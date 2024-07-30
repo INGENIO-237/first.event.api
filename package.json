@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev src/index.ts",
+    "dev": "ts-node-dev --poll src/index.ts",
     "build": "rimraf ./dist && tsc",
     "start": "npm run build && node dist/index.js"
   },
