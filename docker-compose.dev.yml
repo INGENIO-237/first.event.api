@@ -1,12 +1,26 @@
 services:
-  backend:
+  backend-dev:
     build:
       context: .
       target: build
+    env_file:
+      - ./.env
+      - ./.mongodb.env
     volumes:
       - ./:/usr/src/app
       - /usr/src/app/node_modules
     ports:
       - 5000:5000
     command: npm run dev
-    
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    env_file:
+      - ./.mongodb.env
+    volumes:
+      - mongo-db-dev:/data/db
+
+volumes:
+  mongo-db-dev:
