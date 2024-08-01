@@ -4,6 +4,13 @@ export enum PROFILE {
   ORGANIZER = "ORGANIZER",
 }
 
+export type Phone = {
+  cat: PHONE_TYPE;
+  value: Number;
+};
+
+export type SmsInput = { recipient: string; message: string };
+
 export enum PHONE_TYPE {
   HOME = "HOME",
   MOBILE = "MOBILE",
@@ -18,5 +25,5 @@ export enum ADDRESS_TYPE {
 export enum OAUTH_PROVIDER {
   GOOGLE = "GOOGLE",
   FACEBOOK = "FACEBOOK",
-  APPLE = "APPLE"
+  APPLE = "APPLE",
 }

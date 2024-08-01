@@ -102,7 +102,9 @@ const userSchema = new Schema(
   }
 );
 
-export interface IUser extends InferSchemaType<typeof userSchema>, Document {}
+export interface IUser extends InferSchemaType<typeof userSchema>, Document {
+  comparePassword: (password: string) => Promise<boolean>
+}
 
 userSchema.pre<IUser>("save", async function (next) {
   let user = this;
