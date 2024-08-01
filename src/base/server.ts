@@ -1,7 +1,7 @@
 import express from "express";
 import router from "../router";
 import connectToDb from "./db";
-import parseRequestBody from "../middlewares/parse.body";
+import parseRequestBody from "../middlewares/parse.request.body";
 
 export default function createServer() {
   const server = express();
@@ -10,7 +10,7 @@ export default function createServer() {
 
   // Request body parser
   server.use(parseRequestBody());
-  
+
   // Router
   router(server);
 

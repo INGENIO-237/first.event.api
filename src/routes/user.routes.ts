@@ -12,7 +12,7 @@ const UserRouter = Router();
 const controller = Container.get(UserController);
 
 UserRouter.post(
-  "",
+  "/register",
   validate(registerUserSchema),
   tryCatch(controller.registerUser.bind(controller))
 );
