@@ -1,9 +1,11 @@
-import { InferSchemaType, model, Schema, Types } from "mongoose";
+import { InferSchemaType, model, Schema, Document } from "mongoose";
 import {
   ADDRESS_TYPE,
   OAUTH_PROVIDER,
   PHONE_TYPE,
 } from "../utils/constants/user.utils";
+import bcrypt from "bcrypt";
+import config from "../config";
 
 const userSchema = new Schema(
   {
@@ -100,8 +102,32 @@ const userSchema = new Schema(
   }
 );
 
-export type IUser = InferSchemaType<typeof userSchema> & {
-  _id: Types.ObjectId;
+export interface IUser extends InferSchemaType<typeof userSchema>, Document {}
+
+userSchema.pre<IUser>("save", async function (next) {
+  let user = this;
+
+  if (!user.isModified("password")) {
+    next();
+  }
+
+  const salt = await bcrypt.genSalt(config.SALT);
+
+  const hash = await bcrypt.hash(user.password, salt);
+
+  user.password = hash;
+
+  next();
+});
+
+userSchema.methods.comparePassword = async function (
+  candidatePassword: string
+) {
+  let user = this as IUser;
+
+  return await bcrypt
+    .compare(candidatePassword, user.password)
+    .catch((error) => false);
 };
 
 const User = model<IUser>("User", userSchema);
