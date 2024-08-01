@@ -16,7 +16,7 @@ export const registerUserSchema = object({
     password: string({
       required_error: "Le mot de passe est requis",
       invalid_type_error: "Le mot de passe doit être une chaîne de caractères",
-    }),
+    }).min(6, "Le mot de passe doit contenir au moins 6 caractères"),
   }),
 });
 
