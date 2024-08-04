@@ -4,6 +4,7 @@ import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
 import isValidPhoneNumber from "../utils/phone";
 import { SmsInput } from "../utils/constants/user.utils";
+import { constructOtpMessage } from "../utils/mails.utils";
 
 @Service()
 export default class SmsService {
@@ -20,7 +21,7 @@ export default class SmsService {
   async sendOtpSms(phone: string, code: number) {
     await this.sendSms({
       recipient: phone,
-      message: `Hello,\nVotre code de vérification First Event est: ${code}`,
+      message: constructOtpMessage({ code }),
     });
   }
 }

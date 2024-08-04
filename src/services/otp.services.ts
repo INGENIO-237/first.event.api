@@ -1,18 +1,28 @@
+import { Service } from "typedi";
 import { Phone, PHONE_TYPE } from "../utils/constants/user.utils";
 import SmsService from "./sms.services";
+import MailsHooks from "../hooks/mails.hooks";
+import { MAIL_OBJECTS } from "../utils/mails.utils";
 
+@Service()
 export default class OtpServices {
   constructor(private sms: SmsService) {}
 
-  private generateOtp() {
+  generateOtp() {
     let code = Math.round(Math.random() * 1e6);
 
     return Number(code.toString().length < 6 ? code.toString() + "0" : code);
   }
 
-  async sendOtp({ email, phones }: { email?: string; phones?: Phone[] }) {
-    const code = this.generateOtp();
-
+  async sendOtp({
+    email,
+    phones,
+    code,
+  }: {
+    email?: string;
+    phones?: Phone[];
+    code: number;
+  }) {
     await this.sendOtpEmail(email as string, code);
 
     phones?.forEach(async (phone) => {
@@ -22,9 +32,10 @@ export default class OtpServices {
   }
 
   private async sendOtpPhone(phone: string, code: number) {
-    await this.sms.sendOtpSms(phone, code)
+    await this.sms.sendOtpSms(phone, code);
   }
-
-  // TODO: Implement otp sending via mail
-  private async sendOtpEmail(email: string, code: number) {}
+  
+  private async sendOtpEmail(email: string, code: number) {
+    MailsHooks.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
+  }
 }

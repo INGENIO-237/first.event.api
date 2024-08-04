@@ -17,4 +17,7 @@ UserRouter.post(
   tryCatch(controller.registerUser.bind(controller))
 );
 
+// TODO: Ensure user has proper permission to access this resource
+UserRouter.get("", tryCatch(controller.getUsers.bind(controller)));
+
 export default UserRouter;

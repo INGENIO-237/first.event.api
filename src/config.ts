@@ -4,11 +4,11 @@ const config = {
   DB_URI: process.env.DB_URI as string,
 
   // MAIL
-  MAIL_HOST: process.env.MAIL_HOST,
-  MAIL_PORT: process.env.MAIL_PORT ? process.env.MAIL_PORT : 465,
-  MAIL_USER: process.env.MAIL_USER,
-  MAIL_PWD: process.env.MAIL_PWD,
-  MAIL_SENDER: process.env.MAIL_SENDER,
+  MAIL_HOST: process.env.MAIL_HOST as string,
+  MAIL_PORT: process.env.MAIL_PORT ?? 465 as number,
+  MAIL_USER: process.env.MAIL_USER as string,
+  MAIL_PWD: process.env.MAIL_PWD as string,
+  MAIL_SENDER: process.env.MAIL_SENDER as string,
 
   // TWILIO
   TWILIO_SID: process.env.TWILIO_SID as string,

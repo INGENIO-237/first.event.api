@@ -9,6 +9,11 @@ export type Phone = {
   value: Number;
 };
 
+export type MailOpts = {
+  message: string;
+  object: string;
+};
+
 export type SmsInput = { recipient: string; message: string };
 
 export enum PHONE_TYPE {

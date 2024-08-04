@@ -6,6 +6,7 @@ import {
 } from "../utils/constants/user.utils";
 import bcrypt from "bcrypt";
 import config from "../config";
+import moment from "moment";
 
 const userSchema = new Schema(
   {
@@ -42,11 +43,13 @@ const userSchema = new Schema(
       default: [],
     },
     home: {
-      address: { type: String, required: true },
-      country: { type: String, required: true },
-      state: { type: String, required: true },
-      city: { type: String, required: true },
-      zipCode: { type: String, required: true },
+      type: {
+        address: { type: String, required: true },
+        country: { type: String, required: true },
+        state: { type: String, required: true },
+        city: { type: String, required: true },
+        zipCode: { type: String, required: true },
+      },
     },
     addresses: {
       type: [
@@ -103,9 +106,10 @@ const userSchema = new Schema(
 );
 
 export interface IUser extends InferSchemaType<typeof userSchema>, Document {
-  comparePassword: (password: string) => Promise<boolean>
+  comparePassword: (password: string) => Promise<boolean>;
 }
 
+// Password hashing
 userSchema.pre<IUser>("save", async function (next) {
   let user = this;
 
@@ -118,6 +122,19 @@ userSchema.pre<IUser>("save", async function (next) {
   const hash = await bcrypt.hash(user.password, salt);
 
   user.password = hash;
+
+  next();
+});
+
+// OtpExpiry setting
+userSchema.pre<IUser>("save", async function (next) {
+  let user = this;
+
+  if (user.isModified("otp")) {
+    // Sets otp expiry to 30min from now
+    user.otpExpiry = moment(new Date()).add(30, "m").toDate();
+    next();
+  }
 
   next();
 });

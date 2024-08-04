@@ -30,23 +30,17 @@ export default class JwtServices {
     this._publicRefreshToken = PUBLIC_REFRESH_TOKEN;
   }
 
+  // TODO: Change refresh private token
   signJwt(payload: object, isRefreshToken = false) {
-    return jwt.sign(
-      payload,
-      isRefreshToken ? this._privateRefreshToken : this._privateAccessToken,
-      {
-        expiresIn: isRefreshToken ? this._refreshTtl : this._accessTtl,
-        algorithm: "RS256",
-      }
-    );
+    return jwt.sign(payload, this._privateAccessToken, {
+      expiresIn: isRefreshToken ? this._refreshTtl : this._accessTtl,
+      algorithm: "RS256",
+    });
   }
 
   verifyJwt(token: string, isRefreshToken = false) {
     try {
-      const decoded = jwt.verify(
-        token,
-        isRefreshToken ? this._publicRefreshToken : this._publicAccessToken
-      );
+      const decoded = jwt.verify(token, this._publicAccessToken);
 
       return { decoded, isValid: true, expired: false };
     } catch (error: any) {

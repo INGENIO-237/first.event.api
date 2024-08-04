@@ -16,4 +16,11 @@ export default class UserController {
 
     return res.status(HTTP.CREATED).json(user);
   }
+
+  // TODO: Pass down filters for more precise results
+  async getUsers(req: Request, res: Response){
+    const users = await this.service.getUsers();
+
+    return res.status(HTTP.OK).json(users);
+  }
 }

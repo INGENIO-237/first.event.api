@@ -29,14 +29,36 @@ export default class AuthServices {
 
     if (!user.isVerified && !otp) {
       const { phones } = user;
-      await this.otp.sendOtp({ email, phones: phones as Phone[] });
+      const code = this.otp.generateOtp();
+
+      await this.otp.sendOtp({ email, phones: phones as Phone[], code });
+
+      await this.userService.updateUser({
+        userId: user?._id as string,
+        otp: code,
+      });
 
       otpGenerated = true;
+    } else {
+      if (otp && user.otpExpiry) {
+        const otpExpired = new Date().getTime() > user.otpExpiry.getTime();
 
-      //   TODO: Update otp field
+        if (otpExpired) {
+          throw new ApiError(
+            HTTP.BAD_REQUEST,
+            "Le code OTP a expiré. Demandez-en un autre."
+          );
+        }
+
+        if (otp !== user.otp) {
+          throw new ApiError(HTTP.BAD_REQUEST, "Le code OTP est incorrecte");
+        }
+      }
+
+      accessToken = this.jwt.signJwt({ user: user._id });
+      refreshToken = this.jwt.signJwt({ user: user._id }, true);
     }
 
-    if (otp) {
-    }
+    return { accessToken, refreshToken, otpGenerated };
   }
 }
