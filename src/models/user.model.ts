@@ -109,33 +109,36 @@ export interface IUser extends InferSchemaType<typeof userSchema>, Document {
   comparePassword: (password: string) => Promise<boolean>;
 }
 
-// Password hashing
 userSchema.pre<IUser>("save", async function (next) {
   let user = this;
 
-  if (!user.isModified("password")) {
-    next();
+  // Password hashing
+  if (user.isModified("password")) {
+    const salt = await bcrypt.genSalt(config.SALT);
+
+    const hash = await bcrypt.hash(user.password, salt);
+
+    user.password = hash;
   }
 
-  const salt = await bcrypt.genSalt(config.SALT);
-
-  const hash = await bcrypt.hash(user.password, salt);
-
-  user.password = hash;
-
-  next();
+  return next();
 });
 
-// OtpExpiry setting
-userSchema.pre<IUser>("save", async function (next) {
-  let user = this;
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate() as any;
 
-  if (user.isModified("otp")) {
-    // Sets otp expiry to 30min from now
-    user.otpExpiry = moment(new Date()).add(30, "m").toDate();
-    next();
+  if (update.password) {
+    const salt = await bcrypt.genSalt(config.SALT);
+    update.password = await bcrypt.hash(update.password, salt);
   }
 
+  // OtpExpiry setting
+  if (update.otp) {
+    // Sets otp expiry to 30min from now
+    update.otpExpiry = moment(new Date()).add(30, "minutes").toDate();
+  }
+
+  this.setUpdate(update);
   next();
 });
 

@@ -46,7 +46,24 @@ export default class UserServices {
     return user;
   }
 
-  async updateUser({ userId, otp, isVerified }: { userId: string; otp?: number, isVerified?: boolean }) {
-    await this.repository.updateUser({ userId, otp, isVerified });
+  async updateUser({
+    userId,
+    email,
+    otp,
+    isVerified,
+    password,
+  }: {
+    userId?: string;
+    email?: string,
+    otp?: number;
+    isVerified?: boolean;
+    password?: string;
+  }) {
+
+    if(!email && !userId){
+      throw new ApiError(HTTP.INTERNAL_SERVER_ERROR, "Must pass either email or user id to update the user")
+    }
+
+    await this.repository.updateUser({ userId, otp, isVerified, password, email });
   }
 }

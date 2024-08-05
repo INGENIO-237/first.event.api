@@ -1,5 +1,5 @@
 import { Service } from "typedi";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 import { RegisterUser } from "../schemas/user.schemas";
 import { Types } from "mongoose";
 
@@ -26,13 +26,36 @@ export default class UserRepo {
 
   async updateUser({
     userId,
+    email,
     otp,
     isVerified,
+    password,
   }: {
-    userId: string;
+    userId?: string;
+    email?: string;
     otp?: number;
     isVerified?: boolean;
+    password?: string;
   }) {
-    await User.findOneAndUpdate({ _id: new Types.ObjectId(userId) }, { otp, isVerified });
+    if (userId) {
+      await User.findOneAndUpdate(
+        { _id: new Types.ObjectId(userId) },
+        { otp, isVerified, password, email }
+      );
+    }
+
+    if (!userId && email) {
+      // if (password || otp) {
+      //   console.log("Heeeeeeeeeeeeeeeeeeeeeeere");
+        
+      //   const user = (await User.findOne({ email })) as IUser;
+
+      //   if (password) user.password = password;
+      //   if (otp) user.otp = otp;
+
+      //   user.save();
+      // }
+      await User.findOneAndUpdate({ email }, { otp, isVerified, password });
+    }
   }
 }
