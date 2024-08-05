@@ -26,3 +26,13 @@ export const loginSchema = object({
 });
 
 export type LoginPayload = z.infer<typeof loginSchema>;
+
+export const resendOtpSchema = object({
+  body: object({
+    email: string({ required_error: "L'adresse mail est requise" }).email(
+      "Email invalide"
+    ),
+  }),
+});
+
+export type ResendOtp = z.infer<typeof resendOtpSchema>;

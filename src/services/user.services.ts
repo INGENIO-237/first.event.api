@@ -46,7 +46,7 @@ export default class UserServices {
     return user;
   }
 
-  async updateUser({ userId, otp }: { userId: string; otp?: number }) {
-    await this.repository.updateUser({ userId, otp });
+  async updateUser({ userId, otp, isVerified }: { userId: string; otp?: number, isVerified?: boolean }) {
+    await this.repository.updateUser({ userId, otp, isVerified });
   }
 }

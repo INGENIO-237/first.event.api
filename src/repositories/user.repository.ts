@@ -13,7 +13,9 @@ export default class UserRepo {
 
   // TODO: Include hasBeenDeleted and updatedAt properties when users are fetched by top-1 tier admin
   async getUsers() {
-    return await User.find().select("-password -hasBeenDeleted -updatedAt -__v");
+    return await User.find().select(
+      "-password -hasBeenDeleted -updatedAt -__v"
+    );
   }
 
   async getUser({ userId, email }: { userId?: string; email?: string }) {
@@ -22,7 +24,15 @@ export default class UserRepo {
     });
   }
 
-  async updateUser({ userId, otp }: { userId: string; otp?: number }) {
-    await User.findOneAndUpdate({ _id: new Types.ObjectId(userId) }, { otp });
+  async updateUser({
+    userId,
+    otp,
+    isVerified,
+  }: {
+    userId: string;
+    otp?: number;
+    isVerified?: boolean;
+  }) {
+    await User.findOneAndUpdate({ _id: new Types.ObjectId(userId) }, { otp, isVerified });
   }
 }

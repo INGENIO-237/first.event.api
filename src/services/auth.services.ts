@@ -1,6 +1,6 @@
 import { Service } from "typedi";
 import JwtServices from "./jwt.services";
-import { LoginPayload } from "../schemas/auth.schemas";
+import { LoginPayload, ResendOtp } from "../schemas/auth.schemas";
 import UserServices from "./user.services";
 import OtpServices from "./otp.services";
 import { IUser } from "../models/user.model";
@@ -16,6 +16,8 @@ export default class AuthServices {
     private otp: OtpServices
   ) {}
 
+  // TODO: Create a separate method for handling otp sending and storing user's otp 
+  // TODO: Create a separate method for verifying user's account
   async login({ email, password, otp }: LoginPayload["body"]) {
     const user = (await this.userService.getUser({ email })) as IUser;
 
@@ -52,6 +54,11 @@ export default class AuthServices {
 
         if (otp !== user.otp) {
           throw new ApiError(HTTP.BAD_REQUEST, "Le code OTP est incorrecte");
+        } else {
+          await this.userService.updateUser({
+            userId: user._id as string,
+            isVerified: true,
+          });
         }
       }
 
@@ -60,5 +67,19 @@ export default class AuthServices {
     }
 
     return { accessToken, refreshToken, otpGenerated };
+  }
+
+  async resendOtp({ email }: ResendOtp["body"]) {
+    const user = (await this.userService.getUser({ email })) as IUser;
+
+    const { phones } = user;
+    const code = this.otp.generateOtp();
+
+    await this.otp.sendOtp({ email, phones: phones as Phone[], code });
+
+    await this.userService.updateUser({
+      userId: user?._id as string,
+      otp: code,
+    });
   }
 }
