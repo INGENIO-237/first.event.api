@@ -1,3 +1,5 @@
+import { ENV } from "./utils/constants/common";
+
 const config = {
   PORT: process.env.PORT || 5000,
   SALT: Number(process.env.SALT),
@@ -5,7 +7,7 @@ const config = {
 
   // MAIL
   MAIL_HOST: process.env.MAIL_HOST as string,
-  MAIL_PORT: process.env.MAIL_PORT ?? 465 as number,
+  MAIL_PORT: process.env.MAIL_PORT ?? (465 as number),
   MAIL_USER: process.env.MAIL_USER as string,
   MAIL_PWD: process.env.MAIL_PWD as string,
   MAIL_SENDER: process.env.MAIL_SENDER as string,
@@ -15,8 +17,18 @@ const config = {
   TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN as string,
   TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER as string,
 
+  // CLOUDINARY
+  CLOUDINARY_NAME: (process.env.NODE_ENV == ENV.PROD
+    ? process.env.CLOUDINARY_NAME_LIVE
+    : process.env.CLOUDINARY_NAME_TEST) as string,
+  CLOUDINARY_API_KEY: (process.env.NODE_ENV == ENV.PROD
+    ? process.env.CLOUDINARY_API_KEY_LIVE
+    : process.env.CLOUDINARY_API_KEY_TEST) as string,
+  CLOUDINARY_SECRET_KEY: (process.env.NODE_ENV == ENV.PROD
+    ? process.env.CLOUDINARY_SECRET_KEY_LIVE
+    : process.env.CLOUDINARY_SECRET_KEY_TEST) as string,
 
-  // Tokens
+  // TOKENS
   ACCESS_TTL: process.env.ACCESS_TTL as string,
   REFRESH_TTL: process.env.REFRESH_TTL as string,
   PRIVATE_ACCESS_TOKEN: process.env.PRIVATE_ACCESS_TOKEN as string,
