@@ -1,7 +1,7 @@
 import { Service } from "typedi";
 import UserServices from "../services/user.services";
 import { Request, Response } from "express";
-import { GeneralInfo, RegisterUser, UpdateGeneralInfo } from "../schemas/user.schemas";
+import { GeneralInfo, RegisterUser, UpdateCredentials, UpdateGeneralInfo } from "../schemas/user.schemas";
 import HTTP from "../utils/constants/http.responses";
 
 @Service()
@@ -30,6 +30,16 @@ export default class UserController {
   ) {
     const { id } = (req as any).user;
     await this.service.updateGeneralInfo(id as string, req.body);
+    
+    return res.sendStatus(HTTP.OK);
+  }
+
+  async updateCredentials(
+    req: Request<{}, {}, UpdateCredentials["body"]>,
+    res: Response
+  ) {
+    const { id } = (req as any).user;
+    await this.service.updateCredentials(id as string, req.body);
     
     return res.sendStatus(HTTP.OK);
   }
