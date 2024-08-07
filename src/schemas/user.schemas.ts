@@ -39,6 +39,7 @@ export const updateGeneralInfoSchema = object({
       array(
         object({
           cat: nativeEnum(PHONE_TYPE, {
+            required_error: "La catégorie est requise",
             invalid_type_error: "La catégorie doit être soit HOME soit MOBILE",
           }),
           value: string({
@@ -50,4 +51,8 @@ export const updateGeneralInfoSchema = object({
   }),
 });
 
-export type UpdateGeneralInfo = z.infer<typeof updateGeneralInfoSchema>;
+export type GeneralInfo = z.infer<typeof updateGeneralInfoSchema>;
+
+export type UpdateGeneralInfo = GeneralInfo["body"] & {
+  image?: { url: string; publicId: string };
+};

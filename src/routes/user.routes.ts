@@ -11,6 +11,7 @@ import UserController from "../controllers/user.controller";
 import { tryCatch } from "../utils/errors/errors.utlis";
 import { isAdmin, isLoggedIn } from "../middlewares/auth";
 import MulterServices from "../services/multer.services";
+import { imageUploader } from "../middlewares/cloudinary";
 
 const UserRouter = Router();
 
@@ -33,7 +34,7 @@ UserRouter.put(
   isLoggedIn,
   uploader.single("image"),
   validate(updateGeneralInfoSchema),
-  // TODO: Upload to cloudinary,
+  imageUploader,
   tryCatch(controller.updateGeneralInfo.bind(controller))
 );
 

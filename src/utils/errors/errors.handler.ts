@@ -17,7 +17,7 @@ export default function errorHandler(
         .json([
           {
             message:
-              "Un problème s'est produit. Réessayez plus tard. Si le problème persiste, veuillez contacter le service d'assistance.",
+              "Un problème s'est produit. Veuillez réessayer plus tard svp. Si le problème persiste, veuillez contacter le service d'assistance.",
           },
         ]);
 }

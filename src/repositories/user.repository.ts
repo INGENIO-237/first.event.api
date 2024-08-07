@@ -49,7 +49,8 @@ export default class UserRepo {
     }
   }
 
-  async updateGeneralInfo(userId: string, update: UpdateGeneralInfo["body"]) {
-    await User.findByIdAndUpdate(userId, update);
+  // TODO: Avoid having multiple phones of the same category
+  async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
+    await User.findByIdAndUpdate(userId, { ...update });
   }
 }

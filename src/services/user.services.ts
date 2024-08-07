@@ -75,7 +75,9 @@ export default class UserServices {
     });
   }
 
-  async updateGeneralInfo(userId: string, update: UpdateGeneralInfo["body"]) {
+  async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
+    console.log({ update });
+
     await this.repository.updateGeneralInfo(userId, update);
   }
 }
