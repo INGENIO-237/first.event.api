@@ -1,8 +1,13 @@
 import { Service } from "typedi";
-import { RegisterUser, UpdateGeneralInfo } from "../schemas/user.schemas";
+import {
+  RegisterUser,
+  UpdateCredentials,
+  UpdateGeneralInfo,
+} from "../schemas/user.schemas";
 import UserRepo from "../repositories/user.repository";
 import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
+import { IUser } from "../models/user.model";
 
 @Service()
 export default class UserServices {
@@ -76,8 +81,25 @@ export default class UserServices {
   }
 
   async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
-    console.log({ update });
-
     await this.repository.updateGeneralInfo(userId, update);
+  }
+
+  async updateCredentials(userId: string, update: UpdateCredentials["body"]) {
+    const user = (await this.getUser({ userId })) as IUser;
+
+    if (!(await user.comparePassword(update.oldPassword))) {
+      throw new ApiError(HTTP.BAD_REQUEST, "Ancien mot de passe incorrect");
+    }
+
+    const existingUser = (await this.getUser({ email: update.email })) as IUser;
+
+    if (existingUser && existingUser._id != userId) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Adresse électronique déjà utilisée"
+      );
+    }
+
+    await this.repository.updateCredentials(userId, update);
   }
 }

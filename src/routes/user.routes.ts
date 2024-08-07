@@ -4,6 +4,7 @@ import { Router } from "express";
 import validate from "../middlewares/validate.request";
 import {
   registerUserSchema,
+  updateCredentialsSchema,
   updateGeneralInfoSchema,
 } from "../schemas/user.schemas";
 import Container from "typedi";
@@ -36,6 +37,13 @@ UserRouter.put(
   validate(updateGeneralInfoSchema),
   imageUploader,
   tryCatch(controller.updateGeneralInfo.bind(controller))
+);
+
+UserRouter.put(
+  "/credentials",
+  isLoggedIn,
+  validate(updateCredentialsSchema),
+  tryCatch(controller.updateCredentials.bind(controller))
 );
 
 export default UserRouter;

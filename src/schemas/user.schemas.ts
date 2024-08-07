@@ -56,3 +56,32 @@ export type GeneralInfo = z.infer<typeof updateGeneralInfoSchema>;
 export type UpdateGeneralInfo = GeneralInfo["body"] & {
   image?: { url: string; publicId: string };
 };
+
+export const updateCredentialsSchema = object({
+  body: object({
+    email: string({ required_error: "L'adresse mail est requise" }).email(
+      "Email invalide"
+    ),
+    oldPassword: string({
+      required_error: "L'ancien mot de passe est requis",
+      invalid_type_error:
+        "L'ancien mot de passe doit être une chaîne de caractères",
+    }).min(6, "L'ancien mot de passe doit contenir au moins 6 caractères"),
+    password: string({
+      required_error: "Le mot de passe est requis",
+      invalid_type_error: "Le mot de passe doit être une chaîne de caractères",
+    }).min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+  }).superRefine((data, ctx) => {
+    const { oldPassword, password } = data;
+
+    if (oldPassword == password) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Le nouveau mot de passe doit être différent de l'ancien mot de passe",
+      });
+    }
+  }),
+});
+
+export type UpdateCredentials = z.infer<typeof updateCredentialsSchema>;

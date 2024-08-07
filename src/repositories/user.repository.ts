@@ -1,6 +1,10 @@
 import { Service } from "typedi";
 import User from "../models/user.model";
-import { RegisterUser, UpdateGeneralInfo } from "../schemas/user.schemas";
+import {
+  RegisterUser,
+  UpdateCredentials,
+  UpdateGeneralInfo,
+} from "../schemas/user.schemas";
 import { Types } from "mongoose";
 
 @Service()
@@ -51,6 +55,10 @@ export default class UserRepo {
 
   // TODO: Avoid having multiple phones of the same category
   async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
+    await User.findByIdAndUpdate(userId, { ...update });
+  }
+
+  async updateCredentials(userId: string, update: UpdateCredentials["body"]) {
     await User.findByIdAndUpdate(userId, { ...update });
   }
 }
