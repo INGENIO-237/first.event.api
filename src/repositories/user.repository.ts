@@ -1,6 +1,6 @@
 import { Service } from "typedi";
-import User, { IUser } from "../models/user.model";
-import { RegisterUser } from "../schemas/user.schemas";
+import User from "../models/user.model";
+import { RegisterUser, UpdateGeneralInfo } from "../schemas/user.schemas";
 import { Types } from "mongoose";
 
 @Service()
@@ -45,17 +45,12 @@ export default class UserRepo {
     }
 
     if (!userId && email) {
-      // if (password || otp) {
-      //   console.log("Heeeeeeeeeeeeeeeeeeeeeeere");
-        
-      //   const user = (await User.findOne({ email })) as IUser;
-
-      //   if (password) user.password = password;
-      //   if (otp) user.otp = otp;
-
-      //   user.save();
-      // }
       await User.findOneAndUpdate({ email }, { otp, isVerified, password });
     }
+  }
+
+  // TODO: Avoid having multiple phones of the same category
+  async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
+    await User.findByIdAndUpdate(userId, { ...update });
   }
 }

@@ -1,4 +1,5 @@
-import { object, string, z } from "zod";
+import { array, nativeEnum, object, optional, string, z } from "zod";
+import { PHONE_TYPE } from "../utils/constants/user.utils";
 
 export const registerUserSchema = object({
   body: object({
@@ -21,3 +22,37 @@ export const registerUserSchema = object({
 });
 
 export type RegisterUser = z.infer<typeof registerUserSchema>;
+
+export const updateGeneralInfoSchema = object({
+  body: object({
+    firstname: optional(
+      string({
+        invalid_type_error: "Le prénom doit être une chaîne de caractères",
+      })
+    ),
+    lastname: optional(
+      string({
+        invalid_type_error: "Le nom doit être une chaîne de caractères",
+      })
+    ),
+    phones: optional(
+      array(
+        object({
+          cat: nativeEnum(PHONE_TYPE, {
+            required_error: "La catégorie est requise",
+            invalid_type_error: "La catégorie doit être soit HOME soit MOBILE",
+          }),
+          value: string({
+            required_error: "La valeur du numéro de téléphone est requise",
+          }),
+        })
+      )
+    ),
+  }),
+});
+
+export type GeneralInfo = z.infer<typeof updateGeneralInfoSchema>;
+
+export type UpdateGeneralInfo = GeneralInfo["body"] & {
+  image?: { url: string; publicId: string };
+};

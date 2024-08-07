@@ -32,8 +32,9 @@ export default class AuthServices {
 
       otpGenerated = true;
     } else {
-      await this.validateOtp({ email, otp: otp as number });
+      otp && (await this.validateOtp({ email, otp: otp as number }));
 
+      // TODO: Add isAdmin property here
       accessToken = this.jwt.signJwt({ user: user._id });
       refreshToken = this.jwt.signJwt({ user: user._id }, true);
     }
@@ -66,10 +67,10 @@ export default class AuthServices {
           HTTP.BAD_REQUEST,
           "Le code OTP a expiré. Demandez-en un autre."
         );
+      } else {
+        return otp === (user.otp as number);
       }
     }
-    
-    return otp === (user.otp as number);
   }
 
   private async validateOtp({ email, otp }: { email: string; otp: number }) {
@@ -94,8 +95,8 @@ export default class AuthServices {
   }
 
   async resetPwd({ otp, password, email }: ResetPwd["body"]) {
-    this.validateOtp({ email, otp }).then(
-      async () => await this.userService.updateUser({ email, password })
-    );
+    await this.validateOtp({ email, otp });
+
+    await this.userService.updateUser({ email, password });
   }
 }

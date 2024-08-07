@@ -131,3 +131,6 @@ dist
 
 # Todos
 todos*
+
+# Temporary files
+tmp/

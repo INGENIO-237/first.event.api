@@ -1,5 +1,5 @@
 import { Service } from "typedi";
-import { RegisterUser } from "../schemas/user.schemas";
+import { RegisterUser, UpdateGeneralInfo } from "../schemas/user.schemas";
 import UserRepo from "../repositories/user.repository";
 import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
@@ -54,16 +54,30 @@ export default class UserServices {
     password,
   }: {
     userId?: string;
-    email?: string,
+    email?: string;
     otp?: number;
     isVerified?: boolean;
     password?: string;
   }) {
-
-    if(!email && !userId){
-      throw new ApiError(HTTP.INTERNAL_SERVER_ERROR, "Must pass either email or user id to update the user")
+    if (!email && !userId) {
+      throw new ApiError(
+        HTTP.INTERNAL_SERVER_ERROR,
+        "Must pass either email or user id to update the user"
+      );
     }
 
-    await this.repository.updateUser({ userId, otp, isVerified, password, email });
+    await this.repository.updateUser({
+      userId,
+      otp,
+      isVerified,
+      password,
+      email,
+    });
+  }
+
+  async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
+    console.log({ update });
+
+    await this.repository.updateGeneralInfo(userId, update);
   }
 }
