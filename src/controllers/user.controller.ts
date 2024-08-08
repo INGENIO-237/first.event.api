@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import {
   GeneralInfo,
   RegisterUser,
+  UpdateAddresses,
   UpdateCredentials,
   UpdateInterests,
 } from "../schemas/user.schemas";
@@ -56,6 +57,16 @@ export default class UserController {
   ) {
     const { id } = (req as any).user;
     await this.service.updateInterests(id as string, req.body);
+
+    return res.sendStatus(HTTP.OK);
+  }
+
+  async updateAddresses(
+    req: Request<{}, {}, UpdateAddresses["body"]>,
+    res: Response
+  ) {
+    const { id } = (req as any).user;
+    await this.service.updateAddresses(id as string, req.body);
 
     return res.sendStatus(HTTP.OK);
   }

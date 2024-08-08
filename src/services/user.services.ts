@@ -1,6 +1,7 @@
 import { Service } from "typedi";
 import {
   RegisterUser,
+  UpdateAddresses,
   UpdateCredentials,
   UpdateGeneralInfo,
   UpdateInterests,
@@ -82,7 +83,7 @@ export default class UserServices {
   }
 
   async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
-    const user =(await this.getUser({ userId })) as IUser;
+    const user = (await this.getUser({ userId })) as IUser;
 
     await this.repository.updateGeneralInfo(user._id as string, update);
   }
@@ -110,5 +111,11 @@ export default class UserServices {
     const user = (await this.getUser({ userId })) as IUser;
 
     await this.repository.updateInterests(user._id as string, update);
+  }
+
+  async updateAddresses(userId: string, update: UpdateAddresses["body"]) {
+    const user = (await this.getUser({ userId })) as IUser;
+
+    await this.repository.updateAddresses(user._id as string, update);
   }
 }

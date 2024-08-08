@@ -2,6 +2,7 @@ import { Service } from "typedi";
 import User from "../models/user.model";
 import {
   RegisterUser,
+  UpdateAddresses,
   UpdateCredentials,
   UpdateGeneralInfo,
   UpdateInterests,
@@ -64,6 +65,10 @@ export default class UserRepo {
   }
 
   async updateInterests(userId: string, update: UpdateInterests["body"]) {
+    await User.findByIdAndUpdate(userId, { ...update });
+  }
+
+  async updateAddresses(userId: string, update: UpdateAddresses["body"]) {
     await User.findByIdAndUpdate(userId, { ...update });
   }
 }
