@@ -52,25 +52,40 @@ const userSchema = new Schema(
       },
     },
     addresses: {
-      type: [
-        {
-          cat: { type: String, enum: ADDRESS_TYPE, required: true },
-          content: {
-            type: {
+      type: {
+        billing: {
+          type: {
+            content: {
               address: { type: String, required: true },
               country: { type: String, required: true },
               state: { type: String, required: true },
               city: { type: String, required: true },
               zipCode: { type: String, required: true },
             },
+            sameAsHome: {
+              type: Boolean,
+              default: true,
+            },
           },
-          sameAsHome: {
-            type: Boolean,
-            default: false,
-          },
+          required: true,
         },
-      ],
-      default: [],
+        shipping: {
+          type: {
+            content: {
+              address: { type: String, required: true },
+              country: { type: String, required: true },
+              state: { type: String, required: true },
+              city: { type: String, required: true },
+              zipCode: { type: String, required: true },
+            },
+            sameAsHome: {
+              type: Boolean,
+              default: true,
+            },
+          },
+          required: true,
+        },
+      },
     },
 
     // Utility fields

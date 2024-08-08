@@ -160,120 +160,133 @@ export const updateAddressesSchema = object({
         invalid_type_error: "Le domicile doit être sous format d'adresse",
       }
     ),
-    addresses: array(
-      object({
-        cat: nativeEnum(ADDRESS_TYPE, {
-          required_error: "Le type de l'adresse est requise",
+    addresses: object(
+      {
+        billing: object(
+          {
+            content: optional(
+              object({
+                address: string({
+                  required_error: "L'adresse requise",
+                  invalid_type_error:
+                    "L'adresse du domicile doit être une chaîne de caractères",
+                }),
+                country: string({
+                  required_error: "Le pays requis",
+                  invalid_type_error:
+                    "Le pays du domicile doit être une chaîne de caractères",
+                }),
+                state: string({
+                  required_error: "La région requise",
+                  invalid_type_error:
+                    "La région du domicile doit être une chaîne de caractères",
+                }),
+                city: string({
+                  required_error: "La ville requise",
+                  invalid_type_error:
+                    "La ville du domicile doit être une chaîne de caractères",
+                }),
+                zipCode: string({
+                  required_error: "Le code postal requis",
+                  invalid_type_error:
+                    "Le code postal du domicile doit être une chaîne de caractères",
+                }),
+              })
+            ),
+            sameAsHome: boolean({
+              required_error: "Pareille que l'adresse du domicile?",
+              invalid_type_error:
+                "'Pareille que l'adresse du domicile' doit être un booléen",
+            }),
+          },
+          {
+            required_error: "L'adresse de facturation est requise",
+            invalid_type_error:
+              "L'adresse de facturation doit être une adresse valide",
+          }
+        ).superRefine((data, ctx) => {
+          // Either same as home or different
+          if (data.content && data.sameAsHome) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message:
+                "Addresse de facturation invalide. Soit c'est la même chose que l'adresse du domicile soit c'est différent. Mais pas les deux en même temps",
+            });
+          }
+          if (!data.content && !data.sameAsHome) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message:
+                "Addresse de facturation invalide. Soit c'est la même chose que l'adresse du domicile soit il faut fournir une adresse différente",
+            });
+          }
         }),
-        content: optional(
-          object({
-            address: string({
-              required_error: "L'adresse requise",
+        shipping: object(
+          {
+            content: optional(
+              object({
+                address: string({
+                  required_error: "L'adresse requise",
+                  invalid_type_error:
+                    "L'adresse du domicile doit être une chaîne de caractères",
+                }),
+                country: string({
+                  required_error: "Le pays requis",
+                  invalid_type_error:
+                    "Le pays du domicile doit être une chaîne de caractères",
+                }),
+                state: string({
+                  required_error: "La région requise",
+                  invalid_type_error:
+                    "La région du domicile doit être une chaîne de caractères",
+                }),
+                city: string({
+                  required_error: "La ville requise",
+                  invalid_type_error:
+                    "La ville du domicile doit être une chaîne de caractères",
+                }),
+                zipCode: string({
+                  required_error: "Le code postal requis",
+                  invalid_type_error:
+                    "Le code postal du domicile doit être une chaîne de caractères",
+                }),
+              })
+            ),
+            sameAsHome: boolean({
+              required_error: "Pareille que l'adresse du domicile?",
               invalid_type_error:
-                "L'adresse du domicile doit être une chaîne de caractères",
+                "'Pareille que l'adresse du domicile' doit être un booléen",
             }),
-            country: string({
-              required_error: "Le pays requis",
-              invalid_type_error:
-                "Le pays du domicile doit être une chaîne de caractères",
-            }),
-            state: string({
-              required_error: "La région requise",
-              invalid_type_error:
-                "La région du domicile doit être une chaîne de caractères",
-            }),
-            city: string({
-              required_error: "La ville requise",
-              invalid_type_error:
-                "La ville du domicile doit être une chaîne de caractères",
-            }),
-            zipCode: string({
-              required_error: "Le code postal requis",
-              invalid_type_error:
-                "Le code postal du domicile doit être une chaîne de caractères",
-            }),
-          })
-        ),
-        sameAsHome: optional(boolean()),
-      }).superRefine((data, ctx) => {
-        // Either same as home or different
-        if (data.content && data.sameAsHome) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message:
-              "Addresse invalide. Soit c'est la même chose que l'adresse du domicile soit c'est différent. Mais pas les deux en même temps",
-          });
-        }
-        if (!data.content && !data.sameAsHome) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message:
-              "Addresse invalide. Soit c'est la même chose que l'adresse du domicile soit il faut fournir une adresse différente",
-          });
-        }
-      }),
+          },
+          {
+            required_error: "L'adresse de livraison est requise",
+            invalid_type_error:
+              "L'adresse de livraison est requise doit être une adresse valide",
+          }
+        ).superRefine((data, ctx) => {
+          // Either same as home or different
+          if (data.content && data.sameAsHome) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message:
+                "Addresse de livraison invalide. Soit c'est la même chose que l'adresse du domicile soit c'est différent. Mais pas les deux en même temps",
+            });
+          }
+          if (!data.content && !data.sameAsHome) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message:
+                "Addresse de livraison invalide. Soit c'est la même chose que l'adresse du domicile soit il faut fournir une adresse différente",
+            });
+          }
+        }),
+      },
       {
         required_error: "Les autres adresses sont requises",
         invalid_type_error:
           "Les autres adresses doivent être sous forme de tableau d'adresses",
       }
-    ).superRefine((data, ctx) => {
-      // Make sure other addresses (billing, shipping and professional) are populated
-      // Loop through each element and make sure it's unique
-      // Loop through each element and make sure a given address exists
-      let billing = 0;
-      let shipping = 0;
-      let professional = 0;
-
-      data.forEach((address) => {
-        if (address.cat == (ADDRESS_TYPE.BILLING as string)) billing += 1;
-        if (address.cat == (ADDRESS_TYPE.SHIPPING as string)) shipping += 1;
-        if (address.cat == (ADDRESS_TYPE.PROFESSIONAL as string))
-          professional += 1;
-      });
-
-      // BILLING
-      if (billing < 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "L'adresse de facturation est requise",
-        });
-      }
-      if (billing > 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "L'adresse de facturation ne peut être double",
-        });
-      }
-
-      // SHIPPING
-      if (shipping < 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "L'adresse de livraison est requise",
-        });
-      }
-      if (shipping > 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "L'adresse de livraison ne peut être double",
-        });
-      }
-
-      // PROFESSIONAL
-      if (professional < 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "L'adresse de professionnelle est requise",
-        });
-      }
-      if (professional > 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "L'adresse de professionnelle ne peut être double",
-        });
-      }
-    }),
+    ),
   }),
 });
 
