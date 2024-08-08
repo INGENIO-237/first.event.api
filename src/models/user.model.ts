@@ -85,7 +85,12 @@ const userSchema = new Schema(
       default: false,
     },
     interests: {
-      type: [{ interest: { type: String, required: true }, tags: [] }],
+      type: [
+        {
+          interest: { type: String, required: true },
+          tags: { type: [String], required: true },
+        },
+      ],
       default: [],
     },
 

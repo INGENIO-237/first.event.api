@@ -3,6 +3,7 @@ import {
   RegisterUser,
   UpdateCredentials,
   UpdateGeneralInfo,
+  UpdateInterests,
 } from "../schemas/user.schemas";
 import UserRepo from "../repositories/user.repository";
 import ApiError from "../utils/errors/errors.base";
@@ -81,7 +82,9 @@ export default class UserServices {
   }
 
   async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
-    await this.repository.updateGeneralInfo(userId, update);
+    const user =(await this.getUser({ userId })) as IUser;
+
+    await this.repository.updateGeneralInfo(user._id as string, update);
   }
 
   async updateCredentials(userId: string, update: UpdateCredentials["body"]) {
@@ -100,6 +103,12 @@ export default class UserServices {
       );
     }
 
-    await this.repository.updateCredentials(userId, update);
+    await this.repository.updateCredentials(user._id as string, update);
+  }
+
+  async updateInterests(userId: string, update: UpdateInterests["body"]) {
+    const user = (await this.getUser({ userId })) as IUser;
+
+    await this.repository.updateInterests(user._id as string, update);
   }
 }

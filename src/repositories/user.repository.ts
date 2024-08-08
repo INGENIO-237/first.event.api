@@ -4,6 +4,7 @@ import {
   RegisterUser,
   UpdateCredentials,
   UpdateGeneralInfo,
+  UpdateInterests,
 } from "../schemas/user.schemas";
 import { Types } from "mongoose";
 
@@ -59,6 +60,10 @@ export default class UserRepo {
   }
 
   async updateCredentials(userId: string, update: UpdateCredentials["body"]) {
+    await User.findByIdAndUpdate(userId, { ...update });
+  }
+
+  async updateInterests(userId: string, update: UpdateInterests["body"]) {
     await User.findByIdAndUpdate(userId, { ...update });
   }
 }
