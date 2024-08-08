@@ -85,3 +85,42 @@ export const updateCredentialsSchema = object({
 });
 
 export type UpdateCredentials = z.infer<typeof updateCredentialsSchema>;
+
+export const updateInterestsSchema = object({
+  body: object({
+    interests: array(
+      object({
+        interest: string({
+          required_error: "Le nom du centre d'intérêt est requis",
+          invalid_type_error:
+            "Le centre d'intérêt doit être une chaîne de caractères",
+        }),
+        tags: array(
+          string({
+            required_error: "Au moins un sous-élément de l'intérêt est requis",
+            invalid_type_error:
+              "Le sous-élément de l'intérêt doit être une chaîne de caractères",
+          }),
+          {
+            required_error: "Les sous-éléments de l'intérêt sont requis",
+            invalid_type_error:
+              "Les sous-éléments de l'intérêt doivent être un tableau de chaînes de caractères",
+          }
+        ),
+      }).superRefine((data, ctx) => {
+        if(data.interest && data.tags.length < 1){
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Au moins un sous-élément de l'intérêt est requis"
+          })
+        }
+      }),
+      {
+        required_error: "Les intérêts doivent être renseignées",
+        invalid_type_error: "Les intérêts doivent être un tableau d'intérêts",
+      }
+    ),
+  }),
+});
+
+export type UpdateInterests = z.infer<typeof updateInterestsSchema>;

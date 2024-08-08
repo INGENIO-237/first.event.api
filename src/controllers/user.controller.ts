@@ -1,7 +1,12 @@
 import { Service } from "typedi";
 import UserServices from "../services/user.services";
 import { Request, Response } from "express";
-import { GeneralInfo, RegisterUser, UpdateCredentials, UpdateGeneralInfo } from "../schemas/user.schemas";
+import {
+  GeneralInfo,
+  RegisterUser,
+  UpdateCredentials,
+  UpdateInterests,
+} from "../schemas/user.schemas";
 import HTTP from "../utils/constants/http.responses";
 
 @Service()
@@ -30,7 +35,7 @@ export default class UserController {
   ) {
     const { id } = (req as any).user;
     await this.service.updateGeneralInfo(id as string, req.body);
-    
+
     return res.sendStatus(HTTP.OK);
   }
 
@@ -40,7 +45,18 @@ export default class UserController {
   ) {
     const { id } = (req as any).user;
     await this.service.updateCredentials(id as string, req.body);
-    
+
+    return res.sendStatus(HTTP.OK);
+  }
+
+  // TODO: Make sure two or more interests don't have the same keys
+  async updateInterests(
+    req: Request<{}, {}, UpdateInterests["body"]>,
+    res: Response
+  ) {
+    const { id } = (req as any).user;
+    await this.service.updateInterests(id as string, req.body);
+
     return res.sendStatus(HTTP.OK);
   }
 }

@@ -6,6 +6,7 @@ import {
   registerUserSchema,
   updateCredentialsSchema,
   updateGeneralInfoSchema,
+  updateInterestsSchema,
 } from "../schemas/user.schemas";
 import Container from "typedi";
 import UserController from "../controllers/user.controller";
@@ -44,6 +45,13 @@ UserRouter.put(
   isLoggedIn,
   validate(updateCredentialsSchema),
   tryCatch(controller.updateCredentials.bind(controller))
+);
+
+UserRouter.put(
+  "/interests",
+  isLoggedIn,
+  validate(updateInterestsSchema),
+  tryCatch(controller.updateInterests.bind(controller))
 );
 
 export default UserRouter;
