@@ -4,6 +4,7 @@ import { Router } from "express";
 import validate from "../middlewares/validate.request";
 import {
   registerUserSchema,
+  updateAddressesSchema,
   updateCredentialsSchema,
   updateGeneralInfoSchema,
   updateInterestsSchema,
@@ -52,6 +53,13 @@ UserRouter.put(
   isLoggedIn,
   validate(updateInterestsSchema),
   tryCatch(controller.updateInterests.bind(controller))
+);
+
+UserRouter.put(
+  "/addresses",
+  isLoggedIn,
+  validate(updateAddressesSchema),
+  tryCatch(controller.updateAddresses.bind(controller))
 );
 
 export default UserRouter;

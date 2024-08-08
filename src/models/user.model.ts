@@ -66,7 +66,7 @@ const userSchema = new Schema(
           },
           sameAsHome: {
             type: Boolean,
-            default: true,
+            default: false,
           },
         },
       ],
