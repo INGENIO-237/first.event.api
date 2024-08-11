@@ -1,10 +1,10 @@
 import "reflect-metadata";
 import { NextFunction, Request, Response } from "express";
 import Container from "typedi";
-import CloudinaryServices from "../services/cloudinary.services";
+import CloudinaryServices from "../services/utils/cloudinary.services";
 import HTTP from "../utils/constants/http.responses";
 import logger from "../utils/logger";
-import MulterServices from "../services/multer.services";
+import MulterServices from "../services/utils/multer.services";
 
 // TODO: Look how to reduce upload time
 const cloudinary = Container.get(CloudinaryServices);

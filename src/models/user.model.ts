@@ -122,6 +122,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
+    discriminatorKey: "type"
   }
 );
 

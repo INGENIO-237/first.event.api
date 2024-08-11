@@ -1,6 +1,6 @@
 import { Service } from "typedi";
 import { Phone, PHONE_TYPE } from "../utils/constants/user.utils";
-import SmsService from "./sms.services";
+import SmsService from "./utils/sms.services";
 import MailsHooks from "../hooks/mails.hooks";
 import { MAIL_OBJECTS } from "../utils/mails.utils";
 

@@ -1,8 +1,8 @@
 import mailer, { Transporter } from "nodemailer";
 import { Service } from "typedi";
-import config from "../config";
-import { MailOpts } from "../utils/constants/user.utils";
-import { constructOtpMessage, MAIL_OBJECTS } from "../utils/mails.utils";
+import config from "../../config";
+import { MailOpts } from "../../utils/constants/user.utils";
+import { constructOtpMessage, MAIL_OBJECTS } from "../../utils/mails.utils";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 @Service()

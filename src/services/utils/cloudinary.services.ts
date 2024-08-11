@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import { Service } from "typedi";
-import logger from "../utils/logger";
+import logger from "../../utils/logger";
 
 @Service()
 export default class CloudinaryServices {

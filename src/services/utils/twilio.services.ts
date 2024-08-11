@@ -1,7 +1,7 @@
 import { Service } from "typedi";
-import config from "../config";
+import config from "../../config";
 import twilio, { Twilio } from "twilio";
-import { SmsInput } from "../utils/constants/user.utils";
+import { SmsInput } from "../../utils/constants/user.utils";
 
 @Service()
 export default class TwilioService {

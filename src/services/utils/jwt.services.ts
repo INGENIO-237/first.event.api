@@ -1,7 +1,7 @@
 import { Service } from "typedi";
-import config from "../config";
+import config from "../../config";
 import jwt from "jsonwebtoken";
-import logger from "../utils/logger";
+import logger from "../../utils/logger";
 
 @Service()
 export default class JwtServices {

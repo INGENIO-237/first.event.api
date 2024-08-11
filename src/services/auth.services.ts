@@ -1,5 +1,5 @@
 import { Service } from "typedi";
-import JwtServices from "./jwt.services";
+import JwtServices from "./utils/jwt.services";
 import { LoginPayload, ResetPwd, VerifAccount } from "../schemas/auth.schemas";
 import UserServices from "./user.services";
 import OtpServices from "./otp.services";

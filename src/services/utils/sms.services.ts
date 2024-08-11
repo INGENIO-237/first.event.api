@@ -1,10 +1,10 @@
 import { Service } from "typedi";
 import TwilioService from "./twilio.services";
-import ApiError from "../utils/errors/errors.base";
-import HTTP from "../utils/constants/http.responses";
-import isValidPhoneNumber from "../utils/phone";
-import { SmsInput } from "../utils/constants/user.utils";
-import { constructOtpMessage } from "../utils/mails.utils";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
+import isValidPhoneNumber from "../../utils/phone";
+import { SmsInput } from "../../utils/constants/user.utils";
+import { constructOtpMessage } from "../../utils/mails.utils";
 
 @Service()
 export default class SmsService {

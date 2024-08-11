@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { NextFunction, Request, Response } from "express";
 import HTTP from "../utils/constants/http.responses";
 import Container from "typedi";
-import JwtServices from "../services/jwt.services";
+import JwtServices from "../services/utils/jwt.services";
 import { JwtPayload } from "jsonwebtoken";
 
 function processDecodedPayload(

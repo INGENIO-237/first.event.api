@@ -3,7 +3,7 @@ import "reflect-metadata";
 import EventEmitter from "node:events";
 import { MAIL_OBJECTS } from "../utils/mails.utils";
 import Container from "typedi";
-import MailServices from "../services/mail.services";
+import MailServices from "../services/utils/mail.services";
 
 const service = Container.get(MailServices);
 

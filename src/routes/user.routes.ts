@@ -13,7 +13,7 @@ import Container from "typedi";
 import UserController from "../controllers/user.controller";
 import { tryCatch } from "../utils/errors/errors.utlis";
 import { isAdmin, isLoggedIn } from "../middlewares/auth";
-import MulterServices from "../services/multer.services";
+import MulterServices from "../services/utils/multer.services";
 import { imageUploader } from "../middlewares/cloudinary";
 
 const UserRouter = Router();
