@@ -10,6 +10,7 @@ import UserRepo from "../repositories/user.repository";
 import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
 import { IUser } from "../models/user.model";
+import { PROFILE } from "../utils/constants/user.utils";
 
 @Service()
 export default class UserServices {
@@ -59,17 +60,28 @@ export default class UserServices {
     otp,
     isVerified,
     password,
+    profile,
+    professional,
   }: {
     userId?: string;
     email?: string;
     otp?: number;
     isVerified?: boolean;
     password?: string;
+    profile?: string;
+    professional?: PROFILE;
   }) {
     if (!email && !userId) {
       throw new ApiError(
         HTTP.INTERNAL_SERVER_ERROR,
         "Must pass either email or user id to update the user"
+      );
+    }
+
+    if ((professional && !profile) || (profile && !professional)) {
+      throw new ApiError(
+        HTTP.INTERNAL_SERVER_ERROR,
+        "Must pass either profile and professional to update the user"
       );
     }
 
@@ -79,6 +91,8 @@ export default class UserServices {
       isVerified,
       password,
       email,
+      professional,
+      profile,
     });
   }
 

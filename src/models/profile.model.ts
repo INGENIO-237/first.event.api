@@ -7,7 +7,7 @@ const profileSchema = new Schema(
       ref: "User",
     },
   },
-  { timestamps: true, discriminatorKey: "profile" }
+  { timestamps: true, discriminatorKey: "type" }
 );
 
 export interface IProfile

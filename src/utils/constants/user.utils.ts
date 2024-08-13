@@ -1,7 +1,6 @@
 export enum PROFILE {
-  NORMAL = "NORMAL",
-  MARKETER = "MARKETER",
-  ORGANIZER = "ORGANIZER",
+  INFLUENCER = "Influencer",
+  ORGANIZER = "Organizer",
 }
 
 export type Phone = {

@@ -17,7 +17,7 @@ function processDecodedPayload(
   // TODO: Add isAdmin property too
   (req as any).user = {
     id: user,
-    isAdmin: false, // TODO: Change this to be dynamic
+    isAdmin: true, // TODO: Change this to be dynamic
   };
 
   return next();

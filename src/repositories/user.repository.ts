@@ -8,6 +8,7 @@ import {
   UpdateInterests,
 } from "../schemas/user.schemas";
 import { Types } from "mongoose";
+import { PROFILE } from "../utils/constants/user.utils";
 
 @Service()
 export default class UserRepo {
@@ -19,9 +20,11 @@ export default class UserRepo {
 
   // TODO: Include hasBeenDeleted and updatedAt properties when users are fetched by top-1 tier admin
   async getUsers() {
-    return await User.find().select(
-      "-password -hasBeenDeleted -updatedAt -__v"
-    );
+    return await User.find()
+      .populate("profile")
+      .select(
+        "-password -hasBeenDeleted -updatedAt -__v -profile.user -profile.type -profile.__v -profile.updateAt"
+      );
   }
 
   async getUser({ userId, email }: { userId?: string; email?: string }) {
@@ -36,22 +39,29 @@ export default class UserRepo {
     otp,
     isVerified,
     password,
+    profile,
+    professional,
   }: {
     userId?: string;
     email?: string;
     otp?: number;
     isVerified?: boolean;
     password?: string;
+    professional?: PROFILE;
+    profile?: string;
   }) {
     if (userId) {
       await User.findOneAndUpdate(
         { _id: new Types.ObjectId(userId) },
-        { otp, isVerified, password, email }
+        { otp, isVerified, password, email, profile, professional }
       );
     }
 
     if (!userId && email) {
-      await User.findOneAndUpdate({ email }, { otp, isVerified, password });
+      await User.findOneAndUpdate(
+        { email },
+        { otp, isVerified, password, profile, professional }
+      );
     }
   }
 
