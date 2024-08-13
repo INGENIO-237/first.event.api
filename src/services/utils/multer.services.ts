@@ -1,12 +1,12 @@
 import multer from "multer";
 import { join } from "node:path";
 import { unlink, readdir, mkdir } from "node:fs";
-import logger from "../utils/logger";
+import logger from "../../utils/logger";
 import { Service } from "typedi";
 
 @Service()
 export default class MulterServices {
-  private _baseDir = join(__dirname, "..", "tmp");
+  private _baseDir = join(__dirname, "..", "..", "tmp");
   private _storage: multer.StorageEngine;
   uploader: multer.Multer;
 
