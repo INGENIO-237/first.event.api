@@ -1,7 +1,7 @@
 import { Service } from "typedi";
 import {
   RegisterOrganizer,
-//   UpdateOrganizer,
+  UpdateOrganizer,
 } from "../../schemas/professionals/organizer.schemas";
 import UserServices from "../user.services";
 import { PROFILE } from "../../utils/constants/user.utils";
@@ -34,7 +34,7 @@ export default class OrganizerServices {
     return organizer;
   }
 
-//   async updateOrganizer(userId: string, update: UpdateOrganizer["body"]) {
-//     await this.repository.updateOrganizer(userId, update);
-//   }
+  async updateOrganizer(userId: string, update: UpdateOrganizer["body"]) {
+    await this.repository.updateOrganizer(userId, update);
+  }
 }

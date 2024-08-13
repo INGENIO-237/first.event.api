@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import OrganizerServices from "../../services/professionals/organizer.services";
 import {
   RegisterOrganizer,
-//   UpdateOrganizer,
+  UpdateOrganizer,
 } from "../../schemas/professionals/organizer.schemas";
 import HTTP from "../../utils/constants/http.responses";
 import { Service } from "typedi";
@@ -26,12 +26,14 @@ export default class OrganizerController {
     return res.status(HTTP.CREATED).json(organizer);
   }
 
-//   async updateOrganizer(
-//     req: Request<{}, {}, UpdateOrganizer["body"]>,
-//     res: Response
-//   ) {
-//     const { id } = (req as any).user;
+  async updateOrganizer(
+    req: Request<{}, {}, UpdateOrganizer["body"]>,
+    res: Response
+  ) {
+    const { id } = (req as any).user;
 
-//     await this.service.updateOrganizer(id as string, req.body);
-//   }
+    await this.service.updateOrganizer(id as string, req.body);
+
+    return res.sendStatus(HTTP.OK);
+  }
 }

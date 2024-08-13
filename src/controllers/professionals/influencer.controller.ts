@@ -33,5 +33,7 @@ export default class InfluencerController {
     const { id } = (req as any).user;
 
     await this.service.updateInfluencer(id as string, req.body);
+
+    return res.sendStatus(HTTP.OK);
   }
 }

@@ -4,6 +4,7 @@ import {
   UpdateInfluencer,
 } from "../../schemas/professionals/influencer.schemas";
 import Influencer from "../../models/professionals/influencer.model";
+import { Types } from "mongoose";
 
 @Service()
 export default class InfluencerRepo {
@@ -15,6 +16,9 @@ export default class InfluencerRepo {
   }
 
   async updateInfluencer(userId: string, update: UpdateInfluencer["body"]) {
-    await Influencer.findByIdAndUpdate(userId, { ...update });
+    await Influencer.findOneAndUpdate(
+      { user: new Types.ObjectId(userId) },
+      { ...update }
+    );
   }
 }

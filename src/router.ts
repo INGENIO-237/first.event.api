@@ -15,4 +15,3 @@ export default function router(server: Express) {
   server.use("/influencers", InfluencerRouter);
   server.use("/organizers", OrganizerRouter);
 }
-
