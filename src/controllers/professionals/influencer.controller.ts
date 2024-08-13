@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import InfluencerServices from "../../services/professionals/influencer.services";
-import { RegisterInfluencer } from "../../schemas/professionals/influencer.schemas";
+import {
+  RegisterInfluencer,
+  UpdateInfluencer,
+} from "../../schemas/professionals/influencer.schemas";
 import HTTP from "../../utils/constants/http.responses";
 import { Service } from "typedi";
 
@@ -8,6 +11,7 @@ import { Service } from "typedi";
 export default class InfluencerController {
   constructor(private service: InfluencerServices) {}
 
+  // TODO: Set a similar route for admin too
   async registerInfluencer(
     req: Request<{}, {}, RegisterInfluencer["body"]>,
     res: Response
@@ -20,5 +24,14 @@ export default class InfluencerController {
     );
 
     return res.status(HTTP.CREATED).json(influencer);
+  }
+
+  async updateInfluencer(
+    req: Request<{}, {}, UpdateInfluencer["body"]>,
+    res: Response
+  ) {
+    const { id } = (req as any).user;
+
+    await this.service.updateInfluencer(id as string, req.body);
   }
 }

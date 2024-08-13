@@ -34,6 +34,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    // TODO:  Convert phones from array to an object { home: +1 647 xxxxx, mobile: +1 647 xxxxx }
     phones: {
       type: [
         {

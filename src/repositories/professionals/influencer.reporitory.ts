@@ -1,5 +1,8 @@
 import { Service } from "typedi";
-import { RegisterInfluencer } from "../../schemas/professionals/influencer.schemas";
+import {
+  RegisterInfluencer,
+  UpdateInfluencer,
+} from "../../schemas/professionals/influencer.schemas";
 import Influencer from "../../models/professionals/influencer.model";
 
 @Service()
@@ -9,5 +12,9 @@ export default class InfluencerRepo {
     payload: RegisterInfluencer["body"]
   ) {
     return await Influencer.create({ user: userId, ...payload });
+  }
+
+  async updateInfluencer(userId: string, update: UpdateInfluencer["body"]) {
+    await Influencer.findByIdAndUpdate(userId, { ...update });
   }
 }

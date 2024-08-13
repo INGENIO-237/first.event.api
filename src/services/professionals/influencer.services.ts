@@ -1,6 +1,9 @@
 import { Service } from "typedi";
 import InfluencerRepo from "../../repositories/professionals/influencer.reporitory";
-import { RegisterInfluencer } from "../../schemas/professionals/influencer.schemas";
+import {
+  RegisterInfluencer,
+  UpdateInfluencer,
+} from "../../schemas/professionals/influencer.schemas";
 import UserServices from "../user.services";
 import { PROFILE } from "../../utils/constants/user.utils";
 
@@ -29,5 +32,9 @@ export default class InfluencerServices {
     });
 
     return influencer;
+  }
+
+  async updateInfluencer(userId: string, update: UpdateInfluencer["body"]) {
+    await this.repository.updateInfluencer(userId, update);
   }
 }
