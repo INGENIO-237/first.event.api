@@ -9,9 +9,9 @@ export default class OtpServices {
   constructor(private sms: SmsService) {}
 
   generateOtp() {
-    let code = Math.round(Math.random() * 1e6);
+    let code = Math.round(Math.random() * 1e5);
 
-    return Number(code.toString().length < 6 ? code.toString() + "0" : code);
+    return Number(code.toString().length < 5 ? code.toString() + "0" : code);
   }
 
   async sendOtp({
@@ -34,7 +34,7 @@ export default class OtpServices {
   private async sendOtpPhone(phone: string, code: number) {
     await this.sms.sendOtpSms(phone, code);
   }
-  
+
   private async sendOtpEmail(email: string, code: number) {
     MailsHooks.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
   }

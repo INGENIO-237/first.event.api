@@ -9,4 +9,8 @@ export default class PlanServices {
   async createPlan(payload: CreatePlan["body"]) {
     return this.repository.createPlan(payload);
   }
+
+  async getPlans() {
+    return await this.repository.getPlans();
+  }
 }

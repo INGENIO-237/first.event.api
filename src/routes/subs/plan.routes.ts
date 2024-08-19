@@ -19,6 +19,8 @@ PlanRouter.post(
   controller.createPlan.bind(controller)
 );
 
-PlanRouter.get("");
+PlanRouter.get("", controller.getPlans.bind(controller));
+
+// TODO: Routes for getting a single plan and updating and deleting plans
 
 export default PlanRouter;

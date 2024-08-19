@@ -13,4 +13,10 @@ export default class PlanController {
 
     return res.status(HTTP.CREATED).json(plan);
   }
+
+  async getPlans(req: Request, res: Response) {
+    const plans = await this.service.getPlans();
+
+    return res.status(HTTP.OK).json(plans);
+  }
 }
