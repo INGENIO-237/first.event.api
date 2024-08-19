@@ -1,5 +1,5 @@
 import { array, boolean, nativeEnum, object, optional, string, z } from "zod";
-import { ADDRESS_TYPE, PHONE_TYPE } from "../utils/constants/user.utils";
+import { PHONE_TYPE } from "../utils/constants/user.utils";
 
 export const registerUserSchema = object({
   body: object({
