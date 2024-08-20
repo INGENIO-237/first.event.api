@@ -2,9 +2,10 @@ import { Document, InferSchemaType, model, Schema, Types } from "mongoose";
 
 const subscriptionSchema = new Schema(
   {
-    payment: { 
+    payment: {
       type: Types.ObjectId,
       ref: "SubscriptionPayment",
+      required: true,
     },
     freemiumEndsOn: {
       type: Date,

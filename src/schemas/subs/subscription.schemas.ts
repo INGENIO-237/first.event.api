@@ -40,3 +40,18 @@ export const registerSubscriptionSchema = object({
     }
   }),
 });
+
+export type RegisterSubscription = z.infer<typeof registerSubscriptionSchema>;
+
+export type SubscriptionPaymentPayload = RegisterSubscription["body"] & {
+  user: string;
+  paymentIntent: string;
+  amount: number;
+};
+
+export type CreateSubscription = {
+  payment: string;
+  freemiumEndsOn: Date;
+  startsOn: Date;
+  endsOn: Date;
+};
