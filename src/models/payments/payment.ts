@@ -21,6 +21,10 @@ const paymentSchema = new Schema(
       type: String,
       enum: [...Object.values(PAYMENT_STATUS)],
     },
+    coupons: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true, discriminatorKey: "type" }
 );
