@@ -129,7 +129,9 @@ export default class StripeServices {
   }: {
     paymentIntent: string;
     receipt: string;
-  }) {}
+  }) {
+    
+  }
 
   private async handleFailedPayment({
     paymentIntent,

@@ -20,7 +20,7 @@ export default class SubscriptionPaymentServices {
     const { plan, coupons, billed } = payload;
 
     let amount;
-    // TODO: Get plan and price
+    // Get plan and price
     const { monthlyPrice, yearlyPrice } = (await this.planService.getPlan(
       plan,
       true
@@ -34,7 +34,12 @@ export default class SubscriptionPaymentServices {
     const { paymentIntent, ephemeralKey, clientSecret } =
       await this.stripe.initiatePayment({ amount });
 
-    // TODO: Persist to DB
+    // Persist to DB
+    await this.repository.createSubscriptionPayment({
+      ...payload,
+      paymentIntent,
+      amount,
+    });
 
     return { paymentIntent, ephemeralKey, clientSecret };
   }
