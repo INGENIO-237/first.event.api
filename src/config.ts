@@ -28,6 +28,19 @@ const config = {
     ? process.env.CLOUDINARY_SECRET_KEY_LIVE
     : process.env.CLOUDINARY_SECRET_KEY_TEST) as string,
 
+  STRIPE_PUBLIC_KEY:
+    process.env.NODE_ENV == ENV.PROD
+      ? (process.env.STRIPE_PUBLIC_KEY_LIVE as string)
+      : (process.env.STRIPE_PUBLIC_KEY_TEST as string),
+  STRIPE_SECRET_KEY:
+    process.env.NODE_ENV == ENV.PROD
+      ? (process.env.STRIPE_SECRET_KEY_LIVE as string)
+      : (process.env.STRIPE_SECRET_KEY_TEST as string),
+  STRIPE_API_VERSION: process.env.STRIPE_API_VERSION as string,
+  STRIPE_WEBHOOK_ENDPOINT_SECRET: (process.env.NODE_ENV == ENV.PROD
+    ? process.env.STRIPE_WEBHOOK_ENDPOINT_SECRET_LIVE
+    : process.env.STRIPE_WEBHOOK_ENDPOINT_SECRET_TEST) as string,
+
   // TOKENS
   ACCESS_TTL: process.env.ACCESS_TTL as string,
   REFRESH_TTL: process.env.REFRESH_TTL as string,
