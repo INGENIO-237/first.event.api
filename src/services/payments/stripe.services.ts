@@ -70,6 +70,7 @@ export default class StripeServices {
     return { client_secret, paymentIntent, customer: customerId ?? id };
   }
 
+  // TODO: Use this function once the user is created
   async createStripeCustomer({
     fullname,
     email,
@@ -85,14 +86,15 @@ export default class StripeServices {
     return id;
   }
 
-  async handlePaymentHook(
-    signature: string | string[] | Buffer,
-    data: string | Buffer
-  ) {
-    let event: Stripe.Event;
-
+  constructEvent({
+    data,
+    signature,
+  }: {
+    data: string | Buffer;
+    signature: string | string[];
+  }) {
     try {
-      event = this._stripe.webhooks.constructEvent(
+      return this._stripe.webhooks.constructEvent(
         data,
         signature,
         this._webHookSecret
@@ -100,50 +102,5 @@ export default class StripeServices {
     } catch (err: any) {
       throw new ApiError(HTTP.BAD_REQUEST, `Webhook Error: ${err.message}`);
     }
-
-    const { type: eventType } = event;
-
-    if (eventType === "charge.captured" || eventType === "charge.succeeded") {
-      const paymentIntent = event.data.object.payment_intent as string;
-      const receipt = event.data.object.receipt_url as string;
-
-      await this.handleSuccessfullPayment({ paymentIntent, receipt });
-
-      // TODO: Update app balance
-    }
-
-    if (eventType === "charge.expired" || eventType === "charge.failed") {
-      const paymentIntent = event.data.object.payment_intent as string;
-      const { failure_message: failMessage } = event.data.object;
-
-      await this.handleFailedPayment({
-        paymentIntent,
-        failMessage: failMessage as string,
-      });
-    }
-  }
-
-  private async handleSuccessfullPayment({
-    paymentIntent,
-    receipt,
-  }: {
-    paymentIntent: string;
-    receipt: string;
-  }) {
-    
-  }
-
-  private async handleFailedPayment({
-    paymentIntent,
-    failMessage,
-  }: {
-    paymentIntent: string;
-    failMessage: string;
-  }) {
-    // await this.repository.updatePayment({
-    //   paymentIntent,
-    //   failMessage,
-    //   status: PAYMENT_STATUS.FAILED,
-    // });
   }
 }

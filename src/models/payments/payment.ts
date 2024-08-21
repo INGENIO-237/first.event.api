@@ -25,6 +25,12 @@ const paymentSchema = new Schema(
       type: [String],
       default: [],
     },
+    failMessage: {
+      type: String,
+    },
+    receipt: {
+      type: String,
+    },
   },
   { timestamps: true, discriminatorKey: "type" }
 );

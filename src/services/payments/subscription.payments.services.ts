@@ -4,7 +4,10 @@ import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import StripeServices from "./stripe.services";
 import { PlanServices } from "../subs";
 import { IPlan } from "../../models/subs/plan.model";
-import { BILLING_TYPE } from "../../utils/constants/plans-and-subs";
+import {
+  BILLING_TYPE,
+  PAYMENT_STATUS,
+} from "../../utils/constants/plans-and-subs";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -42,5 +45,40 @@ export default class SubscriptionPaymentServices {
     });
 
     return { paymentIntent, ephemeralKey, clientSecret };
+  }
+
+  async getSubscriptionPayment({
+    paymentId,
+    paymentIntent,
+  }: {
+    paymentId?: string;
+    paymentIntent?: string;
+  }) {
+    return await this.repository.getSubscriptionPayment({
+      paymentId,
+      paymentIntent,
+    });
+  }
+
+  async updateSubscriptionPayment({
+    paymentId,
+    paymentIntent,
+    status,
+    receipt,
+    failMessage,
+  }: {
+    paymentId?: string;
+    paymentIntent?: string;
+    status?: PAYMENT_STATUS;
+    receipt?: string;
+    failMessage?: string;
+  }) {
+    await this.repository.updateSubscriptionPayment({
+      paymentId,
+      paymentIntent,
+      status,
+      receipt,
+      failMessage,
+    });
   }
 }

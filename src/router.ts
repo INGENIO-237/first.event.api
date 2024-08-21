@@ -5,7 +5,7 @@ import AuthRouter from "./routes/auth.routes";
 import InfluencerRouter from "./routes/professional/influencer.routes";
 import OrganizerRouter from "./routes/professional/organizer.routes";
 import { PlanRouter } from "./routes/subs";
-import SubscriptionRouter from "./routes/subs/subscription.routes";
+import PaymentsRouter from "./routes/payments.routes";
 
 export default function router(server: Express) {
   server.get("/healthcheck", (req: Request, res: Response) =>
@@ -18,5 +18,5 @@ export default function router(server: Express) {
   server.use("/influencers", InfluencerRouter);
   server.use("/organizers", OrganizerRouter);
   server.use("/plans", PlanRouter);
-  server.use("/subscriptions", SubscriptionRouter);
+  server.use("/payments", PaymentsRouter);
 }
