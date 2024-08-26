@@ -26,3 +26,7 @@ export enum PAYMENT_STATUS {
   FAILED = "Echoué",
   EXPIRED = "Expiré",
 }
+
+export enum SUBS_ACTIONS {
+  SUB_PAYMENT_SUCCEEDED = "SUB_PAYMENT_SUCCEEDED",
+}

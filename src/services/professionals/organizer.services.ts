@@ -34,7 +34,7 @@ export default class OrganizerServices {
     return organizer;
   }
 
-  async updateOrganizer(userId: string, update: UpdateOrganizer["body"]) {
+  async updateOrganizer(userId: string, update: UpdateOrganizer["body"] & {subscription?: string}) {
     await this.repository.updateOrganizer(userId, update);
   }
 }

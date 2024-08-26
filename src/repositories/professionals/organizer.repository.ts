@@ -12,7 +12,10 @@ export default class OrganizerRepo {
     return await Organizer.create({ user: userId, ...payload });
   }
 
-  async updateOrganizer(userId: string, update: UpdateOrganizer["body"]) {
+  async updateOrganizer(
+    userId: string,
+    update: UpdateOrganizer["body"] & { subscription?: string }
+  ) {
     await Organizer.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       { ...update }

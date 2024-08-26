@@ -61,7 +61,6 @@ export default class UserController {
     return res.sendStatus(HTTP.OK);
   }
 
-  // TODO: Change addresses' model from array to object: addresses: { shipping: object, billing: object, professional: object }
   async updateAddresses(
     req: Request<{}, {}, UpdateAddresses["body"]>,
     res: Response

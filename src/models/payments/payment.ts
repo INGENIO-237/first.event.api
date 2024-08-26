@@ -12,6 +12,10 @@ const paymentSchema = new Schema(
       type: Number,
       required: true,
     },
+    fees: {
+      type: Number,
+      required: true
+    },
     trxRef: String,
     paymentIntent: {
       type: String,

@@ -3,9 +3,13 @@ import { Service } from "typedi";
 import StripeServices from "./stripe.services";
 import SubscriptionPaymentServices from "./subscription.payments.services";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import {
+  PAYMENT_STATUS,
+  SUBS_ACTIONS,
+} from "../../utils/constants/plans-and-subs";
 import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
+import SubsHooks from "../../hooks/subs.hooks";
 
 @Service()
 export default class PaymentsServices {
@@ -31,23 +35,19 @@ export default class PaymentsServices {
   async handleWebhook(signature: string | string[], data: string | Buffer) {
     const event = this.stripe.constructEvent({ signature, data });
 
-    console.log({ event });
-
     const { type: eventType } = event;
-
-    if (eventType) {
-    }
 
     const paymentIntent = (event.data.object as Stripe.Charge)
       .payment_intent as string;
+
     const paymentType = (await this.predictPaymentType(
       paymentIntent
     )) as PAYMENT_TYPE;
 
-    console.log({ paymentIntent });
-
     if (eventType === "charge.captured" || eventType === "charge.succeeded") {
       const receipt = event.data.object.receipt_url as string;
+
+      console.log({ paymentIntent, eventType });
 
       await this.handleSuccessfullPayment({
         paymentIntent,
@@ -92,7 +92,8 @@ export default class PaymentsServices {
           status: PAYMENT_STATUS.SUCCEEDED,
           receipt,
         });
-        // TODO: Create related subscription
+
+        SubsHooks.emit(SUBS_ACTIONS.SUB_PAYMENT_SUCCEEDED, paymentIntent);
         break;
 
       default:
