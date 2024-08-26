@@ -26,6 +26,10 @@ const organizerSchema = new Schema({
     type: [String],
     required: true,
   },
+  subscription: {
+    type: Types.ObjectId,
+    ref: "Subscription"
+  }
 });
 
 export interface IOrganizer

@@ -3,9 +3,13 @@ import { Service } from "typedi";
 import StripeServices from "./stripe.services";
 import SubscriptionPaymentServices from "./subscription.payments.services";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import {
+  PAYMENT_STATUS,
+  SUBS_ACTIONS,
+} from "../../utils/constants/plans-and-subs";
 import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
+import SubsHooks from "../../hooks/subs.hooks";
 
 @Service()
 export default class PaymentsServices {
@@ -88,7 +92,8 @@ export default class PaymentsServices {
           status: PAYMENT_STATUS.SUCCEEDED,
           receipt,
         });
-        // TODO: Create related subscription
+
+        SubsHooks.emit(SUBS_ACTIONS.SUB_PAYMENT_SUCCEEDED, paymentIntent);
         break;
 
       default:

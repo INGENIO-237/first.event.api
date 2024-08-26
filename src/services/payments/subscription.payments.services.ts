@@ -35,6 +35,8 @@ export default class SubscriptionPaymentServices {
     // TODO: Apply coupons if any
     // TODO: Apply taxes
     // TODO: Create payment intent
+    // TODO: Ensure that current user is an organizer
+    // TODO: Ensure that current user doesn't have an ongoing plan
     const { paymentIntent, ephemeralKey, clientSecret, fees } =
       await this.stripe.initiatePayment({ amount });
 
