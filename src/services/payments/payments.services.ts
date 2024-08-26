@@ -31,23 +31,19 @@ export default class PaymentsServices {
   async handleWebhook(signature: string | string[], data: string | Buffer) {
     const event = this.stripe.constructEvent({ signature, data });
 
-    console.log({ event });
-
     const { type: eventType } = event;
-
-    if (eventType) {
-    }
 
     const paymentIntent = (event.data.object as Stripe.Charge)
       .payment_intent as string;
+
     const paymentType = (await this.predictPaymentType(
       paymentIntent
     )) as PAYMENT_TYPE;
 
-    console.log({ paymentIntent });
-
     if (eventType === "charge.captured" || eventType === "charge.succeeded") {
       const receipt = event.data.object.receipt_url as string;
+
+      console.log({ paymentIntent, eventType });
 
       await this.handleSuccessfullPayment({
         paymentIntent,

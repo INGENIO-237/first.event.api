@@ -10,6 +10,7 @@ export default class StripeServices {
   private _secretKey: string = config.STRIPE_SECRET_KEY;
   private _webHookSecret: string = config.STRIPE_WEBHOOK_ENDPOINT_SECRET;
   private _stripe: Stripe;
+  private _fees = 3.1;
 
   constructor() {
     this._stripe = new Stripe(this._secretKey);
@@ -24,9 +25,12 @@ export default class StripeServices {
     currency?: string;
     customerId?: string;
   }) {
+    const stripeFeesMargin = Math.ceil((amount * this._fees) / 100);
+    const amountToBePaid = Math.ceil(amount + stripeFeesMargin); // initial amount + stripe fees
+
     const { client_secret, paymentIntent, customer } =
       await this.createPaymentIntent({
-        amount,
+        amount: amountToBePaid,
         currency,
         customerId,
       });
@@ -47,6 +51,7 @@ export default class StripeServices {
       clientSecret: client_secret,
       ephemeralKey,
       paymentIntent,
+      fees: stripeFeesMargin,
     };
   }
 
@@ -62,12 +67,26 @@ export default class StripeServices {
     const { id } = await this._stripe.customers.create();
     const { client_secret, id: paymentIntent } =
       await this._stripe.paymentIntents.create({
-        amount,
+        amount: amount * 100, // american and european currency format
         currency,
         customer: customerId ?? id,
       });
 
     return { client_secret, paymentIntent, customer: customerId ?? id };
+  }
+
+  // TODO: Dev purpose only
+  async confirmPaymentIntent(paymentIntent: string) {
+    console.log(`Capturing ${paymentIntent}`);
+
+    await this._stripe.paymentIntents.confirm(paymentIntent, {
+      return_url: "https://webhook.site/4334a4fc-fc3f-47ef-8686-49acd9a22cea",
+      payment_method: "pm_card_visa",
+    });
+
+    // await this._stripe.charges.capture(paymentIntent)
+
+    console.log(`Captured ${paymentIntent}`);
   }
 
   // TODO: Use this function once the user is created

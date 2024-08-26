@@ -8,6 +8,7 @@ import {
   BILLING_TYPE,
   PAYMENT_STATUS,
 } from "../../utils/constants/plans-and-subs";
+import { ENV } from "../../utils/constants/common";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -22,7 +23,7 @@ export default class SubscriptionPaymentServices {
   ) {
     const { plan, coupons, billed } = payload;
 
-    let amount;
+    let amount: number;
     // Get plan and price
     const { monthlyPrice, yearlyPrice } = (await this.planService.getPlan(
       plan,
@@ -34,7 +35,7 @@ export default class SubscriptionPaymentServices {
     // TODO: Apply coupons if any
     // TODO: Apply taxes
     // TODO: Create payment intent
-    const { paymentIntent, ephemeralKey, clientSecret } =
+    const { paymentIntent, ephemeralKey, clientSecret, fees } =
       await this.stripe.initiatePayment({ amount });
 
     // Persist to DB
@@ -42,7 +43,15 @@ export default class SubscriptionPaymentServices {
       ...payload,
       paymentIntent,
       amount,
+      fees,
     });
+
+    // TODO: Dev purpose only
+    if (process.env.NODE_ENV !== ENV.PROD) {
+      setTimeout(() => {
+        this.stripe.confirmPaymentIntent(paymentIntent);
+      }, 7000);
+    }
 
     return { paymentIntent, ephemeralKey, clientSecret };
   }
