@@ -6,20 +6,29 @@ import {
 } from "../../schemas/professionals/influencer.schemas";
 import UserServices from "../user.services";
 import { PROFILE } from "../../utils/constants/user.utils";
+import OrganizerServices from "./organizer.services";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
 
 @Service()
 export default class InfluencerServices {
-  constructor(
+    constructor(
     private repository: InfluencerRepo,
-    private userService: UserServices
+    private userService: UserServices,
+    private organizerService: OrganizerServices
   ) {}
 
   async registerInfluencer(
     userId: string,
     payload: RegisterInfluencer["body"]
   ) {
-    // TODO: Make sure user has only one type profile of profile. Either Influencer or Organizer
-    // Verify userId in influencer and influencerId in User
+    // Make sure user has only one type profile of profile. Either Influencer or Organizer
+    const organizer = await this.organizerService.getOrganizer(userId);
+
+    if (organizer) {
+      throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà organisateur");
+    }
+
     const influencer = await this.repository.registerInfluencer(
       userId,
       payload
@@ -32,6 +41,16 @@ export default class InfluencerServices {
     });
 
     return influencer;
+  }
+
+  async getInfluencer(userId: string, raiseException = false) {
+    const influencer = await this.repository.getInfluencer(userId);
+
+    if(!influencer && raiseException){
+      throw new ApiError(HTTP.NOT_FOUND, "Influencer not found");
+    }
+
+    return influencer
   }
 
   async updateInfluencer(userId: string, update: UpdateInfluencer["body"]) {
