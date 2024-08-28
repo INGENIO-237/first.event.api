@@ -1,10 +1,5 @@
 import { InferSchemaType, model, Schema, Document, Types } from "mongoose";
-import {
-  ADDRESS_TYPE,
-  OAUTH_PROVIDER,
-  PHONE_TYPE,
-  PROFILE,
-} from "../utils/constants/user.utils";
+import { OAUTH_PROVIDER, PROFILE } from "../utils/constants/user.utils";
 import bcrypt from "bcrypt";
 import config from "../config";
 import moment from "moment";
@@ -34,15 +29,11 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    // TODO:  Convert phones from array to an object { home: +1 647 xxxxx, mobile: +1 647 xxxxx }
     phones: {
-      type: [
-        {
-          cat: { type: String, enum: PHONE_TYPE, required: true },
-          value: { type: Number, required: true },
-        },
-      ],
-      default: [],
+      type: {
+        home: String,
+        mobile: String,
+      },
     },
     home: {
       type: {

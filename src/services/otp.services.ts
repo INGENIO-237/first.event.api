@@ -1,8 +1,8 @@
 import { Service } from "typedi";
-import { Phone, PHONE_TYPE } from "../utils/constants/user.utils";
 import SmsService from "./utils/sms.services";
 import MailsHooks from "../hooks/mails.hooks";
 import { MAIL_OBJECTS } from "../utils/mails.utils";
+import { Phone } from "../utils/constants/user.utils";
 
 @Service()
 export default class OtpServices {
@@ -20,15 +20,11 @@ export default class OtpServices {
     code,
   }: {
     email?: string;
-    phones?: Phone[];
+    phones?: Phone;
     code: number;
   }) {
     await this.sendOtpEmail(email as string, code);
-
-    phones?.forEach(async (phone) => {
-      if (phone.cat === PHONE_TYPE.MOBILE)
-        await this.sendOtpPhone(String(phone), code);
-    });
+    if (phones?.mobile) await this.sendOtpPhone(phones.mobile, code);
   }
 
   private async sendOtpPhone(phone: string, code: number) {

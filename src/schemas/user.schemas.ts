@@ -1,5 +1,5 @@
 import { array, boolean, nativeEnum, object, optional, string, z } from "zod";
-import { PHONE_TYPE } from "../utils/constants/user.utils";
+import isValidPhoneNumber from "../utils/phone";
 
 export const registerUserSchema = object({
   body: object({
@@ -36,18 +36,26 @@ export const updateGeneralInfoSchema = object({
       })
     ),
     phones: optional(
-      array(
-        object({
-          cat: nativeEnum(PHONE_TYPE, {
-            required_error: "La catégorie est requise",
-            invalid_type_error: "La catégorie doit être soit HOME soit MOBILE",
-          }),
-          value: string({
-            required_error: "La valeur du numéro de téléphone est requise",
-          }),
-        })
-      )
+      object({
+        home: optional(string()),
+        mobile: optional(string()),
+      })
     ),
+  }).superRefine((data, ctx) => {
+    if (data.phones) {
+      const { home, mobile } = data.phones;
+
+      if (!isValidPhoneNumber(home as string))
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Le format du numéro de téléphone fixe n'est pas valide",
+        });
+      if (!isValidPhoneNumber(mobile as string))
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Le format du numéro de téléphone portable n'est pas valide",
+        });
+    }
   }),
 });
 
