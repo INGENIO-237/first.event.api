@@ -4,9 +4,9 @@ import { LoginPayload, ResetPwd, VerifAccount } from "../schemas/auth.schemas";
 import UserServices from "./user.services";
 import OtpServices from "./otp.services";
 import { IUser } from "../models/user.model";
-import { Phone } from "../utils/constants/user.utils";
 import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
+import { Phone } from "../utils/constants/user.utils";
 
 @Service()
 export default class AuthServices {
@@ -48,7 +48,7 @@ export default class AuthServices {
     const { phones } = user;
     const code = this.otp.generateOtp();
 
-    await this.otp.sendOtp({ email, phones: phones as Phone[], code });
+    await this.otp.sendOtp({ email, phones: phones as Phone, code });
 
     await this.userService.updateUser({
       userId: user?._id as string,

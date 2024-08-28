@@ -4,8 +4,8 @@ export enum PROFILE {
 }
 
 export type Phone = {
-  cat: PHONE_TYPE;
-  value: Number;
+  home?: string;
+  mobile?: string;
 };
 
 export type MailOpts = {
@@ -15,16 +15,11 @@ export type MailOpts = {
 
 export type SmsInput = { recipient: string; message: string };
 
-export enum PHONE_TYPE {
-  HOME = "HOME",
-  MOBILE = "MOBILE",
-}
-
-export enum ADDRESS_TYPE {
-  BILLING = "BILLING",
-  SHIPPING = "SHIPPING",
-  PROFESSIONAL = "PROFESSIONAL",
-}
+// export enum ADDRESS_TYPE {
+//   BILLING = "BILLING",
+//   SHIPPING = "SHIPPING",
+//   PROFESSIONAL = "PROFESSIONAL",
+// }
 
 export enum OAUTH_PROVIDER {
   GOOGLE = "GOOGLE",
