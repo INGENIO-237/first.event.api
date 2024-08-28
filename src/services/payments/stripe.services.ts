@@ -3,7 +3,6 @@ import { Stripe } from "stripe";
 import config from "../../config";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
 
 @Service()
 export default class StripeServices {
@@ -84,12 +83,9 @@ export default class StripeServices {
       payment_method: "pm_card_visa",
     });
 
-    // await this._stripe.charges.capture(paymentIntent)
-
     console.log(`Captured ${paymentIntent}`);
   }
 
-  // TODO: Use this function once the user is created
   async createStripeCustomer({
     fullname,
     email,

@@ -29,6 +29,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    stripeCustomer: String,
     phones: {
       type: {
         home: String,

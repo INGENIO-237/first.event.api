@@ -10,6 +10,8 @@ import {
 } from "../../utils/constants/plans-and-subs";
 import { ENV } from "../../utils/constants/common";
 import OrganizerServices from "../professionals/organizer.services";
+import UserServices from "../user.services";
+import { IUser } from "../../models/user.model";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -17,7 +19,8 @@ export default class SubscriptionPaymentServices {
     private repository: SubscriptionPaymentRepo,
     private planService: PlanServices,
     private stripe: StripeServices,
-    private organizerService: OrganizerServices
+    private organizerService: OrganizerServices,
+    private userService: UserServices
   ) {}
 
   async createSubscriptionPayment(
@@ -40,9 +43,18 @@ export default class SubscriptionPaymentServices {
     // Ensure current user is legit to create a subscription payment
     await this.organizerService.validateAbilityToSubscribe(user);
 
+    // Retrieve stripeCustomer ID
+    const { stripeCustomer } = (await this.userService.getUser({
+      userId: user,
+      raiseException: false,
+    })) as IUser;
+
     // Create payment intent
     const { paymentIntent, ephemeralKey, clientSecret, fees } =
-      await this.stripe.initiatePayment({ amount });
+      await this.stripe.initiatePayment({
+        amount,
+        customerId: stripeCustomer as string,
+      });
 
     // Persist to DB
     await this.repository.createSubscriptionPayment({
