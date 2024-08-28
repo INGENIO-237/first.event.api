@@ -11,17 +11,24 @@ import HTTP from "../../utils/constants/http.responses";
 import { IOrganizer } from "../../models/professionals/organizer.model";
 import { ISubscription } from "../../models/subs/subscription.model";
 import { IUser } from "../../models/user.model";
+import InfluencerServices from "./influencer.services";
 
 @Service()
 export default class OrganizerServices {
   constructor(
     private repository: OrganizerRepo,
-    private userService: UserServices
+    private userService: UserServices,
+    private influencerService: InfluencerServices
   ) {}
 
   async registerOrganizer(userId: string, payload: RegisterOrganizer["body"]) {
-    // TODO: Make sure user has only one type profile of profile. Either Organizer or Organizer
-    // Verify userId in organizer and organizerId in User
+    // Make sure user has only one type profile of profile. Either Influencer or Organizer
+    const influencer = await this.influencerService.getInfluencer(userId);
+
+    if (influencer) {
+      throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà influenceur");
+    }
+
     const organizer = await this.repository.registerOrganizer(userId, payload);
 
     await this.userService.updateUser({
