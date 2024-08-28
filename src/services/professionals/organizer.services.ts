@@ -1,4 +1,6 @@
-import { Service } from "typedi";
+import "reflect-metadata";
+
+import Container, { Service } from "typedi";
 import {
   RegisterOrganizer,
   UpdateOrganizer,
@@ -17,13 +19,14 @@ import InfluencerServices from "./influencer.services";
 export default class OrganizerServices {
   constructor(
     private repository: OrganizerRepo,
-    private userService: UserServices,
-    private influencerService: InfluencerServices
+    private userService: UserServices
   ) {}
 
   async registerOrganizer(userId: string, payload: RegisterOrganizer["body"]) {
+    const influencerService = Container.get(InfluencerServices);
+
     // Make sure user has only one type profile of profile. Either Influencer or Organizer
-    const influencer = await this.influencerService.getInfluencer(userId);
+    const influencer = await influencerService.getInfluencer(userId);
 
     if (influencer) {
       throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà influenceur");
@@ -59,7 +62,7 @@ export default class OrganizerServices {
 
   async validateAbilityToSubscribe(userId: string) {
     const organizer = (await this.getOrganizer(userId)) as IOrganizer;
-    
+
     // Ensure current user is legit and has an organizer profile
     if (!organizer) {
       throw new ApiError(HTTP.BAD_REQUEST, "Vous n'êtes pas un organisateur");
