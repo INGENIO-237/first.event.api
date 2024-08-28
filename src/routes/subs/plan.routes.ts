@@ -6,6 +6,7 @@ import validate from "../../middlewares/validate.request";
 import { createPlanSchema } from "../../schemas/subs/plan.schemas";
 import Container from "typedi";
 import { PlanController } from "../../controllers/subs";
+import { tryCatch } from "../../utils/errors/errors.utlis";
 
 const PlanRouter = Router();
 const controller = Container.get(PlanController);
@@ -16,11 +17,11 @@ const controller = Container.get(PlanController);
 PlanRouter.post(
   "",
   validate(createPlanSchema),
-  controller.createPlan.bind(controller)
+  tryCatch(controller.createPlan.bind(controller))
 );
 
-PlanRouter.get("", controller.getPlans.bind(controller));
+PlanRouter.get("", tryCatch(controller.getPlans.bind(controller)));
 
-// TODO: Routes for getting a single plan and updating and deleting plans
+// TODO: Routes for getting a single plan and updating and deleting plans (Admins)
 
 export default PlanRouter;

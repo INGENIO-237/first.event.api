@@ -75,7 +75,7 @@ export default class StripeServices {
     return { client_secret, paymentIntent, customer: customerId ?? id };
   }
 
-  // TODO: Dev purpose only
+  // Dev purpose only
   async confirmPaymentIntent(paymentIntent: string) {
     console.log(`Capturing ${paymentIntent}`);
 

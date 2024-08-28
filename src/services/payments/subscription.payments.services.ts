@@ -9,19 +9,21 @@ import {
   PAYMENT_STATUS,
 } from "../../utils/constants/plans-and-subs";
 import { ENV } from "../../utils/constants/common";
+import OrganizerServices from "../professionals/organizer.services";
 
 @Service()
 export default class SubscriptionPaymentServices {
   constructor(
     private repository: SubscriptionPaymentRepo,
     private planService: PlanServices,
-    private stripe: StripeServices
+    private stripe: StripeServices,
+    private organizerService: OrganizerServices
   ) {}
 
   async createSubscriptionPayment(
     payload: RegisterSubscription["body"] & { user: string }
   ) {
-    const { plan, coupons, billed } = payload;
+    const { plan, coupons, billed, user } = payload;
 
     let amount: number;
     // Get plan and price
@@ -34,9 +36,11 @@ export default class SubscriptionPaymentServices {
 
     // TODO: Apply coupons if any
     // TODO: Apply taxes
-    // TODO: Create payment intent
-    // TODO: Ensure that current user is an organizer
-    // TODO: Ensure that current user doesn't have an ongoing plan
+
+    // Ensure current user is legit to create a subscription payment
+    await this.organizerService.validateAbilityToSubscribe(user);
+
+    // Create payment intent
     const { paymentIntent, ephemeralKey, clientSecret, fees } =
       await this.stripe.initiatePayment({ amount });
 
@@ -48,7 +52,7 @@ export default class SubscriptionPaymentServices {
       fees,
     });
 
-    // TODO: Dev purpose only
+    // Dev purpose only
     if (process.env.NODE_ENV !== ENV.PROD) {
       setTimeout(() => {
         this.stripe.confirmPaymentIntent(paymentIntent);

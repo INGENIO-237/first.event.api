@@ -7,4 +7,8 @@ export default class SubsRepo {
   async createSubscription(payload: CreateSubscription) {
     return await Subscription.create(payload);
   }
+  
+  async getSubscription(subscriptionId: string) {
+    return await Subscription.findById(subscriptionId);
+  }
 }
