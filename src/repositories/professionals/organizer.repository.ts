@@ -12,6 +12,11 @@ export default class OrganizerRepo {
     return await Organizer.create({ user: userId, ...payload });
   }
 
+
+  async getOrganizer(userId: string){
+    return await Organizer.findOne({user: new Types.ObjectId(userId)}).populate("subscription user");
+  }
+
   async updateOrganizer(
     userId: string,
     update: UpdateOrganizer["body"] & { subscription?: string }

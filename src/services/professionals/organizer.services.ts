@@ -6,6 +6,11 @@ import {
 import UserServices from "../user.services";
 import { PROFILE } from "../../utils/constants/user.utils";
 import OrganizerRepo from "../../repositories/professionals/organizer.repository";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
+import { IOrganizer } from "../../models/professionals/organizer.model";
+import { ISubscription } from "../../models/subs/subscription.model";
+import { IUser } from "../../models/user.model";
 
 @Service()
 export default class OrganizerServices {
@@ -14,16 +19,10 @@ export default class OrganizerServices {
     private userService: UserServices
   ) {}
 
-  async registerOrganizer(
-    userId: string,
-    payload: RegisterOrganizer["body"]
-  ) {
+  async registerOrganizer(userId: string, payload: RegisterOrganizer["body"]) {
     // TODO: Make sure user has only one type profile of profile. Either Organizer or Organizer
     // Verify userId in organizer and organizerId in User
-    const organizer = await this.repository.registerOrganizer(
-      userId,
-      payload
-    );
+    const organizer = await this.repository.registerOrganizer(userId, payload);
 
     await this.userService.updateUser({
       userId,
@@ -34,7 +33,55 @@ export default class OrganizerServices {
     return organizer;
   }
 
-  async updateOrganizer(userId: string, update: UpdateOrganizer["body"] & {subscription?: string}) {
+  async getOrganizer(userId: string, raiseException = false) {
+    const organizer = await this.repository.getOrganizer(userId);
+
+    if (!organizer && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Organizer not found");
+    }
+
+    return organizer;
+  }
+
+  async updateOrganizer(
+    userId: string,
+    update: UpdateOrganizer["body"] & { subscription?: string }
+  ) {
     await this.repository.updateOrganizer(userId, update);
+  }
+
+  async validateAbilityToSubscribe(userId: string) {
+    const organizer = (await this.getOrganizer(userId)) as IOrganizer;
+    
+    // Ensure current user is legit and has an organizer profile
+    if (!organizer) {
+      throw new ApiError(HTTP.BAD_REQUEST, "Vous n'êtes pas un organisateur");
+    }
+
+    const { user } = organizer;
+
+    const { isVerified } = user as IUser;
+
+    if (!isVerified) {
+      throw new ApiError(HTTP.BAD_REQUEST, "Compte non vérifié");
+    }
+
+    // Ensure that current user doesn't have an ongoing plan
+    if (organizer.subscription) {
+      const { endsOn, hasBeenCancelled } =
+        organizer.subscription as ISubscription;
+
+      if (!hasBeenCancelled) {
+        const expiryTime = endsOn.getTime();
+        const presentTime = new Date().getTime();
+
+        if (expiryTime > presentTime) {
+          throw new ApiError(
+            HTTP.BAD_REQUEST,
+            `Vous avez déjà une souscription en cours`
+          );
+        }
+      }
+    }
   }
 }

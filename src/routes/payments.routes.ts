@@ -6,6 +6,7 @@ import { isLoggedIn } from "../middlewares/auth";
 import { registerSubscriptionSchema } from "../schemas/subs/subscription.schemas";
 import validate from "../middlewares/validate.request";
 import PaymentsController from "../controllers/payments/payments.controller";
+import { tryCatch } from "../utils/errors/errors.utlis";
 
 const PaymentsRouter = Router();
 
@@ -16,7 +17,7 @@ PaymentsRouter.post(
   "/subscriptions",
   isLoggedIn,
   validate(registerSubscriptionSchema),
-  payments.initiateSubscriptionPayment.bind(payments)
+  tryCatch(payments.initiateSubscriptionPayment.bind(payments))
 );
 
 // Tickets
@@ -27,7 +28,7 @@ PaymentsRouter.post(
 PaymentsRouter.post(
   "/webhook",
   raw({ type: "application/json" }),
-  payments.handleWebhook.bind(payments)
+  tryCatch(payments.handleWebhook.bind(payments))
 );
 
 export default PaymentsRouter;
