@@ -1,5 +1,6 @@
 import { Service } from "typedi";
 import {
+  GeneralUserUpdatePayload,
   RegisterUser,
   UpdateAddresses,
   UpdateCredentials,
@@ -10,7 +11,8 @@ import UserRepo from "../repositories/user.repository";
 import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
 import { IUser } from "../models/user.model";
-import { PROFILE } from "../utils/constants/user.utils";
+import { USERS_ACTIONS } from "../utils/constants/user.utils";
+import UsersHooks from "../hooks/users.hooks";
 
 @Service()
 export default class UserServices {
@@ -29,7 +31,16 @@ export default class UserServices {
       );
     }
 
-    return await this.repository.registerUser(payload);
+    const user = (await this.repository.registerUser(payload)) as IUser;
+
+    const { firstname, lastname, email } = user;
+
+    UsersHooks.emit(USERS_ACTIONS.USER_REGISTERED, {
+      fullname: firstname + " " + lastname,
+      email,
+    });
+
+    return user;
   }
 
   async getUsers() {
@@ -62,15 +73,8 @@ export default class UserServices {
     password,
     profile,
     professional,
-  }: {
-    userId?: string;
-    email?: string;
-    otp?: number;
-    isVerified?: boolean;
-    password?: string;
-    profile?: string;
-    professional?: PROFILE;
-  }) {
+    stripeCustomer,
+  }: GeneralUserUpdatePayload) {
     if (!email && !userId) {
       throw new ApiError(
         HTTP.INTERNAL_SERVER_ERROR,
@@ -93,6 +97,7 @@ export default class UserServices {
       email,
       professional,
       profile,
+      stripeCustomer,
     });
   }
 

@@ -1,6 +1,7 @@
 import { Service } from "typedi";
 import User from "../models/user.model";
 import {
+  GeneralUserUpdatePayload,
   RegisterUser,
   UpdateAddresses,
   UpdateCredentials,
@@ -8,7 +9,6 @@ import {
   UpdateInterests,
 } from "../schemas/user.schemas";
 import { Types } from "mongoose";
-import { PROFILE } from "../utils/constants/user.utils";
 
 @Service()
 export default class UserRepo {
@@ -41,31 +41,31 @@ export default class UserRepo {
     password,
     profile,
     professional,
-  }: {
-    userId?: string;
-    email?: string;
-    otp?: number;
-    isVerified?: boolean;
-    password?: string;
-    professional?: PROFILE;
-    profile?: string;
-  }) {
+    stripeCustomer,
+  }: GeneralUserUpdatePayload) {
     if (userId) {
       await User.findOneAndUpdate(
         { _id: new Types.ObjectId(userId) },
-        { otp, isVerified, password, email, profile, professional }
+        {
+          otp,
+          isVerified,
+          password,
+          email,
+          profile,
+          professional,
+          stripeCustomer,
+        }
       );
     }
 
     if (!userId && email) {
       await User.findOneAndUpdate(
         { email },
-        { otp, isVerified, password, profile, professional }
+        { otp, isVerified, password, profile, professional, stripeCustomer }
       );
     }
   }
 
-  // TODO: Avoid having multiple phones of the same category
   async updateGeneralInfo(userId: string, update: UpdateGeneralInfo) {
     await User.findByIdAndUpdate(userId, { ...update });
   }

@@ -1,5 +1,6 @@
-import { array, boolean, nativeEnum, object, optional, string, z } from "zod";
+import { array, boolean, object, optional, string, z } from "zod";
 import isValidPhoneNumber from "../utils/phone";
+import { PROFILE } from "../utils/constants/user.utils";
 
 export const registerUserSchema = object({
   body: object({
@@ -58,6 +59,17 @@ export const updateGeneralInfoSchema = object({
     }
   }),
 });
+
+export type GeneralUserUpdatePayload = {
+  userId?: string;
+  email?: string;
+  otp?: number;
+  isVerified?: boolean;
+  password?: string;
+  profile?: string;
+  professional?: PROFILE;
+  stripeCustomer?: string;
+};
 
 export type GeneralInfo = z.infer<typeof updateGeneralInfoSchema>;
 
