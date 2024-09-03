@@ -32,6 +32,8 @@ export default class OrganizerServices {
       throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà influenceur");
     }
 
+    // TODO: Make  sure user is not already an organizer
+
     const organizer = await this.repository.registerOrganizer(userId, payload);
 
     await this.userService.updateUser({

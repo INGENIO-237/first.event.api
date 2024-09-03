@@ -4,11 +4,11 @@ import { Router } from "express";
 import validate from "../../middlewares/validate.request";
 import { isAdmin, isLoggedIn } from "../../middlewares/auth";
 import Container from "typedi";
-import SubscriptionPaymentController from "../../controllers/payments/subscription.payments.controller";
+import { SubscriptionController } from "../../controllers/subs";
 
 const SubscriptionRouter = Router();
 
-const subsPayment = Container.get(SubscriptionPaymentController);
+const controller = Container.get(SubscriptionController)
 
 // TODO: Request a subscription cancellation
 

@@ -32,6 +32,24 @@ export default class PaymentsServices {
     });
   }
 
+  // Events
+  // Tickets
+
+  // Refunds
+  async initiateRefund({
+    paymentId,
+    amount,
+  }: {
+    paymentId?: string;
+    amount: number;
+  }) {
+    //  Predict payment type to be refunded
+    const paymentType = await this.predictPaymentType({ paymentId });
+
+    // Subscription refund
+    
+  }
+
   async handleWebhook(signature: string | string[], data: string | Buffer) {
     const event = this.stripe.constructEvent({ signature, data });
 
@@ -40,14 +58,12 @@ export default class PaymentsServices {
     const paymentIntent = (event.data.object as Stripe.Charge)
       .payment_intent as string;
 
-    const paymentType = (await this.predictPaymentType(
-      paymentIntent
-    )) as PAYMENT_TYPE;
+    const paymentType = (await this.predictPaymentType({
+      paymentIntent,
+    })) as PAYMENT_TYPE;
 
     if (eventType === "charge.captured" || eventType === "charge.succeeded") {
       const receipt = event.data.object.receipt_url as string;
-
-      console.log({ paymentIntent, eventType });
 
       await this.handleSuccessfullPayment({
         paymentIntent,
@@ -66,10 +82,17 @@ export default class PaymentsServices {
     }
   }
 
-  private async predictPaymentType(paymentIntent: string) {
+  private async predictPaymentType({
+    paymentIntent,
+    paymentId,
+  }: {
+    paymentIntent?: string;
+    paymentId?: string;
+  }) {
     const subscriptionPayment =
       await this.subscriptionPaymentService.getSubscriptionPayment({
         paymentIntent,
+        paymentId,
       });
 
     if (subscriptionPayment) return PAYMENT_TYPE.SUBSCRIPTION;

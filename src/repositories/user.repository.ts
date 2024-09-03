@@ -30,7 +30,7 @@ export default class UserRepo {
   async getUser({ userId, email }: { userId?: string; email?: string }) {
     return await User.findOne({
       $or: [{ _id: new Types.ObjectId(userId) }, { email }],
-    });
+    }).populate("profile");
   }
 
   async updateUser({

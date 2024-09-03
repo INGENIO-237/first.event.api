@@ -12,6 +12,7 @@ import { ENV } from "../../utils/constants/common";
 import OrganizerServices from "../professionals/organizer.services";
 import UserServices from "../user.services";
 import { IUser } from "../../models/user.model";
+import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -107,5 +108,20 @@ export default class SubscriptionPaymentServices {
       receipt,
       failMessage,
     });
+  }
+
+  async refundSubscriptionPayment({
+    paymentId,
+    amount,
+  }: {
+    paymentId: string;
+    amount: number;
+  }) {
+    const { paymentIntent } = (await this.getSubscriptionPayment({
+      paymentId,
+    })) as ISubscriptionPayment;
+
+    // TODO: Initiate refund with stripe
+    // TODO: Persist refund
   }
 }
