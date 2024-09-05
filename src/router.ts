@@ -6,6 +6,7 @@ import {
   OrganizerRouter,
   PaymentsRouter,
   PlanRouter,
+  SubscriptionRouter,
   UserRouter,
 } from "./routes";
 
@@ -19,5 +20,6 @@ export default function router(server: Express) {
   server.use("/influencers", InfluencerRouter);
   server.use("/organizers", OrganizerRouter);
   server.use("/plans", PlanRouter);
+  server.use("/subscriptions", SubscriptionRouter);
   server.use("/payments", PaymentsRouter);
 }

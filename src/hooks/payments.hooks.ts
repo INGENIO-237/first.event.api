@@ -12,27 +12,28 @@ import { ISubscriptionPayment } from "../models/payments/subscription.payment.mo
 import { IPlan } from "../models/subs/plan.model";
 import moment from "moment";
 import IHook from "./hook.interface";
+import RefundServices from "../services/payments/refund.services";
 
 @Service()
 export default class PaymentsHooks implements IHook {
-  private _eventEmitter: EventEmitter;
+  private _eventEmitter = new EventEmitter();
 
   constructor(
     private subsService: SubscriptionServices,
+    private refundService: RefundServices,
     private subsPaymentsService: SubscriptionPaymentServices,
     private planService: PlanServices,
     private organizerService: OrganizerServices
-  ) {
-    this._eventEmitter = new EventEmitter();
-    this.register(this._eventEmitter);
-  }
+  ) {}
 
   getEmitter() {
+    this.register(this._eventEmitter);
     return this._eventEmitter;
   }
 
   emit(event: PAYMENT_ACTIONS, data: any) {
-    this._eventEmitter.emit(event, data);
+    const emitter = this.getEmitter();
+    emitter.emit(event, data);
   }
 
   register(emitter: EventEmitter) {
@@ -74,8 +75,20 @@ export default class PaymentsHooks implements IHook {
 
     emitter.on(
       PAYMENT_ACTIONS.REFUND_SUBSCRIPTION,
-      async (subscriptionId: string) => {
-        await this.subsService.processRefundRequest({ subscriptionId });
+      async ({
+        endsOn,
+        freemiumEndsOn,
+        payment,
+      }: {
+        endsOn: Date;
+        freemiumEndsOn: Date;
+        payment: any;
+      }) => {
+        await this.refundService.processSubRefundRequest({
+          endsOn,
+          freemiumEndsOn,
+          payment,
+        });
       }
     );
   }

@@ -109,18 +109,21 @@ export default class StripeServices {
     paymentIntent: string;
     amount: number;
   }) {
-    const response = await this._stripe.refunds
+    return this._stripe.refunds
       .create({
         payment_intent: paymentIntent,
         amount,
       })
+      .then((response) => {
+        const { id } = response;
+
+        console.log({ refundId: id });
+
+        return id;
+      })
       .catch((error) => {
-        logger.error("Failed refunding", error);
+        logger.error("Failed refunding: \n" + error);
       });
-
-    const { id: refundId } = response as Stripe.Refund;
-
-    return refundId;
   }
 
   constructEvent({

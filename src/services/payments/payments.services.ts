@@ -7,11 +7,9 @@ import {
   PAYMENT_STATUS,
   PAYMENT_TYPE_PREDICTION,
   PAYMENT_ACTIONS,
-  REFUND_TYPES,
 } from "../../utils/constants/plans-and-subs";
 import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import RefundServices from "./refund.services";
 import PaymentsHooks from "../../hooks/payments.hooks";
 
 @Service()
@@ -19,7 +17,6 @@ export default class PaymentsServices {
   constructor(
     private stripe: StripeServices,
     private subscriptionPaymentService: SubscriptionPaymentServices,
-    private refundServices: RefundServices,
     private paymentHooks: PaymentsHooks
   ) {}
 
@@ -41,45 +38,25 @@ export default class PaymentsServices {
   // Tickets
 
   // Refunds
-  async initiateRefund({
+  async refundPayment({
     paymentId,
     amount,
+    paymentType,
   }: {
     paymentId: string;
     amount: number;
+    paymentType: PAYMENT_TYPE;
   }) {
-    //  Predict payment type to be refunded
-    const { type: paymentType, paymentIntent } = (await this.predictPaymentType(
-      {
-        paymentId,
-      }
-    )) as PAYMENT_TYPE_PREDICTION;
+    let refundId;
 
-    if (paymentType) {
-      let refundId;
-      let refundType;
-
-      // Subscription refund
-      if (paymentType === PAYMENT_TYPE.SUBSCRIPTION) {
-        refundId =
-          await this.subscriptionPaymentService.refundSubscriptionPayment({
-            paymentId,
-            amount,
-          });
-        refundType = REFUND_TYPES.SUBSCRIPTION;
-      }
-
-      // Persist refund
-      if (refundId) {
-        await this.refundServices.createRefund({
+    if (paymentType === PAYMENT_TYPE.SUBSCRIPTION)
+      refundId =
+        await this.subscriptionPaymentService.refundSubscriptionPayment({
+          paymentId,
           amount,
-          paymentIntent,
-          refundRef: refundId,
-          payment: paymentId,
-          refundType: refundType as string,
         });
-      }
-    }
+
+    return refundId;
   }
 
   async handleWebhook(signature: string | string[], data: string | Buffer) {
@@ -114,7 +91,7 @@ export default class PaymentsServices {
     }
   }
 
-  private async predictPaymentType({
+  async predictPaymentType({
     paymentIntent,
     paymentId,
   }: {
