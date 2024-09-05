@@ -1,21 +1,26 @@
 import { Service } from "typedi";
-import { SubsRepo } from "../../repositories/subs";
 import { CreateSubscription } from "../../schemas/subs/subscription.schemas";
 import { ISubscription } from "../../models/subs/subscription.model";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
 import OrganizerServices from "../professionals/organizer.services";
 import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
-import { BILLING_TYPE } from "../../utils/constants/plans-and-subs";
+import {
+  BILLING_TYPE,
+  PAYMENT_ACTIONS,
+} from "../../utils/constants/plans-and-subs";
 import moment from "moment";
 import PaymentsServices from "../payments/payments.services";
+import SubsRepo from "../../repositories/subs/subcription.repository";
+import PaymentsHooks from "../../hooks/payments.hooks";
 
 @Service()
 export default class SubscriptionServices {
   constructor(
     private repository: SubsRepo,
     private organizerService: OrganizerServices,
-    private paymentService: PaymentsServices
+    private paymentService: PaymentsServices,
+    private paymentHooks: PaymentsHooks
   ) {}
 
   async createSubscription(payload: CreateSubscription) {
@@ -74,8 +79,12 @@ export default class SubscriptionServices {
     }
 
     // Make sure we don't cancel twice. So that we don't refund twice.
-    const { hasBeenCancelled, cancelDate, endsOn } =
-      subscription as ISubscription;
+    const {
+      hasBeenCancelled,
+      cancelDate,
+      endsOn,
+      _id: sub,
+    } = subscription as ISubscription;
 
     if (hasBeenCancelled && cancelDate) {
       throw new ApiError(
@@ -91,7 +100,8 @@ export default class SubscriptionServices {
       throw new ApiError(HTTP.BAD_REQUEST, "La souscription a déjà expiré");
     }
 
-    // TODO: Emit 'processRefundRequest'
+    this.paymentHooks.emit(PAYMENT_ACTIONS.REFUND_SUBSCRIPTION, sub);
+
     // TODO: Send Email to organizer
   }
 
@@ -105,7 +115,6 @@ export default class SubscriptionServices {
       amount,
       unitPrice,
       _id: paymentId,
-      paymentIntent,
     } = payment as ISubscriptionPayment;
 
     let amountToRefund = amount;
@@ -129,5 +138,7 @@ export default class SubscriptionServices {
       paymentId: paymentId as string,
       amount: amountToRefund,
     });
+
+    // TODO: Update sub to set cancellation info
   }
 }

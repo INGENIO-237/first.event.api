@@ -6,7 +6,7 @@ import { Phone } from "../utils/constants/user.utils";
 
 @Service()
 export default class OtpServices {
-  constructor(private sms: SmsService) {}
+  constructor(private sms: SmsService, private mailHooks: MailsHooks) {}
 
   generateOtp() {
     let code = Math.round(Math.random() * 1e5);
@@ -32,6 +32,6 @@ export default class OtpServices {
   }
 
   private async sendOtpEmail(email: string, code: number) {
-    MailsHooks.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
+    this.mailHooks.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
   }
 }

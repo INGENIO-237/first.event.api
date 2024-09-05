@@ -5,17 +5,22 @@ import SubscriptionPaymentServices from "./subscription.payments.services";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
 import {
   PAYMENT_STATUS,
-  SUBS_ACTIONS,
+  PAYMENT_TYPE_PREDICTION,
+  PAYMENT_ACTIONS,
+  REFUND_TYPES,
 } from "../../utils/constants/plans-and-subs";
 import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import SubsHooks from "../../hooks/subs.hooks";
+import RefundServices from "./refund.services";
+import PaymentsHooks from "../../hooks/payments.hooks";
 
 @Service()
 export default class PaymentsServices {
   constructor(
     private stripe: StripeServices,
-    private subscriptionPaymentService: SubscriptionPaymentServices
+    private subscriptionPaymentService: SubscriptionPaymentServices,
+    private refundServices: RefundServices,
+    private paymentHooks: PaymentsHooks
   ) {}
 
   // Subscriptions
@@ -40,14 +45,41 @@ export default class PaymentsServices {
     paymentId,
     amount,
   }: {
-    paymentId?: string;
+    paymentId: string;
     amount: number;
   }) {
     //  Predict payment type to be refunded
-    const paymentType = await this.predictPaymentType({ paymentId });
+    const { type: paymentType, paymentIntent } = (await this.predictPaymentType(
+      {
+        paymentId,
+      }
+    )) as PAYMENT_TYPE_PREDICTION;
 
-    // Subscription refund
-    
+    if (paymentType) {
+      let refundId;
+      let refundType;
+
+      // Subscription refund
+      if (paymentType === PAYMENT_TYPE.SUBSCRIPTION) {
+        refundId =
+          await this.subscriptionPaymentService.refundSubscriptionPayment({
+            paymentId,
+            amount,
+          });
+        refundType = REFUND_TYPES.SUBSCRIPTION;
+      }
+
+      // Persist refund
+      if (refundId) {
+        await this.refundServices.createRefund({
+          amount,
+          paymentIntent,
+          refundRef: refundId,
+          payment: paymentId,
+          refundType: refundType as string,
+        });
+      }
+    }
   }
 
   async handleWebhook(signature: string | string[], data: string | Buffer) {
@@ -58,9 +90,9 @@ export default class PaymentsServices {
     const paymentIntent = (event.data.object as Stripe.Charge)
       .payment_intent as string;
 
-    const paymentType = (await this.predictPaymentType({
+    const { type: paymentType } = (await this.predictPaymentType({
       paymentIntent,
-    })) as PAYMENT_TYPE;
+    })) as PAYMENT_TYPE_PREDICTION;
 
     if (eventType === "charge.captured" || eventType === "charge.succeeded") {
       const receipt = event.data.object.receipt_url as string;
@@ -95,7 +127,10 @@ export default class PaymentsServices {
         paymentId,
       });
 
-    if (subscriptionPayment) return PAYMENT_TYPE.SUBSCRIPTION;
+    if (subscriptionPayment) {
+      const { paymentIntent } = subscriptionPayment;
+      return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
+    }
     // TODO: Add for tickets and articles too
   }
 
@@ -116,7 +151,10 @@ export default class PaymentsServices {
           receipt,
         });
 
-        SubsHooks.emit(SUBS_ACTIONS.SUB_PAYMENT_SUCCEEDED, paymentIntent);
+        this.paymentHooks.emit(
+          PAYMENT_ACTIONS.SUBSCRIPTION_SUCCEEDED,
+          paymentIntent
+        );
         break;
 
       default:

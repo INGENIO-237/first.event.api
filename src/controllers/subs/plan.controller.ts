@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { Request, Response } from "express";
 import { CreatePlan } from "../../schemas/subs/plan.schemas";
 import HTTP from "../../utils/constants/http.responses";
-import { PlanServices } from "../../services/subs";
+import PlanServices from "../../services/subs/plan.services";
 
 @Service()
 export default class PlanController {

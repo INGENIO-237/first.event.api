@@ -1,23 +1,38 @@
-import "reflect-metadata";
-
-import Container from "typedi";
-import EventEmitter from "node:events";
+import { Service } from "typedi";
+import { EventEmitter } from "node:events";
 import { USERS_ACTIONS } from "../utils/constants/user.utils";
 import StripeServices from "../services/payments/stripe.services";
 import UserRepo from "../repositories/user.repository";
+import IHook from "./hook.interface";
 
-const UsersHooks = new EventEmitter();
+@Service()
+export default class UsersHooks implements IHook {
+  private _eventEmitter: EventEmitter;
 
-const stripe = Container.get(StripeServices);
-const userRepo = Container.get(UserRepo);
-
-UsersHooks.on(
-  USERS_ACTIONS.USER_REGISTERED,
-  async ({ fullname, email }: { fullname: string; email: string }) => {
-    const customerId = await stripe.createStripeCustomer({ fullname, email });
-
-    await userRepo.updateUser({ email, stripeCustomer: customerId });
+  constructor(private stripe: StripeServices, private userRepo: UserRepo) {
+    this._eventEmitter = new EventEmitter();
+    this.register(this._eventEmitter);
   }
-);
 
-export default UsersHooks;
+  getEmitter() {
+    return this._eventEmitter;
+  }
+
+  emit(event: USERS_ACTIONS, data: any) {
+    this._eventEmitter.emit(event, data);
+  }
+
+  register(eventEmitter: EventEmitter) {
+    eventEmitter.on(
+      USERS_ACTIONS.USER_REGISTERED,
+      async ({ fullname, email }: { fullname: string; email: string }) => {
+        const customerId = await this.stripe.createStripeCustomer({
+          fullname,
+          email,
+        });
+
+        await this.userRepo.updateUser({ email, stripeCustomer: customerId });
+      }
+    );
+  }
+}

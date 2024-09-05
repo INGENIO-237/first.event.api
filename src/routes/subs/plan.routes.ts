@@ -5,8 +5,8 @@ import { isAdmin } from "../../middlewares/auth";
 import validate from "../../middlewares/validate.request";
 import { createPlanSchema } from "../../schemas/subs/plan.schemas";
 import Container from "typedi";
-import { PlanController } from "../../controllers/subs";
 import { tryCatch } from "../../utils/errors/errors.utlis";
+import PlanController from "../../controllers/subs/plan.controller";
 
 const PlanRouter = Router();
 const controller = Container.get(PlanController);

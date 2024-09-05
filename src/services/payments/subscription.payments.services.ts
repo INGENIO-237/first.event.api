@@ -2,7 +2,6 @@ import { Service } from "typedi";
 import SubscriptionPaymentRepo from "../../repositories/payments/subscription.payments.repository";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import StripeServices from "./stripe.services";
-import { PlanServices } from "../subs";
 import { IPlan } from "../../models/subs/plan.model";
 import {
   BILLING_TYPE,
@@ -13,6 +12,7 @@ import OrganizerServices from "../professionals/organizer.services";
 import UserServices from "../user.services";
 import { IUser } from "../../models/user.model";
 import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
+import PlanServices from "../subs/plan.services";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -121,7 +121,6 @@ export default class SubscriptionPaymentServices {
       paymentId,
     })) as ISubscriptionPayment;
 
-    // TODO: Initiate refund with stripe
-    // TODO: Persist refund
+    return await this.stripe.createRefund({ paymentIntent, amount });
   }
 }

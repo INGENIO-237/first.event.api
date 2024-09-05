@@ -3,6 +3,7 @@ import { Stripe } from "stripe";
 import config from "../../config";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import logger from "../../utils/logger";
 
 @Service()
 export default class StripeServices {
@@ -99,6 +100,27 @@ export default class StripeServices {
     });
 
     return id;
+  }
+
+  async createRefund({
+    paymentIntent,
+    amount,
+  }: {
+    paymentIntent: string;
+    amount: number;
+  }) {
+    const response = await this._stripe.refunds
+      .create({
+        payment_intent: paymentIntent,
+        amount,
+      })
+      .catch((error) => {
+        logger.error("Failed refunding", error);
+      });
+
+    const { id: refundId } = response as Stripe.Refund;
+
+    return refundId;
   }
 
   constructEvent({

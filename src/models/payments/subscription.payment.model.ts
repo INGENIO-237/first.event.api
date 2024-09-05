@@ -1,11 +1,11 @@
 import "reflect-metadata";
 
 import { InferSchemaType, Schema, Types } from "mongoose";
-import Payment, { IPayment } from "./payment";
+import Payment, { IPayment } from "./payment.model";
 import { BILLING_TYPE } from "../../utils/constants/plans-and-subs";
 import Container from "typedi";
-import { PlanServices } from "../../services/subs";
 import { IPlan } from "../subs/plan.model";
+import PlanServices from "../../services/subs/plan.services";
 
 const subscriptionPaymentSchema = new Schema({
   plan: {

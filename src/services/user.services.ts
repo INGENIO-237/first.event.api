@@ -16,7 +16,7 @@ import UsersHooks from "../hooks/users.hooks";
 
 @Service()
 export default class UserServices {
-  constructor(private repository: UserRepo) {}
+  constructor(private repository: UserRepo, private usersHooks: UsersHooks) {}
 
   async registerUser(payload: RegisterUser["body"]) {
     const existingUser = await this.getUser({
@@ -35,7 +35,7 @@ export default class UserServices {
 
     const { firstname, lastname, email } = user;
 
-    UsersHooks.emit(USERS_ACTIONS.USER_REGISTERED, {
+    this.usersHooks.emit(USERS_ACTIONS.USER_REGISTERED, {
       fullname: firstname + " " + lastname,
       email,
     });
