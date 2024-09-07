@@ -12,11 +12,16 @@ import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
 import { IUser } from "../models/user.model";
 import { USERS_ACTIONS } from "../utils/constants/user.utils";
-import UsersHooks from "../hooks/users.hooks";
+import EventBus from "../hooks/event-bus";
+import EventEmitter from "node:events";
 
 @Service()
 export default class UserServices {
-  constructor(private repository: UserRepo) {}
+  private emitter: EventEmitter;
+
+  constructor(private repository: UserRepo) {
+    this.emitter = EventBus.getEmitter();
+  }
 
   async registerUser(payload: RegisterUser["body"]) {
     const existingUser = await this.getUser({
@@ -35,7 +40,7 @@ export default class UserServices {
 
     const { firstname, lastname, email } = user;
 
-    UsersHooks.emit(USERS_ACTIONS.USER_REGISTERED, {
+    this.emitter.emit(USERS_ACTIONS.USER_REGISTERED, {
       fullname: firstname + " " + lastname,
       email,
     });
@@ -59,7 +64,7 @@ export default class UserServices {
     const user = await this.repository.getUser({ userId, email });
 
     if (!user && raiseException) {
-      throw new ApiError(HTTP.BAD_REQUEST, "Utilisateur introuvable.");
+      throw new ApiError(HTTP.NOT_FOUND, "Utilisateur introuvable.");
     }
 
     return user;

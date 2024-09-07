@@ -4,6 +4,7 @@ import config from "../../config";
 import { MailOpts } from "../../utils/constants/user.utils";
 import { constructOtpMessage, MAIL_OBJECTS } from "../../utils/mails.utils";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
+import logger from "../../utils/logger";
 
 @Service()
 export default class MailServices {
@@ -39,14 +40,12 @@ export default class MailServices {
   }
 
   private async sendMail(recipient: string, { message, object }: MailOpts) {
-    await this._transport
-      .sendMail({
-        from: `"${this._sender}" <${this._user}>`,
-        to: recipient,
-        subject: object,
-        text: message,
-      })
-      .then((response) => console.log({ mail: response }));
+    await this._transport.sendMail({
+      from: `"${this._sender}" <${this._user}>`,
+      to: recipient,
+      subject: object,
+      text: message,
+    });
   }
 
   async sendOtpMail(recipient: string, otp: number) {
@@ -54,6 +53,8 @@ export default class MailServices {
     await this.sendMail(recipient, {
       message: content,
       object: MAIL_OBJECTS.OTP,
+    }).catch((error) => {
+      logger.error(error);
     });
   }
 }

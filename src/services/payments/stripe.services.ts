@@ -3,13 +3,14 @@ import { Stripe } from "stripe";
 import config from "../../config";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import logger from "../../utils/logger";
 
 @Service()
 export default class StripeServices {
   private _secretKey: string = config.STRIPE_SECRET_KEY;
   private _webHookSecret: string = config.STRIPE_WEBHOOK_ENDPOINT_SECRET;
   private _stripe: Stripe;
-  private _fees = 3.1;
+  private _fees = 4;
 
   constructor() {
     this._stripe = new Stripe(this._secretKey);
@@ -99,6 +100,32 @@ export default class StripeServices {
     });
 
     return id;
+  }
+
+  async createRefund({
+    paymentIntent,
+    amount,
+  }: {
+    paymentIntent: string;
+    amount: number;
+  }) {
+    return this._stripe.refunds
+      .create({
+        payment_intent: paymentIntent,
+        amount: amount * 100,
+      })
+      .then((response) => {
+        const { id, destination_details } = response;
+        const { card } =
+          destination_details as Stripe.Refund.DestinationDetails;
+        const { reference } = card as Stripe.Refund.DestinationDetails.Card;
+        const acquirerReferenceNumber = reference;
+
+        return { id, acquirerReferenceNumber };
+      })
+      .catch((error) => {
+        logger.error("Failed refunding: \n" + error);
+      });
   }
 
   constructEvent({

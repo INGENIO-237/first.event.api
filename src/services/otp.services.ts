@@ -1,8 +1,8 @@
 import { Service } from "typedi";
 import SmsService from "./utils/sms.services";
-import MailsHooks from "../hooks/mails.hooks";
 import { MAIL_OBJECTS } from "../utils/mails.utils";
 import { Phone } from "../utils/constants/user.utils";
+import EventBus from "../hooks/event-bus";
 
 @Service()
 export default class OtpServices {
@@ -32,6 +32,8 @@ export default class OtpServices {
   }
 
   private async sendOtpEmail(email: string, code: number) {
-    MailsHooks.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
+    const emitter = EventBus.getEmitter();
+
+    emitter.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
   }
 }

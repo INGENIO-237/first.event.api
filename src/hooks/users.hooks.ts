@@ -1,23 +1,24 @@
-import "reflect-metadata";
-
-import Container from "typedi";
-import EventEmitter from "node:events";
+import { Service } from "typedi";
 import { USERS_ACTIONS } from "../utils/constants/user.utils";
 import StripeServices from "../services/payments/stripe.services";
 import UserRepo from "../repositories/user.repository";
+import EventEmitter from "node:events";
 
-const UsersHooks = new EventEmitter();
+@Service()
+export default class UsersHooks {
+  constructor(private stripe: StripeServices, private userRepo: UserRepo) {}
 
-const stripe = Container.get(StripeServices);
-const userRepo = Container.get(UserRepo);
+  registerListeners(emitter: EventEmitter) {
+    emitter.on(
+      USERS_ACTIONS.USER_REGISTERED,
+      async ({ fullname, email }: { fullname: string; email: string }) => {
+        const customerId = await this.stripe.createStripeCustomer({
+          fullname,
+          email,
+        });
 
-UsersHooks.on(
-  USERS_ACTIONS.USER_REGISTERED,
-  async ({ fullname, email }: { fullname: string; email: string }) => {
-    const customerId = await stripe.createStripeCustomer({ fullname, email });
-
-    await userRepo.updateUser({ email, stripeCustomer: customerId });
+        await this.userRepo.updateUser({ email, stripeCustomer: customerId });
+      }
+    );
   }
-);
-
-export default UsersHooks;
+}

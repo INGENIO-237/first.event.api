@@ -1,8 +1,8 @@
 import { Service } from "typedi";
 import { CreatePlan } from "../../schemas/subs/plan.schemas";
-import { PlanRepo } from "../../repositories/subs";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import PlanRepo from "../../repositories/subs/plan.repository";
 
 @Service()
 export default class PlanServices {

@@ -32,6 +32,8 @@ export default class InfluencerServices {
       throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà organisateur");
     }
 
+    // TODO: Make  sure user is not already an influencer
+
     const influencer = await this.repository.registerInfluencer(
       userId,
       payload

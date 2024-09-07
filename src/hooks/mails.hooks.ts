@@ -1,19 +1,18 @@
-import "reflect-metadata";
-
-import EventEmitter from "node:events";
 import { MAIL_OBJECTS } from "../utils/mails.utils";
-import Container from "typedi";
 import MailServices from "../services/utils/mail.services";
+import { Service } from "typedi";
+import EventEmitter from "node:events";
 
-const service = Container.get(MailServices);
+@Service()
+export default class MailsHooks {
+  constructor(private service: MailServices) {}
 
-const MailsHooks = new EventEmitter();
-
-MailsHooks.on(
-  MAIL_OBJECTS.OTP,
-  async ({ recipient, otp }: { recipient: string; otp: number }) => {
-    await service.sendOtpMail(recipient, otp);
+  registerListeners(emitter: EventEmitter) {
+    emitter.on(
+      MAIL_OBJECTS.OTP,
+      async ({ recipient, otp }: { recipient: string; otp: number }) => {
+        await this.service.sendOtpMail(recipient, otp);
+      }
+    );
   }
-);
-
-export default MailsHooks;
+}
