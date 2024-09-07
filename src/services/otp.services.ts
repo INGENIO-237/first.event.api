@@ -1,12 +1,12 @@
 import { Service } from "typedi";
 import SmsService from "./utils/sms.services";
-import MailsHooks from "../hooks/mails.hooks";
 import { MAIL_OBJECTS } from "../utils/mails.utils";
 import { Phone } from "../utils/constants/user.utils";
+import EventBus from "../hooks/event-bus";
 
 @Service()
 export default class OtpServices {
-  constructor(private sms: SmsService, private mailHooks: MailsHooks) {}
+  constructor(private sms: SmsService) {}
 
   generateOtp() {
     let code = Math.round(Math.random() * 1e5);
@@ -32,6 +32,8 @@ export default class OtpServices {
   }
 
   private async sendOtpEmail(email: string, code: number) {
-    this.mailHooks.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
+    const emitter = EventBus.getEmitter();
+
+    emitter.emit(MAIL_OBJECTS.OTP, { recipient: email, otp: code });
   }
 }

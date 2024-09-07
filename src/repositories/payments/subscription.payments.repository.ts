@@ -6,7 +6,9 @@ import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
 
 @Service()
 export default class SubscriptionPaymentRepo {
-  async createSubscriptionPayment(payload: SubscriptionPaymentPayload & {fees: number}) {
+  async createSubscriptionPayment(
+    payload: SubscriptionPaymentPayload & { fees: number }
+  ) {
     return await SubscriptionPayment.create(payload);
   }
 

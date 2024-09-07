@@ -1,6 +1,8 @@
 import { Service } from "typedi";
 import { CreateRefund } from "../../schemas/payments/refund.schemas";
 import Refund from "../../models/payments/refund.model";
+import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { Types } from "mongoose";
 
 @Service()
 export default class RefundRepo {
@@ -8,6 +10,34 @@ export default class RefundRepo {
     return await Refund.create(payload);
   }
 
+  async getRefund({
+    refundId,
+    paymentIntent,
+  }: {
+    refundId?: string;
+    paymentIntent?: string;
+  }) {
+    return await Refund.findOne({
+      $or: [{ _id: new Types.ObjectId(refundId) }, { paymentIntent }],
+    });
+  }
+
   // TODO: Get list of refunds
   // TODO: Update refund
+  async updateRefund({
+    refundId,
+    paymentIntent,
+    status,
+    failMessage,
+  }: {
+    refundId?: string;
+    paymentIntent?: string;
+    status: PAYMENT_STATUS;
+    failMessage?: string;
+  }) {
+    await Refund.findOneAndUpdate(
+      { $or: [{ _id: new Types.ObjectId(refundId) }, { paymentIntent }] },
+      { status, failMessage }
+    );
+  }
 }

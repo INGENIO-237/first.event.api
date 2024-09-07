@@ -4,21 +4,25 @@ import StripeServices from "./stripe.services";
 import SubscriptionPaymentServices from "./subscription.payments.services";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
 import {
-  PAYMENT_STATUS,
   PAYMENT_TYPE_PREDICTION,
   PAYMENT_ACTIONS,
+  PAYMENT_STATUS,
 } from "../../utils/constants/plans-and-subs";
 import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import PaymentsHooks from "../../hooks/payments.hooks";
+import EventBus from "../../hooks/event-bus";
+import EventEmitter from "node:events";
 
 @Service()
 export default class PaymentsServices {
+  private emitter: EventEmitter;
+
   constructor(
     private stripe: StripeServices,
-    private subscriptionPaymentService: SubscriptionPaymentServices,
-    private paymentHooks: PaymentsHooks
-  ) {}
+    private subscriptionPaymentService: SubscriptionPaymentServices
+  ) {
+    this.emitter = EventBus.getEmitter();
+  }
 
   // Subscriptions
   async initiateSubscriptionPayment({
@@ -34,8 +38,8 @@ export default class PaymentsServices {
     });
   }
 
-  // Events
-  // Tickets
+  // TODO: Events
+  // TODO: Tickets
 
   // Refunds
   async refundPayment({
@@ -47,16 +51,19 @@ export default class PaymentsServices {
     amount: number;
     paymentType: PAYMENT_TYPE;
   }) {
-    let refundId;
+    let rfId, acquirer;
 
-    if (paymentType === PAYMENT_TYPE.SUBSCRIPTION)
-      refundId =
-        await this.subscriptionPaymentService.refundSubscriptionPayment({
+    if (paymentType === PAYMENT_TYPE.SUBSCRIPTION) {
+      const { id, acquirerReferenceNumber } =
+        (await this.subscriptionPaymentService.refundSubscriptionPayment({
           paymentId,
           amount,
-        });
+        })) as { id: string; acquirerReferenceNumber: string };
+      rfId = id;
+      acquirer = acquirerReferenceNumber;
+    }
 
-    return refundId;
+    return { rfId, acquirer };
   }
 
   async handleWebhook(signature: string | string[], data: string | Buffer) {
@@ -67,27 +74,37 @@ export default class PaymentsServices {
     const paymentIntent = (event.data.object as Stripe.Charge)
       .payment_intent as string;
 
-    const { type: paymentType } = (await this.predictPaymentType({
-      paymentIntent,
-    })) as PAYMENT_TYPE_PREDICTION;
-
-    if (eventType === "charge.captured" || eventType === "charge.succeeded") {
-      const receipt = event.data.object.receipt_url as string;
-
-      await this.handleSuccessfullPayment({
+    if (paymentIntent) {
+      const { type: paymentType } = (await this.predictPaymentType({
         paymentIntent,
-        receipt,
-        paymentType,
-      });
-    }
+      })) as PAYMENT_TYPE_PREDICTION;
 
-    if (eventType === "charge.expired" || eventType === "charge.failed") {
-      const { failure_message: failMessage } = event.data.object;
+      if (eventType === "charge.captured" || eventType === "charge.succeeded") {
+        const receipt = (event.data.object.receipt_url as string) ?? undefined;
 
-      await this.handleFailedPayment({
-        paymentIntent,
-        failMessage: failMessage as string,
-      });
+        await this.handleSuccessfullPayment({
+          paymentIntent,
+          receipt,
+          paymentType,
+        });
+      }
+
+      if (eventType === "charge.refunded") {
+        await this.handleSuccessfullPayment({
+          paymentIntent,
+          paymentType: PAYMENT_TYPE.REFUND,
+        });
+      }
+
+      if (eventType === "charge.expired" || eventType === "charge.failed") {
+        const { failure_message: failMessage } = event.data.object;
+
+        await this.handleFailedPayment({
+          paymentIntent,
+          failMessage: failMessage as string,
+          paymentType,
+        });
+      }
     }
   }
 
@@ -107,8 +124,10 @@ export default class PaymentsServices {
     if (subscriptionPayment) {
       const { paymentIntent } = subscriptionPayment;
       return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
+      // TODO: Add for tickets and articles too
+    } else {
+      return { type: PAYMENT_TYPE.REFUND, paymentIntent };
     }
-    // TODO: Add for tickets and articles too
   }
 
   async handleSuccessfullPayment({
@@ -117,23 +136,21 @@ export default class PaymentsServices {
     paymentType,
   }: {
     paymentIntent: string;
-    receipt: string;
+    receipt?: string;
     paymentType: PAYMENT_TYPE;
   }) {
     switch (paymentType) {
       case PAYMENT_TYPE.SUBSCRIPTION:
-        await this.subscriptionPaymentService.updateSubscriptionPayment({
+        this.emitter.emit(PAYMENT_ACTIONS.SUBSCRIPTION_SUCCEEDED, {
           paymentIntent,
-          status: PAYMENT_STATUS.SUCCEEDED,
           receipt,
         });
-
-        this.paymentHooks.emit(
-          PAYMENT_ACTIONS.SUBSCRIPTION_SUCCEEDED,
-          paymentIntent
-        );
         break;
-
+      case PAYMENT_TYPE.REFUND:
+        this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_SUCCEEDED, {
+          paymentIntent,
+        });
+        break;
       default:
         logger.error("Invalid payment type");
         break;
@@ -143,14 +160,27 @@ export default class PaymentsServices {
   async handleFailedPayment({
     paymentIntent,
     failMessage,
+    paymentType,
   }: {
     paymentIntent: string;
-    failMessage: string;
+    failMessage?: string;
+    paymentType: PAYMENT_TYPE;
   }) {
-    await this.subscriptionPaymentService.updateSubscriptionPayment({
-      paymentIntent,
-      failMessage,
-      status: PAYMENT_STATUS.FAILED,
-    });
+    switch (paymentType) {
+      case PAYMENT_TYPE.SUBSCRIPTION:
+        this.emitter.emit(PAYMENT_ACTIONS.SUBSCRIPTION_FAILED, {
+          paymentIntent,
+          failMessage,
+        });
+        break;
+      case PAYMENT_TYPE.REFUND:
+        this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_FAILED, {
+          paymentIntent,
+          failMessage,
+        });
+      default:
+        logger.error("Invalid payment type");
+        break;
+    }
   }
 }

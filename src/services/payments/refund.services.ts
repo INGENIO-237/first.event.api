@@ -4,12 +4,15 @@ import { CreateRefund } from "../../schemas/payments/refund.schemas";
 import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
 import {
   BILLING_TYPE,
+  PAYMENT_STATUS,
   PAYMENT_TYPE_PREDICTION,
   REFUND_TYPES,
 } from "../../utils/constants/plans-and-subs";
 import moment from "moment";
 import PaymentsServices from "./payments.services";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
 
 @Service()
 export default class RefundServices {
@@ -20,6 +23,24 @@ export default class RefundServices {
 
   async createRefund(payload: CreateRefund) {
     return await this.repository.createRefund({ fees: 0, ...payload });
+  }
+
+  async getRefund({
+    refundId,
+    paymentIntent,
+    raiseException = false,
+  }: {
+    refundId?: string;
+    paymentIntent?: string;
+    raiseException?: boolean;
+  }) {
+    const refund = await this.repository.getRefund({ refundId, paymentIntent });
+
+    if (!refund && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Remboursement non trouvé");
+    }
+
+    return refund;
   }
 
   async processSubRefundRequest({
@@ -59,8 +80,6 @@ export default class RefundServices {
       paymentId: paymentId as string,
       amount: amountToRefund,
     });
-
-    // TODO: Update sub to set cancellation info
   }
 
   async initiateRefund({
@@ -78,15 +97,20 @@ export default class RefundServices {
 
     if (paymentType) {
       let refundId;
+      let acquirerReferenceNumber;
       let refundType;
 
+      const { rfId, acquirer } = await this.paymentService.refundPayment({
+        paymentId,
+        amount,
+        paymentType,
+      });
+      refundId = rfId as string;
+      acquirerReferenceNumber = acquirer as string;
+
       // Subscription refund
+      // TODO: Convert to a switch statement
       if (paymentType === PAYMENT_TYPE.SUBSCRIPTION) {
-        refundId = await this.paymentService.refundPayment({
-          paymentId,
-          amount,
-          paymentType,
-        });
         refundType = REFUND_TYPES.SUBSCRIPTION;
       }
 
@@ -98,6 +122,7 @@ export default class RefundServices {
           refundRef: refundId,
           payment: paymentId,
           refundType: refundType as string,
+          acquirerReferenceNumber: acquirerReferenceNumber as string,
         });
       }
     }
@@ -105,4 +130,22 @@ export default class RefundServices {
 
   // TODO: Get list of refunds
   // TODO: Update refund
+  async updateRefund({
+    refundId,
+    paymentIntent,
+    status,
+    failMessage,
+  }: {
+    refundId?: string;
+    paymentIntent?: string;
+    status: PAYMENT_STATUS;
+    failMessage?: string;
+  }) {
+    await this.repository.updateRefund({
+      refundId,
+      paymentIntent,
+      status,
+      failMessage,
+    });
+  }
 }

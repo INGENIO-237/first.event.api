@@ -6,15 +6,19 @@ import HTTP from "../../utils/constants/http.responses";
 import OrganizerServices from "../professionals/organizer.services";
 import { PAYMENT_ACTIONS } from "../../utils/constants/plans-and-subs";
 import SubsRepo from "../../repositories/subs/subcription.repository";
-import PaymentsHooks from "../../hooks/payments.hooks";
+import EventEmitter from "node:events";
+import EventBus from "../../hooks/event-bus";
 
 @Service()
 export default class SubscriptionServices {
+  private emitter: EventEmitter;
+
   constructor(
     private repository: SubsRepo,
-    private organizerService: OrganizerServices,
-    private paymentHooks: PaymentsHooks
-  ) {}
+    private organizerService: OrganizerServices
+  ) {
+    this.emitter = EventBus.getEmitter();
+  }
 
   async createSubscription(payload: CreateSubscription) {
     return await this.repository.createSubscription(payload);
@@ -22,20 +26,39 @@ export default class SubscriptionServices {
 
   async getSubscription({
     subscriptionId,
+    payment,
     raiseException = false,
   }: {
-    subscriptionId: string;
+    subscriptionId?: string;
+    payment?: string;
     raiseException?: boolean;
   }) {
-    const subscription = (await this.repository.getSubscription(
-      subscriptionId
-    )) as ISubscription;
+    const subscription = (await this.repository.getSubscription({
+      subscriptionId: subscriptionId as string,
+      payment: payment as string,
+    })) as any;
 
     if (!subscription && raiseException) {
       throw new ApiError(HTTP.NOT_FOUND, "La souscription n'existe pas");
     }
 
     return subscription;
+  }
+
+  async updateSubscription({
+    subscriptionId,
+    hasBeenCancelled,
+    cancelDate,
+  }: {
+    subscriptionId: string;
+    hasBeenCancelled: boolean;
+    cancelDate: Date;
+  }) {
+    await this.repository.updateSubscription({
+      subscriptionId,
+      hasBeenCancelled,
+      cancelDate,
+    });
   }
 
   async requestSubscriptionCancellation({
@@ -55,7 +78,9 @@ export default class SubscriptionServices {
         throw new ApiError(HTTP.BAD_REQUEST, "Vous n'êtes pas un organisateur");
       }
 
-      subscription = organizer.subscription as ISubscription;
+      subscription = await this.getSubscription({
+        subscriptionId: organizer.subscription as string,
+      });
     }
 
     // Get a given subscription
@@ -95,7 +120,7 @@ export default class SubscriptionServices {
       throw new ApiError(HTTP.BAD_REQUEST, "La souscription a déjà expiré");
     }
 
-    this.paymentHooks.emit(PAYMENT_ACTIONS.REFUND_SUBSCRIPTION, {
+    this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUBSCRIPTION, {
       endsOn,
       freemiumEndsOn,
       payment,

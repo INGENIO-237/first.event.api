@@ -1,5 +1,3 @@
-import "reflect-metadata";
-
 import Container, { Service } from "typedi";
 import {
   RegisterOrganizer,

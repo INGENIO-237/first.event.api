@@ -1,4 +1,3 @@
-import { EventEmitter } from "node:events";
 import { Service } from "typedi";
 import SubscriptionServices from "../services/subs/subscription.services";
 import SubscriptionPaymentServices from "../services/payments/subscription.payments.services";
@@ -7,17 +6,17 @@ import OrganizerServices from "../services/professionals/organizer.services";
 import {
   BILLING_TYPE,
   PAYMENT_ACTIONS,
+  PAYMENT_STATUS,
 } from "../utils/constants/plans-and-subs";
 import { ISubscriptionPayment } from "../models/payments/subscription.payment.model";
 import { IPlan } from "../models/subs/plan.model";
 import moment from "moment";
-import IHook from "./hook.interface";
 import RefundServices from "../services/payments/refund.services";
+import EventEmitter from "node:events";
+import { IRefund } from "../models/payments/refund.model";
 
 @Service()
-export default class PaymentsHooks implements IHook {
-  private _eventEmitter = new EventEmitter();
-
+export default class PaymentsHooks {
   constructor(
     private subsService: SubscriptionServices,
     private refundService: RefundServices,
@@ -26,20 +25,25 @@ export default class PaymentsHooks implements IHook {
     private organizerService: OrganizerServices
   ) {}
 
-  getEmitter() {
-    this.register(this._eventEmitter);
-    return this._eventEmitter;
-  }
-
-  emit(event: PAYMENT_ACTIONS, data: any) {
-    const emitter = this.getEmitter();
-    emitter.emit(event, data);
-  }
-
-  register(emitter: EventEmitter) {
+  registerListeners(emitter: EventEmitter) {
+    // Subscription payment
     emitter.on(
       PAYMENT_ACTIONS.SUBSCRIPTION_SUCCEEDED,
-      async (paymentIntent: string) => {
+      async ({
+        paymentIntent,
+        receipt,
+      }: {
+        paymentIntent: string;
+        receipt: string;
+      }) => {
+        // Update subscription payment status
+        await this.subsPaymentsService.updateSubscriptionPayment({
+          paymentIntent,
+          status: PAYMENT_STATUS.SUCCEEDED,
+          receipt,
+        });
+
+        // Create subscription accordingly
         const {
           _id: payment,
           billed,
@@ -74,6 +78,24 @@ export default class PaymentsHooks implements IHook {
     );
 
     emitter.on(
+      PAYMENT_ACTIONS.SUBSCRIPTION_FAILED,
+      async ({
+        paymentIntent,
+        failMessage,
+      }: {
+        paymentIntent: string;
+        failMessage: string;
+      }) => {
+        await this.subsPaymentsService.updateSubscriptionPayment({
+          paymentIntent,
+          failMessage,
+          status: PAYMENT_STATUS.FAILED,
+        });
+      }
+    );
+
+    // Sub Refunds ==>
+    emitter.on(
       PAYMENT_ACTIONS.REFUND_SUBSCRIPTION,
       async ({
         endsOn,
@@ -91,5 +113,50 @@ export default class PaymentsHooks implements IHook {
         });
       }
     );
+
+    emitter.on(
+      PAYMENT_ACTIONS.REFUND_SUB_SUCCEEDED,
+      async ({ paymentIntent }: { paymentIntent: string }) => {
+        await this.refundService.updateRefund({
+          paymentIntent,
+          status: PAYMENT_STATUS.SUCCEEDED,
+        });
+
+        const { payment } = (await this.refundService.getRefund({
+          paymentIntent,
+        })) as IRefund;
+
+        const { _id: subscriptionId } = await this.subsService.getSubscription({
+          payment: payment as string,
+        });
+
+        // Update sub to set cancellation info
+        if (subscriptionId) {
+          await this.subsService.updateSubscription({
+            subscriptionId: subscriptionId as string,
+            hasBeenCancelled: true,
+            cancelDate: new Date(),
+          });
+        }
+      }
+    );
+
+    emitter.on(
+      PAYMENT_ACTIONS.REFUND_SUB_FAILED,
+      async ({
+        paymentIntent,
+        failMessage,
+      }: {
+        paymentIntent: string;
+        failMessage?: string;
+      }) => {
+        await this.refundService.updateRefund({
+          paymentIntent,
+          failMessage,
+          status: PAYMENT_STATUS.FAILED,
+        });
+      }
+    );
+    // <==
   }
 }
