@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import SubscriptionPaymentServices from "../../services/payments/subscription.payments.services";
 import HTTP from "../../utils/constants/http.responses";
 import { Service } from "typedi";
 import PaymentsServices from "../../services/payments/payments.services";
