@@ -12,6 +12,14 @@ const PaymentsRouter = Router();
 
 const payments = Container.get(PaymentsController);
 
+// Payment method
+PaymentsRouter.post(
+  "/methods",
+  isLoggedIn,
+  validate(registerSubscriptionSchema),
+  tryCatch(payments.initiateSubscriptionPayment.bind(payments))
+);
+
 // Subscriptions
 PaymentsRouter.post(
   "/subscriptions",

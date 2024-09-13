@@ -6,6 +6,7 @@ import { loginSchema, resetPwd, verifSchema } from "../schemas/auth.schemas";
 import Container from "typedi";
 import AuthController from "../controllers/auth.controller";
 import { tryCatch } from "../utils/errors/errors.utlis";
+import { isLoggedIn } from "../middlewares/auth";
 
 const AuthRouter = Router();
 
@@ -15,6 +16,12 @@ AuthRouter.post(
   "/login",
   validate(loginSchema),
   tryCatch(controller.login.bind(controller))
+);
+
+AuthRouter.get(
+  "/current",
+  isLoggedIn,
+  tryCatch(controller.getCurrentUser.bind(controller))
 );
 
 AuthRouter.post(
