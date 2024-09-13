@@ -21,4 +21,12 @@ export default class PaymentMethodController {
 
     return res.status(HTTP.CREATED).json(pm);
   }
+
+  async getUserPaymentMethods(req: Request, res: Response) {
+    const { id } = (req as any).user;
+
+    const pms = await this.service.getUserPaymentMethods(id as string);
+
+    return res.status(HTTP.OK).json(pms);
+  }
 }

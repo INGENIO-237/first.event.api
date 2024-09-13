@@ -11,4 +11,10 @@ export default class PaymentMethodService {
   ) {
     return await this.repository.registerPaymentMethod(payload);
   }
+
+  async getUserPaymentMethods(
+    userId: string
+  ) {
+    return await this.repository.getUserPaymentMethods(userId);
+  }
 }

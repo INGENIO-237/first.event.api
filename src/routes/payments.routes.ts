@@ -23,6 +23,12 @@ PaymentsRouter.post(
   tryCatch(methods.registerPaymentMethod.bind(methods))
 );
 
+PaymentsRouter.get(
+  "/methods",
+  isLoggedIn,
+  tryCatch(methods.getUserPaymentMethods.bind(methods))
+);
+
 // Subscriptions
 PaymentsRouter.post(
   "/subscriptions",
