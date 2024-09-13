@@ -23,6 +23,8 @@ export default class PaymentsServices {
     this.emitter = EventBus.getEmitter();
   }
 
+  // TODO: When provided with a payment method to use, ensure card is still valid
+
   // Subscriptions
   async initiateSubscriptionPayment({
     data,

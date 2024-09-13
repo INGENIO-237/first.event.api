@@ -7,17 +7,20 @@ import { registerSubscriptionSchema } from "../schemas/subs/subscription.schemas
 import validate from "../middlewares/validate.request";
 import PaymentsController from "../controllers/payments/payments.controller";
 import { tryCatch } from "../utils/errors/errors.utlis";
+import PaymentMethodController from "../controllers/payments/methods.controller";
+import { registerPaymentMethodSchema } from "../schemas/payments/methods.schemas";
 
 const PaymentsRouter = Router();
 
 const payments = Container.get(PaymentsController);
+const methods = Container.get(PaymentMethodController);
 
-// Payment method
+// Payment methods
 PaymentsRouter.post(
   "/methods",
   isLoggedIn,
-  validate(registerSubscriptionSchema),
-  tryCatch(payments.initiateSubscriptionPayment.bind(payments))
+  validate(registerPaymentMethodSchema),
+  tryCatch(methods.registerPaymentMethod.bind(methods))
 );
 
 // Subscriptions
