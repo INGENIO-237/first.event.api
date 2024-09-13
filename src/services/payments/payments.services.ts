@@ -6,7 +6,6 @@ import { PAYMENT_TYPE } from "../../utils/constants/common";
 import {
   PAYMENT_TYPE_PREDICTION,
   PAYMENT_ACTIONS,
-  PAYMENT_STATUS,
 } from "../../utils/constants/plans-and-subs";
 import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
@@ -53,6 +52,7 @@ export default class PaymentsServices {
   }) {
     let rfId, acquirer;
 
+    // TODO: Change this to a switch block
     if (paymentType === PAYMENT_TYPE.SUBSCRIPTION) {
       const { id, acquirerReferenceNumber } =
         (await this.subscriptionPaymentService.refundSubscriptionPayment({
@@ -130,7 +130,7 @@ export default class PaymentsServices {
     }
   }
 
-  async handleSuccessfullPayment({
+  private async handleSuccessfullPayment({
     paymentIntent,
     receipt,
     paymentType,
@@ -157,7 +157,7 @@ export default class PaymentsServices {
     }
   }
 
-  async handleFailedPayment({
+  private async handleFailedPayment({
     paymentIntent,
     failMessage,
     paymentType,

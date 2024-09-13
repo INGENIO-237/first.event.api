@@ -42,6 +42,10 @@ export default class AuthServices {
     return { accessToken, refreshToken, otpGenerated };
   }
 
+  async getCurrentUser(userId: string) {
+    return await this.userService.getUser({ userId });
+  }
+
   private async sendOtp({ email }: { email: string }) {
     const user = (await this.userService.getUser({ email })) as IUser;
 
