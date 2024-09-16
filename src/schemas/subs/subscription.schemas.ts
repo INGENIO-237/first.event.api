@@ -18,6 +18,7 @@ export const registerSubscriptionSchema = object({
         })
       )
     ),
+    paymentMethodId: optional(string()),
   }).superRefine((data, ctx) => {
     try {
       new Types.ObjectId(data.plan);
@@ -55,4 +56,3 @@ export type CreateSubscription = {
   startsOn: Date;
   endsOn: Date;
 };
-

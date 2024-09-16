@@ -102,6 +102,18 @@ export default class StripeServices {
     return id;
   }
 
+  async attachCustomerToPaymentMethod({
+    paymentMethodId,
+    customerId,
+  }: {
+    paymentMethodId: string;
+    customerId: string;
+  }) {
+    await this._stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+  }
+
   async createRefund({
     paymentIntent,
     amount,
