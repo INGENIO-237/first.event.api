@@ -27,7 +27,7 @@ export default class SubscriptionPaymentServices {
   async createSubscriptionPayment(
     payload: RegisterSubscription["body"] & { user: string }
   ) {
-    const { plan, coupons, billed, user } = payload;
+    const { plan, coupons, billed, user, paymentMethodId } = payload;
 
     let amount: number;
     // Get plan and price
