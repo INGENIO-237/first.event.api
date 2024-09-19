@@ -19,10 +19,7 @@ export default class PaymentMethodRepo {
     stripePmId?: string;
   }) {
     return await PaymentMethod.findOne({
-      $or: [
-        { _id: new Types.ObjectId(pmId) },
-        { paymentMethodId: new Types.ObjectId(stripePmId) },
-      ],
+      $or: [{ _id: new Types.ObjectId(pmId) }, { paymentMethodId: stripePmId }],
     });
   }
 

@@ -55,6 +55,7 @@ export default class SubscriptionPaymentServices {
       await this.stripe.initiatePayment({
         amount,
         customerId: stripeCustomer as string,
+        paymentMethodId,
       });
 
     // Persist to DB
@@ -66,7 +67,7 @@ export default class SubscriptionPaymentServices {
     });
 
     // Dev purpose only
-    if (process.env.NODE_ENV !== ENV.PROD) {
+    if (process.env.NODE_ENV !== ENV.PROD && !paymentMethodId) {
       setTimeout(() => {
         this.stripe.confirmPaymentIntent(paymentIntent);
       }, 7000);

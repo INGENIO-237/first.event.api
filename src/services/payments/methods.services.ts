@@ -4,6 +4,8 @@ import PaymentMethodRepo from "../../repositories/payments/methods.repository";
 import StripeServices from "./stripe.services";
 import UserServices from "../user.services";
 import { IUser } from "../../models/user.model";
+import HTTP from "../../utils/constants/http.responses";
+import ApiError from "../../utils/errors/errors.base";
 
 @Service()
 export default class PaymentMethodService {
@@ -17,6 +19,12 @@ export default class PaymentMethodService {
     payload: RegisterPaymentMethod["body"] & { user: string }
   ) {
     const { paymentMethodId, user } = payload;
+
+    const existingPM = await this.getPaymentMethod({stripePmId: paymentMethodId});
+
+    if(existingPM){
+      throw new ApiError(HTTP.BAD_REQUEST, "Ce moyen de paiement existe déjà.")
+    }
 
     const { stripeCustomer } = (await this.userService.getUser({
       userId: user,
