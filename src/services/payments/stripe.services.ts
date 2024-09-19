@@ -20,10 +20,12 @@ export default class StripeServices {
     amount,
     currency = "CAD",
     customerId,
+    paymentMethodId,
   }: {
     amount: number;
     currency?: string;
     customerId?: string;
+    paymentMethodId?: string;
   }) {
     const stripeFeesMargin = Math.ceil((amount * this._fees) / 100);
     const amountToBePaid = Math.ceil(amount + stripeFeesMargin); // initial amount + stripe fees
@@ -33,6 +35,7 @@ export default class StripeServices {
         amount: amountToBePaid,
         currency,
         customerId,
+        paymentMethodId,
       });
 
     const ephemeralKey = await this._stripe.ephemeralKeys.create(
@@ -59,20 +62,35 @@ export default class StripeServices {
     amount,
     currency,
     customerId,
+    paymentMethodId,
   }: {
     amount: number;
     currency: string;
     customerId?: string;
+    paymentMethodId?: string;
   }) {
-    const { id } = await this._stripe.customers.create();
-    const { client_secret, id: paymentIntent } =
-      await this._stripe.paymentIntents.create({
-        amount: amount * 100, // american and european currency format
-        currency,
-        customer: customerId ?? id,
-      });
+    let cus = customerId;
 
-    return { client_secret, paymentIntent, customer: customerId ?? id };
+    if (!customerId) {
+      const { id } = await this._stripe.customers.create();
+      cus = id;
+    }
+    const { client_secret, id: paymentIntent } = paymentMethodId
+      ? await this._stripe.paymentIntents.create({
+          amount: amount * 100,
+          currency,
+          customer: cus,
+          payment_method: paymentMethodId,
+          off_session: true,
+          confirm: true,
+        })
+      : await this._stripe.paymentIntents.create({
+          amount: amount * 100,
+          currency,
+          customer: cus,
+        });
+
+    return { client_secret, paymentIntent, customer: cus };
   }
 
   // Dev purpose only
