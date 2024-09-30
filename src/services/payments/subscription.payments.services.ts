@@ -65,9 +65,8 @@ export default class SubscriptionPaymentServices {
       amount,
       fees,
     });
-
-    // Dev purpose only
-    if (process.env.NODE_ENV !== ENV.PROD && !paymentMethodId) {
+    
+    if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId) {
       setTimeout(() => {
         this.stripe.confirmPaymentIntent(paymentIntent);
       }, 7000);

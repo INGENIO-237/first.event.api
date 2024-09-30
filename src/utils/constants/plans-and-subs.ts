@@ -29,6 +29,14 @@ export enum PAYMENT_STATUS {
   EXPIRED = "Expiré",
 }
 
+export enum STRIPE_EVENT_TYPES {
+  CHARGE_CAPTURED = "charge.captured",
+  CHARGE_SUCCEEDED = "charge.succeeded",
+  CHARGE_FAILED = "charge.failed",
+  CHARGE_EXPIRED = "charge.expired",
+  CHARGE_REFUNDED = "charge.refunded",
+}
+
 export enum PAYMENT_ACTIONS {
   SUBSCRIPTION_SUCCEEDED = "SUBSCRIPTION_SUCCEEDED",
   SUBSCRIPTION_FAILED = "SUBSCRIPTION_FAILED",

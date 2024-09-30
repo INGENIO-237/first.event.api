@@ -4,9 +4,11 @@ import SubscriptionPaymentServices from "../services/payments/subscription.payme
 import PlanServices from "../services/subs/plan.services";
 import OrganizerServices from "../services/professionals/organizer.services";
 import {
+  ASSISTANCE,
   BILLING_TYPE,
   PAYMENT_ACTIONS,
   PAYMENT_STATUS,
+  TICKETS_PER_EVENT,
 } from "../utils/constants/plans-and-subs";
 import { ISubscriptionPayment } from "../models/payments/subscription.payment.model";
 import { IPlan } from "../models/subs/plan.model";
@@ -52,9 +54,13 @@ export default class PaymentsHooks {
         } = (await this.subsPaymentsService.getSubscriptionPayment({
           paymentIntent,
         })) as ISubscriptionPayment;
-        const { tryDays } = (await this.planService.getPlan(
-          plan as string
-        )) as IPlan;
+        const {
+          tryDays,
+          ticketsPerEvent,
+          assistance,
+          couponsPerEvent,
+          promotion,
+        } = (await this.planService.getPlan(plan as string)) as IPlan;
 
         const freemiumEnd = moment(new Date()).add(tryDays, "days").toDate();
         const startsOn = moment(freemiumEnd).add(1, "days").toDate();
@@ -68,6 +74,10 @@ export default class PaymentsHooks {
             freemiumEndsOn: freemiumEnd,
             startsOn,
             endsOn,
+            ticketsPerEvent: ticketsPerEvent as TICKETS_PER_EVENT,
+            assistance: assistance as ASSISTANCE,
+            couponsPerEvent,
+            promotion,
           }
         );
 

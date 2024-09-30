@@ -6,6 +6,7 @@ import { PAYMENT_TYPE } from "../../utils/constants/common";
 import {
   PAYMENT_TYPE_PREDICTION,
   PAYMENT_ACTIONS,
+  STRIPE_EVENT_TYPES,
 } from "../../utils/constants/plans-and-subs";
 import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
@@ -76,12 +77,20 @@ export default class PaymentsServices {
     const paymentIntent = (event.data.object as Stripe.Charge)
       .payment_intent as string;
 
-    if (paymentIntent) {
+    if (
+      paymentIntent &&
+      [...Object.values(STRIPE_EVENT_TYPES)].includes(
+        eventType as STRIPE_EVENT_TYPES
+      )
+    ) {
       const { type: paymentType } = (await this.predictPaymentType({
         paymentIntent,
       })) as PAYMENT_TYPE_PREDICTION;
 
-      if (eventType === "charge.captured" || eventType === "charge.succeeded") {
+      if (
+        eventType === STRIPE_EVENT_TYPES.CHARGE_CAPTURED ||
+        eventType === STRIPE_EVENT_TYPES.CHARGE_SUCCEEDED
+      ) {
         const receipt = (event.data.object.receipt_url as string) ?? undefined;
 
         await this.handleSuccessfullPayment({
@@ -91,14 +100,17 @@ export default class PaymentsServices {
         });
       }
 
-      if (eventType === "charge.refunded") {
+      if (eventType === STRIPE_EVENT_TYPES.CHARGE_REFUNDED) {
         await this.handleSuccessfullPayment({
           paymentIntent,
           paymentType: PAYMENT_TYPE.REFUND,
         });
       }
 
-      if (eventType === "charge.expired" || eventType === "charge.failed") {
+      if (
+        eventType === STRIPE_EVENT_TYPES.CHARGE_EXPIRED ||
+        eventType === STRIPE_EVENT_TYPES.CHARGE_FAILED
+      ) {
         const { failure_message: failMessage } = event.data.object;
 
         await this.handleFailedPayment({

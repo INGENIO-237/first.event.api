@@ -1,4 +1,5 @@
 import { Document, InferSchemaType, model, Schema, Types } from "mongoose";
+import { ASSISTANCE, TICKETS_PER_EVENT } from "../../utils/constants/plans-and-subs";
 
 const subscriptionSchema = new Schema(
   {
@@ -24,6 +25,24 @@ const subscriptionSchema = new Schema(
       default: false,
     },
     cancelDate: Date,
+    ticketsPerEvent: {
+      type: String,
+      // enum: [...Object.values(TICKETS_PER_EVENT)],
+      required: true,
+    },
+    assistance: {
+      type: String,
+      // enum: [...Object.values(ASSISTANCE)],
+      required: true,
+    },
+    couponsPerEvent: {
+      type: String,
+      required: true,
+    },
+    promotion: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

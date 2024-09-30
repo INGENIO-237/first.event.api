@@ -80,9 +80,7 @@ export default class StripeServices {
           amount: amount * 100,
           currency,
           customer: cus,
-          payment_method: paymentMethodId,
-          off_session: true,
-          confirm: true,
+          payment_method: paymentMethodId
         })
       : await this._stripe.paymentIntents.create({
           amount: amount * 100,
@@ -93,7 +91,6 @@ export default class StripeServices {
     return { client_secret, paymentIntent, customer: cus };
   }
 
-  // Dev purpose only
   async confirmPaymentIntent(paymentIntent: string) {
     console.log(`Capturing ${paymentIntent}`);
 
