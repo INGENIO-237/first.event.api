@@ -24,6 +24,7 @@
     "nodemailer": "^6.9.14",
     "pino": "^9.3.2",
     "pino-pretty": "^11.2.2",
+    "qs": "^6.13.0",
     "reflect-metadata": "^0.2.2",
     "stripe": "^16.8.0",
     "swagger-jsdoc": "^6.2.8",

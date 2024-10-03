@@ -4,7 +4,6 @@ import { NextFunction, Request, Response } from "express";
 import HTTP from "../utils/constants/http.responses";
 import Container from "typedi";
 import OrganizerServices from "../services/professionals/organizer.services";
-import { isLoggedIn } from "./auth";
 import ApiError from "../utils/errors/errors.base";
 import { ISubscription } from "../models/subs/subscription.model";
 
@@ -14,8 +13,6 @@ export async function isValidOrganizer(
   next: NextFunction
 ) {
   const organizerService = Container.get(OrganizerServices);
-
-  isLoggedIn(req, res, next);
 
   const { id } = (req as any).user;
 

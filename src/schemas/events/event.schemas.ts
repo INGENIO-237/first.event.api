@@ -29,6 +29,7 @@ export const createEventSchema = object({
     startDate: date({
       required_error: "La date de début est requise",
       invalid_type_error: "La date de début doit être une date valide",
+      coerce: true
     }),
     endDate: date({
       invalid_type_error: "La date de fin doit être une date valide",

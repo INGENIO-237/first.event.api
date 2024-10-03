@@ -8,6 +8,9 @@ import { createEventSchema } from "../../schemas/events/event.schemas";
 import { imageUploader } from "../../middlewares/cloudinary";
 import EventController from "../../controllers/events/event.controller";
 import { isValidOrganizer } from "../../middlewares/organizer";
+import { tryCatch } from "../../utils/errors/errors.utlis";
+import { isLoggedIn } from "../../middlewares/auth";
+import { parseTickets } from "../../middlewares/parse-array-fields";
 
 const EventsRouter = Router();
 
@@ -18,11 +21,13 @@ const uploader = multer.uploader;
 
 EventsRouter.post(
   "",
+  isLoggedIn,
   isValidOrganizer,
   uploader.single("image"),
   imageUploader,
+  parseTickets,
   validate(createEventSchema),
-  controller.createEvent.bind(controller)
+  tryCatch(controller.createEvent.bind(controller))
 );
 
 export default EventsRouter;
