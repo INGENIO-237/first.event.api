@@ -79,6 +79,7 @@ const eventSchema = new Schema(
     taxPolicy: {
       type: String,
       enum: [...Object.values(TAX_POLICY)],
+      default: TAX_POLICY.ABSORB,
     },
     tickets: [
       {
@@ -124,4 +125,4 @@ export interface IEvent extends InferSchemaType<typeof eventSchema>, Document {}
 
 const Event = model<IEvent>("Event", eventSchema);
 
-export default Event
+export default Event;

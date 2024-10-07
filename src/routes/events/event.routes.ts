@@ -10,7 +10,7 @@ import EventController from "../../controllers/events/event.controller";
 import { isValidOrganizer } from "../../middlewares/organizer";
 import { tryCatch } from "../../utils/errors/errors.utlis";
 import { isLoggedIn } from "../../middlewares/auth";
-import { parseTickets } from "../../middlewares/parse-array-fields";
+import { parseLocation, parseTickets } from "../../middlewares/parse-fields"
 
 const EventsRouter = Router();
 
@@ -26,6 +26,7 @@ EventsRouter.post(
   uploader.single("image"),
   imageUploader,
   parseTickets,
+  parseLocation,
   validate(createEventSchema),
   tryCatch(controller.createEvent.bind(controller))
 );

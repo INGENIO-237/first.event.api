@@ -23,6 +23,8 @@ export default class EventServices {
     private readonly subscriptionService: SubscriptionServices
   ) {}
 
+  // TODO: A day after an event is done, automatically send the funds to the organizer
+
   async createEvent(
     event: CreateEvent["body"] & { image: Image; user?: string } // user has to be optional in order to delete it from the properties list
   ) {
@@ -55,5 +57,15 @@ export default class EventServices {
     }
 
     return await this.eventRepo.createEvent(event as CreateEventPayload);
+  }
+
+  async updateEvent() {
+    // TODO: Only Admins and organizer can update a given event
+
+    // Once published:
+    // TODO: Can't change tickets anymore. Can add more tickets(if under the tickets limit), but can't update the previous ones
+    // TODO: Can't switch status back to draft, if tickets already sold
+
+    // TODO: If updated, delete the previous remote image
   }
 }
