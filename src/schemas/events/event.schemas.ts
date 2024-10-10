@@ -15,6 +15,97 @@ import {
   TAX_POLICY,
 } from "../../utils/constants/events";
 import { Image } from "../../utils/constants/common";
+import { Types } from "mongoose";
+
+export const getEventsSchema = object({
+  query: object({
+    organizer: string({
+      required_error: "L'organisateur est requis",
+      invalid_type_error: "L'organisateur doit être une chaîne de caractères",
+    }).optional(),
+    page: number({
+      required_error: "La page est requise",
+      invalid_type_error: "La page doit être un nombre",
+    })
+      .min(1, "La page doit être supérieure ou égale à 1")
+      .optional(),
+    limit: number({
+      required_error: "La limite est requise",
+      invalid_type_error: "La limite doit être un nombre",
+    })
+      .min(1, "La limite doit être supérieure ou égale à 1")
+      .optional(),
+    location: object({
+      geo: object({
+        lat: number({
+          required_error: "La latitude est requise",
+          invalid_type_error: "La latitude doit être un nombre",
+        }),
+        lng: number({
+          required_error: "La longitude est requise",
+          invalid_type_error: "La longitude doit être un nombre",
+        }),
+      }).optional(),
+      city: string({
+        invalid_type_error: "La ville doit être une chaîne de caractères",
+      }).optional(),
+      country: string({
+        invalid_type_error: "Le pays doit être une chaîne de caractères",
+      }).optional(),
+    }).optional(),
+    search: string({
+      invalid_type_error: "La recherche doit être une chaîne de caractères",
+    }).optional(),
+    status: nativeEnum(EVENT_STATUS, {
+      invalid_type_error: "Le statut doit être une valeur valide",
+    }).optional(),
+    type: nativeEnum(EVENT_TYPE, {
+      invalid_type_error: "Le type doit être une valeur valide",
+    }).optional(),
+    startDate: date({
+      invalid_type_error: "La date de début doit être une date valide",
+      coerce: true,
+    }).optional(),
+    endDate: date({
+      invalid_type_error: "La date de fin doit être une date valide",
+      coerce: true,
+    }).optional(),
+  }).superRefine((data, ctx) => {
+    if (data.startDate && data.endDate) {
+      if (data.startDate > data.endDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "La date de début doit être inférieure à la date de fin",
+          path: ["startDate"],
+        });
+      }
+    }
+
+    if(data.organizer){
+      try {
+        new Types.ObjectId(data.organizer);
+      } catch (error) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "L'organisateur doit être un identifiant valide",
+          path: ["organizer"],
+        });
+      }
+    }
+  }),
+});
+
+export type GetEvents = z.infer<typeof getEventsSchema>;
+export type Location = {
+  geo?:
+    | {
+        lat: number;
+        lng: number;
+      }
+    | undefined;
+  city?: string | undefined;
+  country?: string | undefined;
+};
 
 export const createEventSchema = object({
   body: object({
@@ -163,6 +254,7 @@ export type CreateEvent = z.infer<typeof createEventSchema>;
 
 export type CreateEventPayload = CreateEvent["body"] & {
   image: Image;
+  remainingTickets: Number;
   organizer: string;
 };
 
@@ -299,14 +391,21 @@ export const updateEventSchema = object({
   params: object({
     event: string({
       required_error: "L'ID de l'événement est requis",
-      invalid_type_error: "L'ID de l'événement doit être une chaîne de caractères",
+      invalid_type_error:
+        "L'ID de l'événement doit être une chaîne de caractères",
     }),
-  }),
+  }).refine((data) => {
+    try {
+      new Types.ObjectId(data.event);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }, "L'Identifiant de l'événement doit être une chaîne de caractères valide"),
 });
 
 export type UpdateEvent = z.infer<typeof updateEventSchema>;
 
 export type UpdateEventPayload = UpdateEvent["body"] & {
   image: Image;
-  organizer: string;
 };

@@ -44,10 +44,15 @@ const eventSchema = new Schema(
       type: {
         geo: {
           type: {
-            lat: { type: Number, required: true },
-            lng: { type: Number, required: true },
+            type: String,
+            enum: ["Point"],
+            required: true,
+            default: "Point",
           },
-          required: true,
+          coordinates: {
+            type: [Number],
+            required: true,
+          },
         },
         address: {
           type: String,
@@ -88,6 +93,10 @@ const eventSchema = new Schema(
         quantity: { type: Number, required: true },
       },
     ],
+    remainingTickets: {
+      type: Number,
+      default: 100,
+    },
     status: {
       type: String,
       enum: [...Object.values(EVENT_STATUS)],
@@ -120,6 +129,13 @@ const eventSchema = new Schema(
     timestamps: true,
   }
 );
+
+eventSchema.virtual("slug").get(function () {
+  return this.title
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/ /g, "-");
+});
 
 export interface IEvent extends InferSchemaType<typeof eventSchema>, Document {}
 

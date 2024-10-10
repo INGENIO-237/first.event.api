@@ -4,7 +4,7 @@ import { Router } from "express";
 import Container from "typedi";
 import MulterServices from "../../services/utils/multer.services";
 import validate from "../../middlewares/validate.request";
-import { createEventSchema } from "../../schemas/events/event.schemas";
+import { createEventSchema, updateEventSchema } from "../../schemas/events/event.schemas";
 import { imageUploader } from "../../middlewares/cloudinary";
 import EventController from "../../controllers/events/event.controller";
 import { isValidOrganizer } from "../../middlewares/organizer";
@@ -29,6 +29,18 @@ EventsRouter.post(
   parseLocation,
   validate(createEventSchema),
   tryCatch(controller.createEvent.bind(controller))
+);
+
+EventsRouter.put(
+  "/:event",
+  isLoggedIn,
+  isValidOrganizer,
+  uploader.single("image"),
+  imageUploader,
+  parseTickets,
+  parseLocation,
+  validate(updateEventSchema),
+  tryCatch(controller.updateEvent.bind(controller))
 );
 
 export default EventsRouter;
