@@ -19,4 +19,8 @@ export default class CloudinaryServices {
       return { url: undefined, publicId: undefined };
     }
   }
+
+  async deleteResource(publicId: string) {
+    return await cloudinary.uploader.destroy(publicId);
+  }
 }

@@ -7,5 +7,10 @@ export enum PAYMENT_TYPE {
   SUBSCRIPTION = "SUBSCRIPTION",
   TICKET = "TICKET",
   ARTICLE = "ARTICLE",
-  REFUND = "REFUND"
+  REFUND = "REFUND",
 }
+
+export type Image = {
+  url: string;
+  publicId: string;
+};

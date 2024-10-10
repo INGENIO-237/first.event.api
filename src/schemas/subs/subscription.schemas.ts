@@ -1,5 +1,9 @@
 import { array, nativeEnum, object, optional, string, z } from "zod";
-import { BILLING_TYPE } from "../../utils/constants/plans-and-subs";
+import {
+  ASSISTANCE,
+  BILLING_TYPE,
+  TICKETS_PER_EVENT,
+} from "../../utils/constants/plans-and-subs";
 import { Types } from "mongoose";
 
 export const registerSubscriptionSchema = object({
@@ -55,4 +59,8 @@ export type CreateSubscription = {
   freemiumEndsOn: Date;
   startsOn: Date;
   endsOn: Date;
+  ticketsPerEvent: TICKETS_PER_EVENT;
+  assistance: ASSISTANCE;
+  couponsPerEvent: string;
+  promotion: number;
 };

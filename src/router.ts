@@ -8,6 +8,7 @@ import {
   PlanRouter,
   SubscriptionRouter,
   UserRouter,
+  EventsRouter,
 } from "./routes";
 
 export default function router(server: Express) {
@@ -22,4 +23,5 @@ export default function router(server: Express) {
   server.use("/plans", PlanRouter);
   server.use("/subscriptions", SubscriptionRouter);
   server.use("/payments", PaymentsRouter);
+  server.use("/events", EventsRouter);
 }

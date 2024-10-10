@@ -19,6 +19,10 @@ const planSchema = new Schema({
     type: Number,
     required: true,
   },
+  tryDays: {
+    type: Number,
+    required: true,
+  },
   ticketsPerEvent: {
     type: String,
     enum: [...Object.values(TICKETS_PER_EVENT)],
@@ -31,10 +35,6 @@ const planSchema = new Schema({
   },
   couponsPerEvent: {
     type: String,
-    required: true,
-  },
-  tryDays: {
-    type: Number,
     required: true,
   },
   promotion: {
