@@ -2,7 +2,6 @@ import { Service } from "typedi";
 import {
   CreateEventPayload,
   GetEvents,
-  Location,
 } from "../../schemas/events/event.schemas";
 import Event from "../../models/events/event.model";
 import { Types } from "mongoose";
@@ -21,38 +20,67 @@ export default class EventsRepo {
       location,
       status,
     } = filters;
-    const { geo, city, country } = location as Location;
+    const geo = location?.geo;
+    const city = location?.city ?? ""; // cause casting to string will fail if undefined
+    const country = location?.country ?? "";
 
-    const { lat, lng } = geo as { lat: number; lng: number };
+    const lat = geo?.lat ?? 56.1304;
+    const lng = geo?.lng ?? -106.3468;
 
-    return await Event.find({
-      $or: [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { "location.city": { $regex: search, $options: "i" } },
-        { "location.country": { $regex: search, $options: "i" } },
-      ],
-      startDate: { $gte: startDate },
-      endDate: { $lte: endDate },
-      organizer: new Types.ObjectId(organizer),
-      eventType: type,
-      status,
-      location: {
-        geo: {
-          $near: {
-            $geometry: {
-              type: "Point",
-              coordinates: [lng, lat],
+    const query = search ?? "";
+    const skipPage = page ?? 1;
+    const offset = limit ?? 30;
+
+    const events = query
+      ? await Event.find({
+          $or: [
+            { title: { $regex: query, $options: "i" } },
+            { description: { $regex: query, $options: "i" } },
+            { "location.city": { $regex: query, $options: "i" } },
+            { "location.country": { $regex: query, $options: "i" } },
+            {
+              "location.geo": {
+                $geoWithin: {
+                  $centerSphere: [
+                    [lng, lat], // Center of the search area (longitude, latitude)
+                    50 / 6378.1, // 50 km radius in radians
+                  ],
+                },
+              },
             },
-            $maxDistance: 1000,
+          ],
+        })
+      : await Event.aggregate([
+          {
+            $match: {
+              $or: [
+                {
+                  $or: [
+                    { "location.city": { $regex: city, $options: "i" } },
+                    { "location.country": { $regex: country, $options: "i" } },
+                  ],
+                },
+
+                { startDate: { $gte: startDate ?? new Date() } },
+                { endDate: { $lte: endDate } },
+                { organizer: new Types.ObjectId(organizer) },
+                { eventType: type },
+                { status },
+                {
+                  "location.geo": {
+                    $geoWithin: {
+                      $centerSphere: [[lng, lat], 50 / 6378.1],
+                    },
+                  },
+                },
+              ],
+            },
           },
-        },
-        city: { $regex: city, $options: "i" },
-        country: { $regex: country, $options: "i" },
-      },
-    })
-      .skip(((page as number) - 1) * (limit as number))
-      .limit(limit as number);
+          { $skip: (skipPage - 1) * offset },
+          { $limit: offset },
+        ]);
+
+    return events;
   }
 
   async createEvent(event: CreateEventPayload) {

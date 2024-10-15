@@ -20,7 +20,9 @@ export async function isValidOrganizer(
   const organizer = await organizerService.getOrganizer(id as string);
 
   if (!organizer) {
-    throw new ApiError(HTTP.FORBIDDEN, "Vous n'êtes pas un organisateur");
+    return res
+      .status(HTTP.FORBIDDEN)
+      .json([{ message: "Vous n'êtes pas un organisateur" }]);
   }
 
   // Ensure user has an ongoing subscription and that it's still valid
@@ -30,10 +32,9 @@ export async function isValidOrganizer(
   const subscriptionEndTime = endsOn.getTime();
 
   if (hasBeenCancelled || presentTime > subscriptionEndTime)
-    throw new ApiError(
-      HTTP.BAD_REQUEST,
-      "Vous n'avez pas de souscription valide en cours"
-    );
+    return res
+      .status(HTTP.BAD_REQUEST)
+      .json([{ message: "Vous n'avez pas de souscription valide en cours" }]);
 
   return next();
 }
@@ -42,6 +43,4 @@ export async function validateSubscription(
   req: Request,
   res: Response,
   next: NextFunction
-) {
-    
-}
+) {}

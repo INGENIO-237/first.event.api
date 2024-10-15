@@ -81,7 +81,7 @@ export const getEventsSchema = object({
       }
     }
 
-    if(data.organizer){
+    if (data.organizer) {
       try {
         new Types.ObjectId(data.organizer);
       } catch (error) {

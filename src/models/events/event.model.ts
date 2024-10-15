@@ -137,7 +137,20 @@ eventSchema.virtual("slug").get(function () {
     .replace(/ /g, "-");
 });
 
-export interface IEvent extends InferSchemaType<typeof eventSchema>, Document {}
+eventSchema.methods.checkValidity = function () {
+  const now = new Date();
+  const startDate = new Date(this.startDate);
+  const endDate = this.endDate ? new Date(this.endDate) : null;
+
+  const dateIsValid =
+    startDate >= now && (!endDate || new Date(endDate) >= now);
+
+  return dateIsValid && this.status === EVENT_STATUS.PUBLISHED;
+};
+
+export interface IEvent extends InferSchemaType<typeof eventSchema>, Document {
+  checkValidity: () => boolean;
+}
 
 const Event = model<IEvent>("Event", eventSchema);
 

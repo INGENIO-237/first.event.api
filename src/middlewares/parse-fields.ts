@@ -33,7 +33,7 @@ export function parseTickets(req: Request, res: Response, next: NextFunction) {
   return next();
 }
 
-export function parseLocation(req: Request, res: Response, next: NextFunction) {
+export function parseBodyLocation(req: Request, res: Response, next: NextFunction) {
   const parsedBody = qs.parse(req.body);
   const transformedBody = { ...parsedBody };
 
@@ -66,6 +66,41 @@ export function parseLocation(req: Request, res: Response, next: NextFunction) {
   req.body = transformedBody;
 
   console.log({ location });
+
+  return next();
+}
+
+export function parseQueryLocation(req: Request, res: Response, next: NextFunction) {
+  const parsedQuery = req.query;
+  const transformedQuery = { ...parsedQuery };
+
+  const location: Record<string, any> = {};
+
+  Object.keys(parsedQuery).forEach((key) => {
+    if (key.startsWith("location")) {
+      const [, lKey, lsKey] = key.split(".");
+      if (lKey && !lsKey) {
+        location[lKey] = parsedQuery[key];
+      }
+
+      if (lsKey) {
+        location[lKey] = {
+          ...location[lKey],
+          [lsKey]:
+            lsKey == "lat" || lsKey == "lng"
+              ? Number(parsedQuery[key])
+              : parsedQuery[key],
+        };
+      }
+
+      delete transformedQuery[key];
+    }
+  });
+
+  transformedQuery.location =
+    Object.keys(location).length > 0 ? location : undefined;
+
+  req.query = transformedQuery;
 
   return next();
 }
