@@ -13,6 +13,7 @@ import OrganizerServices from "../../services/professionals/organizer.services";
 import EventServices from "../../services/events/event.services";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import { getSlug } from "../../utils/utilities";
 
 const eventSchema = new Schema(
   {
@@ -138,10 +139,7 @@ const eventSchema = new Schema(
 );
 
 eventSchema.virtual("slug").get(function () {
-  return this.title
-    .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, "")
-    .replace(/ /g, "-");
+  return getSlug(this.title);
 });
 
 eventSchema.statics.checkValidity = async function (event: string) {
