@@ -4,6 +4,7 @@ import {
   GetCoupons,
   RegisterCoupon,
 } from "../../schemas/events/coupon.schemas";
+import { Types } from "mongoose";
 
 @Service()
 export default class CouponRepo {
@@ -11,7 +12,13 @@ export default class CouponRepo {
     return await Coupon.find({ event });
   }
 
-  async registerCoupon(coupon: RegisterCoupon["body"] & { code: string }) {
+  async getCoupon({ code, id }: { code?: string; id?: string }) {
+    return Types.ObjectId.isValid(id as string)
+      ? await Coupon.findById(id)
+      : await Coupon.findOne({ code: "TC-" + code });
+  }
+
+  async registerCoupon(coupon: RegisterCoupon["body"]) {
     return await Coupon.create(coupon);
   }
 }

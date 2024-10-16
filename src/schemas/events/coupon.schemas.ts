@@ -24,6 +24,12 @@ export const registerCouponSchema = object({
     }).refine((val) => Types.ObjectId.isValid(val), {
       message: "Identifiant d'événement non valide",
     }),
+    code: string({
+      required_error: "Le code coupon est requis",
+      invalid_type_error: "Le code coupon doit être une chaîne de caractères",
+    }).refine((val) => val.length === 5, {
+      message: "Le code coupon doit contenir exactement 5 caractères",
+    }),
     discount: number({
       required_error: "La réduction est requise",
       invalid_type_error: "La réduction doit être un nombre",

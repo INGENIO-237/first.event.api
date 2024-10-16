@@ -5,12 +5,13 @@ import {
   GetCoupons,
   RegisterCoupon,
 } from "../../schemas/events/coupon.schemas";
-import crypto from "node:crypto";
-import { alphabet } from "../../utils/constants/common";
 import Event from "../../models/events/event.model";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
+import { generateCouponCode } from "../../utils/coupons";
 
 @Service()
-export default class CouponServices {
+export default class TicketsCouponServices {
   constructor(
     private readonly couponRepo: CouponRepo,
     private readonly influencerCouponRepo: InfluencerCouponRepo
@@ -40,16 +41,18 @@ export default class CouponServices {
     user: string;
     couponPaylaod: RegisterCoupon["body"];
   }) {
-    const { event } = couponPaylaod;
+    const { event, code } = couponPaylaod;
 
     await Event.checkOwnership({ user, event });
     await Event.checkValidity(event);
 
+    const matchingCoupon = await this.getCoupon({ code, raiseException: false });
+
+    if(matchingCoupon) throw new ApiError(HTTP.BAD_REQUEST, "Ce coupon existe déjà");
+
     const { influencer, share } = couponPaylaod;
 
     let coupon;
-
-    const code = this.generateCouponCode();
 
     if (influencer && share) {
       coupon = await this.influencerCouponRepo.registerCoupon({
@@ -57,26 +60,33 @@ export default class CouponServices {
         code,
       });
     } else {
-      coupon = await this.couponRepo.registerCoupon({ ...couponPaylaod, code });
+      coupon = await this.couponRepo.registerCoupon(couponPaylaod);
     }
 
     return coupon;
   }
 
-  private generateCouponCode(options?: {
-    length?: number;
-    type?: "ticket" | "article";
+  async getCoupon({
+    raiseException = true,
+    ...query
+  }: {
+    code?: string;
+    id?: string;
+    raiseException?: boolean;
   }) {
-    const length = options ? options.length || 5 : 5;
-    const type = options ? options.type || "ticket" : "ticket";
+    if (!query.code && !query.id)
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Veuillez passer soit l'identifiant ou le code du coupon"
+      );
 
-    const prefix = type === "ticket" ? "TC-" : "AC-";
-    const bytes = crypto.randomBytes(length);
-    let code = "";
-    for (let i = 0; i < length; i++) {
-      code += alphabet[bytes[i] % alphabet.length];
+    const coupon = await this.couponRepo.getCoupon(query);
+    const influencerCoupon = await this.influencerCouponRepo.getCoupon(query);
+
+    if (!coupon && !influencerCoupon && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Coupon non trouvé");
     }
 
-    return prefix + code;
+    return coupon ? coupon : influencerCoupon;
   }
 }
