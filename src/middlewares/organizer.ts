@@ -34,6 +34,12 @@ export async function validateSubscription(
   res: Response,
   next: NextFunction
 ) {
+  if (!(req as any).organizer.subscription) {
+    return res
+      .status(HTTP.BAD_REQUEST)
+      .json([{ message: "Vous n'avez pas de souscription valide en cours" }]);
+  }
+
   // Ensure user has an ongoing subscription and that it's still valid
   const { hasBeenCancelled, endsOn } = (req as any).organizer
     .subscription as ISubscription;
