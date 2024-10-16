@@ -15,7 +15,7 @@ import {
   registerCouponSchema,
   updateCouponSchema,
 } from "../../schemas/events/coupon.schemas";
-import { generateCouponCode } from "../../utils/coupons";
+import { generateCouponCode } from "../../utils/utilities";
 import HTTP from "../../utils/constants/http.responses";
 
 const CouponsRouter = Router();
