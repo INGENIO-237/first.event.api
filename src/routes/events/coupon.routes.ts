@@ -13,6 +13,7 @@ import { tryCatch } from "../../utils/errors/errors.utlis";
 import {
   getCouponsSchema,
   registerCouponSchema,
+  updateCouponSchema,
 } from "../../schemas/events/coupon.schemas";
 import { generateCouponCode } from "../../utils/coupons";
 import HTTP from "../../utils/constants/http.responses";
@@ -54,6 +55,15 @@ CouponsRouter.get(
   "/events/:coupon",
   isLoggedIn,
   tryCatch(controller.getTicketCoupon.bind(controller))
+);
+
+CouponsRouter.put(
+  "/events/:coupon",
+  isLoggedIn,
+  isValidOrganizer,
+  validateSubscription,
+  validate(updateCouponSchema),
+  tryCatch(controller.updateCoupon.bind(controller))
 );
 
 export default CouponsRouter;

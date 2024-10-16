@@ -3,6 +3,7 @@ import Coupon from "../../models/events/coupon.model";
 import {
   GetCoupons,
   RegisterCoupon,
+  UpdateCoupon,
 } from "../../schemas/events/coupon.schemas";
 import { Types } from "mongoose";
 
@@ -20,5 +21,15 @@ export default class CouponRepo {
 
   async registerCoupon(coupon: RegisterCoupon["body"]) {
     return await Coupon.create(coupon);
+  }
+
+  async updateCoupon({
+    coupon,
+    couponPayload,
+  }: {
+    couponPayload: UpdateCoupon["body"];
+    coupon: string;
+  }) {
+    await Coupon.findByIdAndUpdate(coupon, couponPayload);
   }
 }

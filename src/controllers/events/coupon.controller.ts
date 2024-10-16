@@ -11,8 +11,6 @@ import {
 export default class CouponController {
   constructor(private readonly ticketsCouponService: TicketsCouponServices) {}
 
-  
-
   // Events
   async getTicketsCoupons(
     req: Request<{}, {}, {}, GetCoupons["query"]>,
@@ -36,7 +34,7 @@ export default class CouponController {
 
     const coupon = await this.ticketsCouponService.registerCoupon({
       user,
-      couponPaylaod: req.body,
+      couponPayload: req.body,
     });
 
     return res.status(HTTP.CREATED).json(coupon);
@@ -49,5 +47,19 @@ export default class CouponController {
     });
 
     return res.status(HTTP.OK).json(coupon);
+  }
+
+  async updateCoupon(req: Request<{ coupon: string }>, res: Response) {
+    const { id: user } = (req as any).user;
+
+    await this.ticketsCouponService.updateCoupon({
+      user,
+      couponPayload: req.body,
+      couponId: req.params.coupon,
+    });
+
+    return res.status(HTTP.OK).json({
+      message: "Coupon mis à jour avec succès",
+    });
   }
 }

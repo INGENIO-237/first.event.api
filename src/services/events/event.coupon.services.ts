@@ -4,11 +4,13 @@ import InfluencerCouponRepo from "../../repositories/events/influencer.coupon.re
 import {
   GetCoupons,
   RegisterCoupon,
+  UpdateCoupon,
 } from "../../schemas/events/coupon.schemas";
 import Event from "../../models/events/event.model";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
-import { generateCouponCode } from "../../utils/coupons";
+import { ICoupon } from "../../models/events/coupon.model";
+import { IInfluencerCoupon } from "../../models/events/influencer.coupon.model";
 
 @Service()
 export default class TicketsCouponServices {
@@ -36,31 +38,35 @@ export default class TicketsCouponServices {
 
   async registerCoupon({
     user,
-    couponPaylaod,
+    couponPayload,
   }: {
     user: string;
-    couponPaylaod: RegisterCoupon["body"];
+    couponPayload: RegisterCoupon["body"];
   }) {
-    const { event, code } = couponPaylaod;
+    const { event, code } = couponPayload;
 
     await Event.checkOwnership({ user, event });
     await Event.checkValidity(event);
 
-    const matchingCoupon = await this.getCoupon({ code, raiseException: false });
+    const matchingCoupon = await this.getCoupon({
+      code,
+      raiseException: false,
+    });
 
-    if(matchingCoupon) throw new ApiError(HTTP.BAD_REQUEST, "Ce coupon existe déjà");
+    if (matchingCoupon)
+      throw new ApiError(HTTP.BAD_REQUEST, "Ce coupon existe déjà");
 
-    const { influencer, share } = couponPaylaod;
+    const { influencer, share } = couponPayload;
 
     let coupon;
 
     if (influencer && share) {
       coupon = await this.influencerCouponRepo.registerCoupon({
-        ...couponPaylaod,
+        ...couponPayload,
         code,
       });
     } else {
-      coupon = await this.couponRepo.registerCoupon(couponPaylaod);
+      coupon = await this.couponRepo.registerCoupon(couponPayload);
     }
 
     return coupon;
@@ -88,5 +94,51 @@ export default class TicketsCouponServices {
     }
 
     return coupon ? coupon : influencerCoupon;
+  }
+
+  async updateCoupon({
+    user,
+    couponPayload,
+    couponId,
+  }: {
+    user: string;
+    couponPayload: UpdateCoupon["body"];
+    couponId: string;
+  }) {
+    const { event } = couponPayload as {
+      influencer?: string | undefined;
+      share?: number | undefined;
+      event?: string | undefined;
+      code?: string | undefined;
+      discount?: number | undefined;
+    };
+
+    event && (await Event.checkOwnership({ user, event }));
+    event && (await Event.checkValidity(event));
+
+    let coupon = (await this.getCoupon({ id: couponId })) as ICoupon;
+    let influencer, share;
+
+    if (!coupon) {
+      const { influencer: inf, share: sh } =
+        (await this.influencerCouponRepo.getCoupon({
+          id: couponId,
+        })) as IInfluencerCoupon;
+
+      influencer = inf;
+      share = sh;
+    }
+
+    if (influencer && share) {
+      await this.influencerCouponRepo.updateCoupon({
+        couponPayload,
+        coupon: couponId,
+      });
+    } else {
+      await this.couponRepo.updateCoupon({
+        couponPayload,
+        coupon: couponId,
+      });
+    }
   }
 }
