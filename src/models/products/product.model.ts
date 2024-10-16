@@ -1,5 +1,7 @@
-import { Schema, model, Types, InferSchemaType } from "mongoose";
+import { Schema, model, Types, InferSchemaType, Model } from "mongoose";
 import { getSlug } from "../../utils/utilities";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
 
 const productSchema = new Schema(
   {
@@ -30,8 +32,8 @@ const productSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "inactive"],
-      default: "active",
+      enum: ["available", "unavailable"],
+      default: "available",
     },
   },
   {
@@ -45,10 +47,31 @@ productSchema.virtual("slug").get(function () {
   return getSlug(this.title);
 });
 
+productSchema.statics.isOwner = async function (
+  productId: string,
+  organizerId: string
+) {
+  const product = await this.findById(productId);
+
+  if (!product) throw new ApiError(HTTP.BAD_REQUEST, "Produit inéxistant");
+
+  if (product.organizer.toString() !== organizerId.toString())
+    throw new ApiError(
+      HTTP.UNAUTHORIZED,
+      "Vous n'êtes pas le créateur de ce produit"
+    );
+
+  return product;
+};
+
 export interface IProduct
   extends Document,
     InferSchemaType<typeof productSchema> {}
 
-const Product = model<IProduct>("Product", productSchema);
+interface ProductModel extends Model<IProduct> {
+  isOwner: (productId: string, organizerId: string) => Promise<IProduct>;
+}
+
+const Product = model<IProduct, ProductModel>("Product", productSchema);
 
 export default Product;

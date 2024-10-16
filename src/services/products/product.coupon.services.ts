@@ -1,19 +1,19 @@
 import { Service } from "typedi";
-import CouponRepo from "../../repositories/events/coupon.repository";
-import InfluencerCouponRepo from "../../repositories/events/influencer.coupon.repository";
 import {
   GetCoupons,
   RegisterCoupon,
   UpdateCoupon,
-} from "../../schemas/events/coupon.schemas";
-import Event from "../../models/events/event.model";
+} from "../../schemas/products/product.coupon.schemas";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
-import { ICoupon } from "../../models/events/coupon.model";
-import { IInfluencerCoupon } from "../../models/events/influencer.coupon.model";
+import Product from "../../models/products/product.model";
+import CouponRepo from "../../repositories/products/product.coupon.repository";
+import InfluencerCouponRepo from "../../repositories/products/product.influencer.coupon.repository";
+import { IProductCoupon } from "../../models/products/product.coupon.model";
+import { IProductInfluencerCoupon } from "../../models/products/product.influencer.coupon.model";
 
 @Service()
-export default class TicketsCouponServices {
+export default class ProductsCouponServices {
   constructor(
     private readonly couponRepo: CouponRepo,
     private readonly influencerCouponRepo: InfluencerCouponRepo
@@ -26,9 +26,9 @@ export default class TicketsCouponServices {
     user: string;
     query: GetCoupons["query"];
   }) {
-    const { event } = query;
+    const { product } = query;
 
-    await Event.checkOwnership({ user, event });
+    await Product.isOwner(product, user);
 
     const coupons = await this.couponRepo.getCoupons(query);
     const influencerCoupons = await this.influencerCouponRepo.getCoupons(query);
@@ -43,10 +43,9 @@ export default class TicketsCouponServices {
     user: string;
     couponPayload: RegisterCoupon["body"];
   }) {
-    const { event, code } = couponPayload;
+    const { product, code } = couponPayload;
 
-    await Event.checkOwnership({ user, event });
-    await Event.checkValidity(event);
+    await Product.isOwner(product, user);
 
     const matchingCoupon = await this.getCoupon({
       code,
@@ -63,12 +62,12 @@ export default class TicketsCouponServices {
     if (influencer && share) {
       coupon = await this.influencerCouponRepo.registerCoupon({
         ...couponPayload,
-        code: "TC-" + code
+        code: "PC-" + code,
       });
     } else {
       coupon = await this.couponRepo.registerCoupon({
         ...couponPayload,
-        code: "TC-" + code,
+        code: "PC-" + code,
       });
     }
 
@@ -108,25 +107,24 @@ export default class TicketsCouponServices {
     couponPayload: UpdateCoupon["body"];
     couponId: string;
   }) {
-    const { event } = couponPayload as {
+    const { product } = couponPayload as {
       influencer?: string | undefined;
       share?: number | undefined;
-      event?: string | undefined;
+      product?: string | undefined;
       code?: string | undefined;
       discount?: number | undefined;
     };
 
-    event && (await Event.checkOwnership({ user, event }));
-    event && (await Event.checkValidity(event));
+    product && (await Product.isOwner(product, user));
 
-    let coupon = (await this.getCoupon({ id: couponId })) as ICoupon;
+    let coupon = (await this.getCoupon({ id: couponId })) as IProductCoupon;
     let influencer, share;
 
     if (!coupon) {
       const { influencer: inf, share: sh } =
         (await this.influencerCouponRepo.getCoupon({
           id: couponId,
-        })) as IInfluencerCoupon;
+        })) as IProductInfluencerCoupon;
 
       influencer = inf;
       share = sh;
