@@ -8,7 +8,7 @@ export function generateCouponCode(options?: {
   const length = options ? options.length || 5 : 5;
   const type = options ? options.type || "ticket" : "ticket";
 
-  const prefix = type === "ticket" ? "TC-" : "AC-";
+  const prefix = type === "ticket" ? "TC-" : "PC-";
   const bytes = crypto.randomBytes(length);
   let code = "";
   for (let i = 0; i < length; i++) {
