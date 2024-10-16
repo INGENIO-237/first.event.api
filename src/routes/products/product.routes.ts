@@ -6,6 +6,7 @@ import MulterServices from "../../services/utils/multer.services";
 import {
   createProductSchema,
   getProductsSchema,
+  updateProductSchema,
 } from "../../schemas/products/product.schema";
 import validate from "../../middlewares/validate.request";
 import { tryCatch } from "../../utils/errors/errors.utlis";
@@ -39,6 +40,16 @@ ProductsRouter.post(
   imageUploader,
   validate(createProductSchema),
   tryCatch(controller.createProduct.bind(controller))
+);
+
+ProductsRouter.put(
+  "/:product",
+  isLoggedIn,
+  isValidOrganizer,
+  uploader.single("image"),
+  imageUploader,
+  validate(updateProductSchema),
+  tryCatch(controller.updateProduct.bind(controller))
 );
 
 export default ProductsRouter;

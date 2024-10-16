@@ -2,6 +2,7 @@ import { Service } from "typedi";
 import {
   CreateProductPayload,
   GetProductsQuery,
+  UpdateProductInput,
 } from "../../schemas/products/product.schema";
 import Product from "../../models/products/product.model";
 import { Types } from "mongoose";
@@ -21,5 +22,15 @@ export default class ProductRepo {
           ],
         }).sort({ createdAt: -1, updatedAt: -1 })
       : await Product.find();
+  }
+
+  async updateProduct({
+    productId,
+    update,
+  }: {
+    productId: string;
+    update: UpdateProductInput["body"];
+  }) {
+    await Product.findByIdAndUpdate(productId, update);
   }
 }

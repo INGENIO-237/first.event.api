@@ -82,15 +82,70 @@ export type CreateProductPayload = CreateProductInput["body"] & {
 };
 
 export const updateProductSchema = object({
+  params: object({
+    product: string({
+      required_error: "L'identifiant de l'article est requis",
+      invalid_type_error: "L'identifiant doit être une chaîne de caractères",
+    }).refine(
+      (data) => {
+        return Types.ObjectId.isValid(data);
+      },
+      {
+        message: "L'identifiant n'est pas valide",
+      }
+    ),
+  }),
   body: object({
     title: string({
       invalid_type_error: "Le titre doit être une chaîne de caractères",
     }).optional(),
-    price: number({
-      invalid_type_error: "Le prix doit être un nombre",
-    }).optional(),
+    price: string({
+      required_error: "Le prix de l'article est requis",
+    })
+      .optional()
+      .refine(
+        (data) => {
+          if (Number.isNaN(Number(data))) return false;
+
+          return true;
+        },
+        {
+          message: "Le prix doit être un nombre",
+        }
+      ),
+    event: string({
+      invalid_type_error:
+        "L'identifiant de l'événement doit être une chaîne de caractères",
+    })
+      .optional()
+      .refine(
+        (data) => {
+          if (!data) return true;
+
+          return Types.ObjectId.isValid(data);
+        },
+        {
+          message: "L'identifiant de l'événement n'est pas valide",
+        }
+      ),
     description: string({
       invalid_type_error: "La description doit être une chaîne de caractères",
     }).optional(),
+    status: string({
+      invalid_type_error: "Le status doit être une chaîne de caractères",
+    })
+      .optional()
+      .refine(
+        (data) => {
+          if (!data) return true;
+
+          if (data !== "available" && data !== "unavailable") return false;
+        },
+        {
+          message: "Le status doit être 'available' ou 'unavailable'",
+        }
+      ),
   }),
 });
+
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;
