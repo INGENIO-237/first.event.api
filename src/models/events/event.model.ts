@@ -1,4 +1,6 @@
-import { InferSchemaType, Schema, Types } from "mongoose";
+import "reflect-metadata";
+
+import { InferSchemaType, Model, Schema, Types } from "mongoose";
 import {
   EVENT_STATUS,
   EVENT_TYPE,
@@ -6,6 +8,11 @@ import {
 } from "../../utils/constants/events";
 import { Document } from "mongoose";
 import { model } from "mongoose";
+import Container from "typedi";
+import OrganizerServices from "../../services/professionals/organizer.services";
+import EventServices from "../../services/events/event.services";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
 
 const eventSchema = new Schema(
   {
@@ -137,8 +144,59 @@ eventSchema.virtual("slug").get(function () {
     .replace(/ /g, "-");
 });
 
+eventSchema.statics.checkValidity = async function (event: string) {
+  const eventService = Container.get(EventServices);
+
+  const matchingEvent = await eventService.getEvent({ eventId: event });
+
+  const now = new Date();
+  const startDate = new Date(matchingEvent!.startDate);
+  const endDate = matchingEvent!.endDate
+    ? new Date(matchingEvent!.endDate)
+    : null;
+
+  const dateIsValid =
+    startDate >= now && (!endDate || new Date(endDate) >= now);
+
+  const isValid =
+    dateIsValid && matchingEvent!.status === EVENT_STATUS.PUBLISHED;
+
+  if (!isValid) {
+    throw new ApiError(HTTP.BAD_REQUEST, "L'événement n'est pas/plus actif.");
+  }
+};
+
+eventSchema.statics.checkOwnership = async function ({
+  user,
+  event,
+}: {
+  user: string;
+  event: string;
+}) {
+  const organizerService = Container.get(OrganizerServices);
+  const eventService = Container.get(EventServices);
+
+  const organizer = await organizerService.getOrganizer(user);
+  const matchingEvent = await eventService.getEvent({ eventId: event });
+
+  if (
+    matchingEvent!.organizer.toString() !==
+    (organizer!._id as Types.ObjectId).toString()
+  ) {
+    throw new ApiError(
+      HTTP.UNAUTHORIZED,
+      "Vous n'êtes pas autorisé à modifier cet événement"
+    );
+  }
+};
+
 export interface IEvent extends InferSchemaType<typeof eventSchema>, Document {}
 
-const Event = model<IEvent>("Event", eventSchema);
+interface EventModel extends Model<IEvent> {
+  checkValidity(event: string): Promise<void>;
+  checkOwnership(args: { user: string; event: string }): Promise<void>;
+}
+
+const Event = model<IEvent, EventModel>("Event", eventSchema);
 
 export default Event;

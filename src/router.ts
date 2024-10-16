@@ -10,6 +10,7 @@ import {
   UserRouter,
   EventsRouter,
 } from "./routes";
+import CouponsRouter from "./routes/events/coupon.routes";
 
 export default function router(server: Express) {
   server.get("/healthcheck", (req: Request, res: Response) =>
@@ -24,4 +25,5 @@ export default function router(server: Express) {
   server.use("/subscriptions", SubscriptionRouter);
   server.use("/payments", PaymentsRouter);
   server.use("/events", EventsRouter);
+  server.use("/coupons", CouponsRouter);
 }

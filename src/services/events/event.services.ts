@@ -16,6 +16,8 @@ import SubscriptionServices from "../subs/subscription.services";
 import { ISubscription } from "../../models/subs/subscription.model";
 import { TICKETS_PER_EVENT } from "../../utils/constants/plans-and-subs";
 import { EVENT_STATUS } from "../../utils/constants/events";
+import { Types } from "mongoose";
+import Event from "../../models/events/event.model";
 
 @Service()
 export default class EventServices {
@@ -98,14 +100,9 @@ export default class EventServices {
     update: UpdateEventPayload;
     user: string;
   }) {
+    await Event.checkOwnership({ user, event: eventId });
+
     const event = await this.getEvent({ eventId });
-    // If the user is not the organizer of the event, then it can't be updated
-    if (event!.organizer.toString() !== user) {
-      throw new ApiError(
-        HTTP.UNAUTHORIZED,
-        "Vous n'êtes pas autorisé à modifier cet événement"
-      );
-    }
 
     if (event!.status === EVENT_STATUS.PUBLISHED) {
       // TODO: Can't change tickets anymore. Can add more tickets(if under the tickets limit), but can't update the previous ones
