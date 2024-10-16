@@ -1,23 +1,37 @@
 import { Service } from "typedi";
 import CouponRepo from "../../repositories/events/coupon.repository";
 import InfluencerCouponRepo from "../../repositories/events/influencer.coupon.repository";
-import EventsServices from "./event.services";
-import ApiError from "../../utils/errors/errors.base";
-import HTTP from "../../utils/constants/http.responses";
-import { RegisterCoupon } from "../../schemas/events/coupon.schemas";
-import OrganizerServices from "../professionals/organizer.services";
-import { Types } from "mongoose";
+import {
+  GetCoupons,
+  RegisterCoupon,
+} from "../../schemas/events/coupon.schemas";
 import crypto from "node:crypto";
 import { alphabet } from "../../utils/constants/common";
+import Event from "../../models/events/event.model";
 
 @Service()
 export default class CouponServices {
   constructor(
     private readonly couponRepo: CouponRepo,
-    private readonly influencerCouponRepo: InfluencerCouponRepo,
-    private readonly eventService: EventsServices,
-    private readonly organizerService: OrganizerServices
+    private readonly influencerCouponRepo: InfluencerCouponRepo
   ) {}
+
+  async getCoupons({
+    query,
+    user,
+  }: {
+    user: string;
+    query: GetCoupons["query"];
+  }) {
+    const { event } = query;
+
+    await Event.checkOwnership({ user, event });
+
+    const coupons = await this.couponRepo.getCoupons(query);
+    const influencerCoupons = await this.influencerCouponRepo.getCoupons(query);
+
+    return [...coupons, ...influencerCoupons];
+  }
 
   async registerCoupon({
     user,
@@ -26,25 +40,10 @@ export default class CouponServices {
     user: string;
     couponPaylaod: RegisterCoupon["body"];
   }) {
-    const { event: eventId } = couponPaylaod;
+    const { event } = couponPaylaod;
 
-    const organizer = await this.organizerService.getOrganizer(user);
-    const event = await this.eventService.getEvent({ eventId });
-
-    // If the user is not the organizer of the event, then it can't be added a coupon
-    if (
-      event!.organizer.toString() !==
-      (organizer!._id as Types.ObjectId).toString()
-    ) {
-      throw new ApiError(
-        HTTP.UNAUTHORIZED,
-        "Vous n'êtes pas autorisé à modifier cet événement"
-      );
-    }
-
-    if (!event!.checkValidity()) {
-      throw new ApiError(HTTP.BAD_REQUEST, "L'événement n'est pas/plus actif.");
-    }
+    await Event.checkOwnership({ user, event });
+    await Event.checkValidity(event);
 
     const { influencer, share } = couponPaylaod;
 

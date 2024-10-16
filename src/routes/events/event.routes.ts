@@ -11,7 +11,7 @@ import {
 } from "../../schemas/events/event.schemas";
 import { imageUploader } from "../../middlewares/cloudinary";
 import EventController from "../../controllers/events/event.controller";
-import { isValidOrganizer } from "../../middlewares/organizer";
+import { isValidOrganizer, validateSubscription } from "../../middlewares/organizer";
 import { tryCatch } from "../../utils/errors/errors.utlis";
 import { isLoggedIn } from "../../middlewares/auth";
 import { parseBodyLocation, parseQueryLocation, parseTickets } from "../../middlewares/parse-fields";
@@ -34,6 +34,7 @@ EventsRouter.post(
   "",
   isLoggedIn,
   isValidOrganizer,
+  validateSubscription,
   uploader.single("image"),
   imageUploader,
   parseTickets,
@@ -46,6 +47,7 @@ EventsRouter.put(
   "/:event",
   isLoggedIn,
   isValidOrganizer,
+  validateSubscription,
   uploader.single("image"),
   imageUploader,
   parseTickets,

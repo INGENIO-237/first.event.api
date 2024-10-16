@@ -1,6 +1,20 @@
 import { Types } from "mongoose";
 import { object, string, number, z } from "zod";
 
+export const getCouponsSchema = object({
+  query: object({
+    event: string({
+      required_error: "L'Identifiant de l'événement est requis",
+      invalid_type_error:
+        "L'Identifiant de l'événement doit être une chaîne de caractères",
+    }).refine((val) => Types.ObjectId.isValid(val), {
+      message: "Identifiant d'événement non valide",
+    }),
+  }),
+});
+
+export type GetCoupons = z.infer<typeof getCouponsSchema>;
+
 export const registerCouponSchema = object({
   body: object({
     event: string({
