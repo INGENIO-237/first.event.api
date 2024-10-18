@@ -6,6 +6,7 @@ import PaymentsRouter from "./payments.routes";
 import EventsRouter from "./events/event.routes";
 import CouponsRouter from "./coupon.routes";
 import ProductsRouter from "./products/product.routes";
+import OrdersRouter from "./orders.routes";
 
 // TODO: Subscriptions routes
 
@@ -19,5 +20,6 @@ export {
   PaymentsRouter,
   EventsRouter,
   CouponsRouter,
-  ProductsRouter
+  ProductsRouter,
+  OrdersRouter
 };

@@ -36,7 +36,7 @@ subscriptionPaymentSchema.pre<ISubscriptionPayment>(
     const sub = this;
 
     const plan = Container.get(PlanServices);
- 
+
     const { monthlyPrice, yearlyPrice } = (await plan.getPlan(
       sub.plan as string
     )) as IPlan;
