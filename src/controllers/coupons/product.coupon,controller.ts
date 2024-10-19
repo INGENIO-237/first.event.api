@@ -1,26 +1,24 @@
 import { Request, Response } from "express";
 import { Service } from "typedi";
 import HTTP from "../../utils/constants/http.responses";
-import {
-  GetCoupons,
-  RegisterCoupon,
-} from "../../schemas/products/product.coupon.schemas";
-import ProductsCouponServices from "../../services/products/product.coupon.services";
 import { IOrganizer } from "../../models/professionals/organizer.model";
+import ProductCouponServices from "../../services/coupons/product.coupon.services";
+import {
+  GetProductCoupons,
+  RegisterProductCoupon,
+  UpdateProductCoupon,
+} from "../../schemas/coupons/product.coupon.schemas";
 
 @Service()
 export default class ProductCouponController {
-  constructor(private readonly productsCouponService: ProductsCouponServices) {}
+  constructor(private readonly service: ProductCouponServices) {}
 
-  // Products
   async getProductsCoupons(
-    req: Request<{}, {}, {}, GetCoupons["query"]>,
+    req: Request<{}, {}, {}, GetProductCoupons["query"]>,
     res: Response
   ) {
-    const { id: user } = (req as any).user;
-
-    const coupons = await this.productsCouponService.getCoupons({
-      user,
+    const coupons = await this.service.getCoupons({
+      user: ((req as any).organizer as IOrganizer)._id as string,
       query: req.query,
     });
 
@@ -28,10 +26,10 @@ export default class ProductCouponController {
   }
 
   async registerProductsCoupon(
-    req: Request<{}, {}, RegisterCoupon["body"]>,
+    req: Request<{}, {}, RegisterProductCoupon["body"]>,
     res: Response
   ) {
-    const coupon = await this.productsCouponService.registerCoupon({
+    const coupon = await this.service.registerCoupon({
       user: ((req as any).organizer as IOrganizer)._id as string,
       couponPayload: req.body,
     });
@@ -40,7 +38,7 @@ export default class ProductCouponController {
   }
 
   async getProductCoupon(req: Request<{ coupon: string }>, res: Response) {
-    const coupon = await this.productsCouponService.getCoupon({
+    const coupon = await this.service.getCoupon({
       code: req.params.coupon,
       id: req.params.coupon,
     });
@@ -48,11 +46,16 @@ export default class ProductCouponController {
     return res.status(HTTP.OK).json(coupon);
   }
 
-  async updateCoupon(req: Request<{ coupon: string }>, res: Response) {
-    const { id: user } = (req as any).user;
-
-    await this.productsCouponService.updateCoupon({
-      user,
+  async updateCoupon(
+    req: Request<
+      UpdateProductCoupon["params"],
+      {},
+      UpdateProductCoupon["body"]
+    >,
+    res: Response
+  ) {
+    await this.service.updateCoupon({
+      user: ((req as any).organizer as IOrganizer)._id as string,
       couponPayload: req.body,
       couponId: req.params.coupon,
     });

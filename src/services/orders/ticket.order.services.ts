@@ -1,7 +1,12 @@
 import { Service } from "typedi";
 import TicketOrderRepo from "../../repositories/orders/ticket.order.repository";
-import { CreateTicketOrderPayload } from "../../schemas/orders/ticket.order.schemas";
+import {
+  CreateTicketOrderPayload,
+  UpdateTicketOrderInput,
+} from "../../schemas/orders/ticket.order.schemas";
 import Event from "../../models/events/event.model";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
 
 @Service()
 export default class TicketOrderServices {
@@ -14,4 +19,28 @@ export default class TicketOrderServices {
 
     return await this.ticketOrderRepo.createTicketOrder(data);
   }
+
+  async getTicketOrder({
+    ticketOrder,
+    raiseException = true,
+  }: {
+    ticketOrder: string;
+    raiseException?: boolean;
+  }) {
+    const order = await this.ticketOrderRepo.getTicketOrder({ ticketOrder });
+
+    if (!order && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Commande inéxistante");
+    }
+
+    return order;
+  }
+
+  async getTicketOrders({
+    ticketOrder,
+    update,
+  }: {
+    ticketOrder: string;
+    update: UpdateTicketOrderInput["body"];
+  }) {}
 }

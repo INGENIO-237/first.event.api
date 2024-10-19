@@ -1,6 +1,6 @@
 import { Service } from "typedi";
 import SubscriptionServices from "../services/subs/subscription.services";
-import SubscriptionPaymentServices from "../services/payments/subscription.payments.services";
+import SubscriptionPaymentServices from "../services/payments/core-payments/subscription.payments.services";
 import PlanServices from "../services/subs/plan.services";
 import OrganizerServices from "../services/professionals/organizer.services";
 import {

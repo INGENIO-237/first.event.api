@@ -1,5 +1,8 @@
-import { InferSchemaType, Schema } from "mongoose";
+import { InferSchemaType, Model, Schema } from "mongoose";
 import Order, { IOrder } from "./order.model";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
+import Event from "../events/event.model";
 
 const ticketOrderSchema = new Schema({
   event: {
@@ -29,7 +32,22 @@ export interface ITicketOrder
   extends IOrder,
     InferSchemaType<typeof ticketOrderSchema> {}
 
-const TicketOrder = Order.discriminator<ITicketOrder>(
+ticketOrderSchema.statics.checkValidity = async function (orderId: string) {
+  const order = await this.findById(orderId);
+  if (!order) {
+    throw new ApiError(HTTP.NOT_FOUND, "Commande inéxistante");
+  }
+
+  await Event.checkValidity(order.event as string);
+
+  return order as ITicketOrder;
+};
+
+interface TicketModel extends Model<ITicketOrder> {
+  checkValidity: (orderId: string) => Promise<ITicketOrder>;
+}
+
+const TicketOrder = Order.discriminator<ITicketOrder, TicketModel>(
   "TicketOrder",
   ticketOrderSchema
 );

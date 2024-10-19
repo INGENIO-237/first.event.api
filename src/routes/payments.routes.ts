@@ -38,6 +38,11 @@ PaymentsRouter.post(
 );
 
 // Tickets
+PaymentsRouter.post(
+  "/tickets",
+  isLoggedIn,
+  tryCatch(payments.initiateTicketPayment.bind(payments))
+);
 
 // Articles
 

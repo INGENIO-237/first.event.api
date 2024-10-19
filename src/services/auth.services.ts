@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import JwtServices from "./utils/jwt.services";
 import { LoginPayload, ResetPwd, VerifAccount } from "../schemas/auth.schemas";
 import UserServices from "./user.services";
-import OtpServices from "./otp.services";
+import OtpServices from "./utils/otp.services";
 import { IUser } from "../models/user.model";
 import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
