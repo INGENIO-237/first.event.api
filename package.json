@@ -16,6 +16,7 @@
     "cloudinary": "^2.4.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "first.event.api": "file:",
     "jsonwebtoken": "^9.0.2",
     "libphonenumber-js": "^1.11.5",
     "moment": "^2.30.1",

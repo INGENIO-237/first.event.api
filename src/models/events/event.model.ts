@@ -162,6 +162,8 @@ eventSchema.statics.checkValidity = async function (event: string) {
   if (!isValid) {
     throw new ApiError(HTTP.BAD_REQUEST, "L'événement n'est pas/plus actif.");
   }
+
+  return matchingEvent!;
 };
 
 eventSchema.statics.checkOwnership = async function ({
@@ -191,7 +193,7 @@ eventSchema.statics.checkOwnership = async function ({
 export interface IEvent extends InferSchemaType<typeof eventSchema>, Document {}
 
 interface EventModel extends Model<IEvent> {
-  checkValidity(event: string): Promise<void>;
+  checkValidity(event: string): Promise<IEvent>;
   checkOwnership(args: { user: string; event: string }): Promise<void>;
 }
 

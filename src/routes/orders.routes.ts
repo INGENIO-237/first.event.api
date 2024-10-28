@@ -6,7 +6,7 @@ import TicketOrderController from "../controllers/orders/ticket.order.controller
 import { isLoggedIn } from "../middlewares/auth";
 import { tryCatch } from "../utils/errors/errors.utlis";
 import validate from "../middlewares/validate.request";
-import { createTicketOrderSchema } from "../schemas/orders/ticket.order.schemas";
+import { createTicketOrderSchema, getTicketOrdersSchema } from "../schemas/orders/ticket.order.schemas";
 
 const OrdersRouter = Router();
 
@@ -19,5 +19,18 @@ OrdersRouter.post(
   validate(createTicketOrderSchema),
   tryCatch(ticketOrderController.createTicketOrder.bind(ticketOrderController))
 );
+
+OrdersRouter.get(
+  "/tickets",
+  isLoggedIn,
+  validate(getTicketOrdersSchema),
+  tryCatch(ticketOrderController.getTicketOrders.bind(ticketOrderController))
+);
+
+OrdersRouter.get(
+  "/tickets/:order",
+  isLoggedIn,
+  tryCatch(ticketOrderController.getTicketOrder.bind(ticketOrderController))
+)
 
 export default OrdersRouter;

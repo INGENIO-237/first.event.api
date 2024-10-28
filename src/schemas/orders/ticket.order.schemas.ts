@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
-import { nativeEnum, number, object, string, z } from "zod";
+import { number, object, string, z } from "zod";
+import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
 
 export const createTicketOrderSchema = object({
   body: object({
@@ -14,7 +15,6 @@ export const createTicketOrderSchema = object({
       {
         cat: string(),
         quantity: number(),
-        price: number(),
       },
       {
         required_error: "Le type de billet est requis",
@@ -27,6 +27,23 @@ export const createTicketOrderSchema = object({
 
 export type CreateTicketOrderInput = z.infer<typeof createTicketOrderSchema>;
 export type CreateTicketOrderPayload = CreateTicketOrderInput["body"] & {
+  user: string;
+};
+
+export const getTicketOrdersSchema = object({
+  query: object({
+    event: string({
+      required_error: "L'identifiant de l'événement est requis",
+      invalid_type_error:
+        "L'identifiant de l'événement doit être une chaîne de caractères",
+    }).refine((data) => Types.ObjectId.isValid(data), {
+      message: "L'identifiant de l'événement n'est pas valide",
+    }),
+  }),
+});
+
+export type GetTicketOrdersInput = z.infer<typeof getTicketOrdersSchema>;
+export type GetTicketOrdersPayload = GetTicketOrdersInput["query"] & {
   user: string;
 };
 
@@ -55,8 +72,12 @@ export const updateTicketOrderSchema = object({
     )
       .array()
       .optional(),
-    // status: nativeEnum()
   }),
 });
 
 export type UpdateTicketOrderInput = z.infer<typeof updateTicketOrderSchema>;
+
+export type UpdateTicketOrderPayload = UpdateTicketOrderInput["body"] & {
+  ticketOrder: string;
+  status?: PAYMENT_STATUS;
+};
