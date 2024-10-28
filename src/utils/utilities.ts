@@ -1,21 +1,28 @@
+import config from "../config";
 import { alphabet } from "./constants/common";
 import crypto from "node:crypto";
 
-export function generateCouponCode(options?: {
-  length?: number;
-  type?: "ticket" | "article";
-}) {
-  const length = options ? options.length || 5 : 5;
-  const type = options ? options.type || "ticket" : "ticket";
-
-  const prefix = type === "ticket" ? "TC-" : "PC-";
-  const bytes = crypto.randomBytes(length);
-  let code = "";
-  for (let i = 0; i < length; i++) {
-    code += alphabet[bytes[i] % alphabet.length];
+export function generateCouponCode(options?: { length?: number }) {
+  function getTimestampIndex(i: number) {
+    return i - 1 > 0 ? (i - 1 > 2 ? 2 : i - 1) : 0;
   }
 
-  return prefix + code;
+  const timestamp = Date.now().toString().slice(-3);
+
+  const length = options
+    ? options.length || config.COUPON_LENGTH
+    : config.COUPON_LENGTH;
+
+  const bytes = crypto.randomBytes(Number(length - 3));
+  let code = "";
+  for (let i = 0; i < length - 3; i++) {
+    code +=
+      (i + 2) % 2 === 0
+        ? alphabet[bytes[i] % alphabet.length] + timestamp[getTimestampIndex(i)]
+        : alphabet[bytes[i] % alphabet.length];
+  }
+
+  return code.toUpperCase();
 }
 
 export function getSlug(str: string) {

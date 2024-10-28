@@ -9,6 +9,7 @@ import PaymentsController from "../controllers/payments/payments.controller";
 import { tryCatch } from "../utils/errors/errors.utlis";
 import PaymentMethodController from "../controllers/payments/methods.controller";
 import { registerPaymentMethodSchema } from "../schemas/payments/methods.schemas";
+import { createTicketPaymentSchema } from "../schemas/payments/ticket.payment.schemas";
 
 const PaymentsRouter = Router();
 
@@ -38,6 +39,12 @@ PaymentsRouter.post(
 );
 
 // Tickets
+PaymentsRouter.post(
+  "/tickets",
+  isLoggedIn,
+  validate(createTicketPaymentSchema),
+  tryCatch(payments.initiateTicketPayment.bind(payments))
+);
 
 // Articles
 

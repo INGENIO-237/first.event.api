@@ -26,7 +26,12 @@ const paymentSchema = new Schema(
       enum: [...Object.values(PAYMENT_STATUS)],
     },
     coupons: {
-      type: [String],
+      type: [
+        {
+          code: String,
+          discount: Number,
+        },
+      ],
       default: [],
     },
     failMessage: {

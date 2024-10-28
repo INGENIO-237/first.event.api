@@ -2,7 +2,6 @@ import "reflect-metadata";
 
 import { Request, Response, Router } from "express";
 import Container from "typedi";
-import CouponController from "../controllers/events/coupon.controller";
 import { isLoggedIn } from "../middlewares/auth";
 import {
   isValidOrganizer,
@@ -10,43 +9,39 @@ import {
 } from "../middlewares/organizer";
 import validate from "../middlewares/validate.request";
 import { tryCatch } from "../utils/errors/errors.utlis";
-import {
-  getCouponsSchema,
-  registerCouponSchema,
-  updateCouponSchema,
-} from "../schemas/events/coupon.schemas";
 import { generateCouponCode } from "../utils/utilities";
 import HTTP from "../utils/constants/http.responses";
+import TicketCouponController from "../controllers/coupons/ticket.coupon.controller";
+import {
+  getTicketCouponsSchema,
+  registerTicketCouponSchema,
+  updateTicketCouponSchema,
+} from "../schemas/coupons/ticket.coupon.schemas";
 import {
   getProductCouponsSchema,
   registerProductCouponSchema,
   updateProductCouponSchema,
-} from "../schemas/products/product.coupon.schemas";
-import ProductCouponController from "../controllers/products/product.coupon.controller";
+} from "../schemas/coupons/product.coupon.schemas";
+import ProductCouponController from "../controllers/coupons/product.coupon,controller";
 
 const CouponsRouter = Router();
 
-CouponsRouter.get(
-  "/generate",
-  (req: Request<{}, {}, {}, { type: "ticket" | "article" }>, res: Response) => {
-    const { type } = req.query;
+CouponsRouter.get("/generate", (req: Request, res: Response) => {
+  const couponCode = generateCouponCode();
 
-    const couponCode = generateCouponCode({ type });
+  return res.status(HTTP.CREATED).json({ couponCode });
+});
 
-    return res.status(HTTP.CREATED).json({ couponCode });
-  }
-);
+const tickets = Container.get(TicketCouponController);
+const products = Container.get(ProductCouponController);
 
-const controller = Container.get(CouponController);
-const productController = Container.get(ProductCouponController);
-
-// Events
+// Tickets
 CouponsRouter.get(
   "/events",
   isLoggedIn,
   isValidOrganizer,
-  validate(getCouponsSchema),
-  tryCatch(controller.getTicketsCoupons.bind(controller))
+  validate(getTicketCouponsSchema),
+  tryCatch(tickets.getCoupons.bind(tickets))
 );
 
 CouponsRouter.post(
@@ -54,14 +49,14 @@ CouponsRouter.post(
   isLoggedIn,
   isValidOrganizer,
   validateSubscription,
-  validate(registerCouponSchema),
-  tryCatch(controller.registerTicketsCoupon.bind(controller))
+  validate(registerTicketCouponSchema),
+  tryCatch(tickets.registerCoupon.bind(tickets))
 );
 
 CouponsRouter.get(
   "/events/:coupon",
   isLoggedIn,
-  tryCatch(controller.getTicketCoupon.bind(controller))
+  tryCatch(tickets.getCoupon.bind(tickets))
 );
 
 CouponsRouter.put(
@@ -69,8 +64,8 @@ CouponsRouter.put(
   isLoggedIn,
   isValidOrganizer,
   validateSubscription,
-  validate(updateCouponSchema),
-  tryCatch(controller.updateCoupon.bind(controller))
+  validate(updateTicketCouponSchema),
+  tryCatch(tickets.updateCoupon.bind(tickets))
 );
 
 // Products
@@ -79,7 +74,7 @@ CouponsRouter.get(
   isLoggedIn,
   isValidOrganizer,
   validate(getProductCouponsSchema),
-  tryCatch(productController.getProductsCoupons.bind(productController))
+  tryCatch(products.getProductsCoupons.bind(products))
 );
 
 CouponsRouter.post(
@@ -88,13 +83,13 @@ CouponsRouter.post(
   isValidOrganizer,
   validateSubscription,
   validate(registerProductCouponSchema),
-  tryCatch(productController.registerProductsCoupon.bind(productController))
+  tryCatch(products.registerProductsCoupon.bind(products))
 );
 
 CouponsRouter.get(
   "/products/:coupon",
   isLoggedIn,
-  tryCatch(productController.getProductCoupon.bind(productController))
+  tryCatch(products.getProductCoupon.bind(products))
 );
 
 CouponsRouter.put(
@@ -103,7 +98,7 @@ CouponsRouter.put(
   isValidOrganizer,
   validateSubscription,
   validate(updateProductCouponSchema),
-  tryCatch(productController.updateCoupon.bind(productController))
+  tryCatch(products.updateCoupon.bind(products))
 );
 
 export default CouponsRouter;

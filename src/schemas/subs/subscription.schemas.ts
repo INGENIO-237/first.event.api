@@ -5,6 +5,7 @@ import {
   TICKETS_PER_EVENT,
 } from "../../utils/constants/plans-and-subs";
 import { Types } from "mongoose";
+import config from "../../config";
 
 export const registerSubscriptionSchema = object({
   body: object({
@@ -35,7 +36,7 @@ export const registerSubscriptionSchema = object({
 
     if (data.coupons) {
       data.coupons.forEach((coupon) => {
-        if (coupon.length !== 5) {
+        if (coupon.length !== config.COUPON_LENGTH) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Coupon de réduction invalide",

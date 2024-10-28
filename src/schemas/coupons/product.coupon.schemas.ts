@@ -1,34 +1,51 @@
 import { Types } from "mongoose";
 import { object, string, number, z } from "zod";
+import config from "../../config";
 
-export const getCouponsSchema = object({
+export const getProductCouponsSchema = object({
   query: object({
-    event: string({
-      required_error: "L'Identifiant de l'événement est requis",
+    product: string({
       invalid_type_error:
-        "L'Identifiant de l'événement doit être une chaîne de caractères",
+        "L'Identifiant du produit doit être une chaîne de caractères",
     }).refine((val) => Types.ObjectId.isValid(val), {
       message: "Identifiant d'événement non valide",
     }),
+    influencer: string({
+      invalid_type_error:
+        "L'Identifiant de l'influenceur doit être une chaîne de caractères",
+    })
+      .optional()
+      .refine(
+        (data) => {
+          if (data) {
+            return Types.ObjectId.isValid(data);
+          }
+
+          return true;
+        },
+        {
+          message: "L'Identifiant de l'influenceur doit être valide",
+        }
+      ),
   }),
 });
 
-export type GetCoupons = z.infer<typeof getCouponsSchema>;
+export type GetProductCoupons = z.infer<typeof getProductCouponsSchema>;
 
-export const registerCouponSchema = object({
+export const registerProductCouponSchema = object({
   body: object({
-    event: string({
-      required_error: "L'Identifiant de l'événement est requis",
+    product: string({
+      required_error: "L'Identifiant du produit est requis",
       invalid_type_error:
-        "L'Identifiant de l'événement doit être une chaîne de caractères",
+        "L'Identifiant du produit doit être une chaîne de caractères",
     }).refine((val) => Types.ObjectId.isValid(val), {
       message: "Identifiant d'événement non valide",
     }),
     code: string({
       required_error: "Le code coupon est requis",
       invalid_type_error: "Le code coupon doit être une chaîne de caractères",
-    }).refine((val) => val.length === 5, {
-      message: "Le code coupon doit contenir exactement 5 caractères",
+    }).refine((val) => val.length == config.COUPON_LENGTH, {
+      message: `Le code coupon doit contenir exactement ${config.COUPON_LENGTH} caractères`,
     }),
     discount: number({
       required_error: "La réduction est requise",
@@ -79,9 +96,9 @@ export const registerCouponSchema = object({
   }),
 });
 
-export type RegisterCoupon = z.infer<typeof registerCouponSchema>;
+export type RegisterProductCoupon = z.infer<typeof registerProductCouponSchema>;
 
-export const updateCouponSchema = object({
+export const updateProductCouponSchema = object({
   params: object({
     coupon: string({
       required_error: "L'Identifiant du coupon est requis",
@@ -101,10 +118,10 @@ export const updateCouponSchema = object({
         (val) => {
           if (!val) return true;
 
-          return val.length === 5;
+          return val.length == config.COUPON_LENGTH;
         },
         {
-          message: "Le code coupon doit contenir exactement 5 caractères",
+          message: `Le code coupon doit contenir exactement ${config.COUPON_LENGTH} caractères`,
         }
       ),
     discount: number({
@@ -133,7 +150,11 @@ export const updateCouponSchema = object({
           });
         }
 
-        if(data.status && data.status !== "active" && data.status !== "inactive") {
+        if (
+          data.status &&
+          data.status !== "active" &&
+          data.status !== "inactive"
+        ) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Le statut du coupon doit être 'active' ou 'inactive'",
@@ -144,4 +165,4 @@ export const updateCouponSchema = object({
     }),
 });
 
-export type UpdateCoupon = z.infer<typeof updateCouponSchema>;
+export type UpdateProductCoupon = z.infer<typeof updateProductCouponSchema>;

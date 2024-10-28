@@ -3,6 +3,7 @@ import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import HTTP from "../../utils/constants/http.responses";
 import { Service } from "typedi";
 import PaymentsServices from "../../services/payments/payments.services";
+import { CreateTicketPaymentInput } from "../../schemas/payments/ticket.payment.schemas";
 
 @Service()
 export default class PaymentsController {
@@ -16,6 +17,21 @@ export default class PaymentsController {
     const { id } = (req as any).user;
     const payment = await this.service.initiateSubscriptionPayment({
       data: req.body,
+      user: id,
+    });
+
+    return res.status(HTTP.CREATED).json(payment);
+  }
+
+  // Tickets
+  async initiateTicketPayment(
+    req: Request<{}, {}, CreateTicketPaymentInput["body"]>,
+    res: Response
+  ) {
+    const { id } = (req as any).user;
+
+    const payment = await this.service.initiateTicketPayment({
+      ...req.body,
       user: id,
     });
 

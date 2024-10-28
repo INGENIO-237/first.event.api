@@ -1,8 +1,8 @@
 import { Service } from "typedi";
-import SmsService from "./utils/sms.services";
-import { MAIL_OBJECTS } from "../utils/mails.utils";
-import { Phone } from "../utils/constants/user.utils";
-import EventBus from "../hooks/event-bus";
+import SmsService from "./sms.services";
+import { Phone } from "../../utils/constants/user.utils";
+import EventBus from "../../hooks/event-bus";
+import { MAIL_OBJECTS } from "../../utils/mails.utils";
 
 @Service()
 export default class OtpServices {

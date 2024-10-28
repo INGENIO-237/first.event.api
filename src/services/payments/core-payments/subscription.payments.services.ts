@@ -1,18 +1,18 @@
 import { Service } from "typedi";
-import SubscriptionPaymentRepo from "../../repositories/payments/subscription.payments.repository";
-import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import StripeServices from "./stripe.services";
-import { IPlan } from "../../models/subs/plan.model";
+import SubscriptionPaymentRepo from "../../../repositories/payments/subscription.payments.repository";
+import { RegisterSubscription } from "../../../schemas/subs/subscription.schemas";
+import StripeServices from "../stripe.services";
+import { IPlan } from "../../../models/subs/plan.model";
 import {
   BILLING_TYPE,
   PAYMENT_STATUS,
-} from "../../utils/constants/plans-and-subs";
-import { ENV } from "../../utils/constants/common";
-import OrganizerServices from "../professionals/organizer.services";
-import UserServices from "../user.services";
-import { IUser } from "../../models/user.model";
-import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
-import PlanServices from "../subs/plan.services";
+} from "../../../utils/constants/plans-and-subs";
+import { ENV } from "../../../utils/constants/common";
+import OrganizerServices from "../../professionals/organizer.services";
+import UserServices from "../../user.services";
+import { IUser } from "../../../models/user.model";
+import { ISubscriptionPayment } from "../../../models/payments/subscription.payment.model";
+import PlanServices from "../../subs/plan.services";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -37,8 +37,6 @@ export default class SubscriptionPaymentServices {
     )) as IPlan;
 
     amount = billed == BILLING_TYPE.MONTHLY ? monthlyPrice : yearlyPrice * 12;
-
-    // TODO: Apply coupons if any
     // TODO: Apply taxes
 
     // Ensure current user is legit to create a subscription payment

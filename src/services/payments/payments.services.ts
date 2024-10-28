@@ -1,8 +1,6 @@
 import Stripe from "stripe";
 import { Service } from "typedi";
 import StripeServices from "./stripe.services";
-import SubscriptionPaymentServices from "./subscription.payments.services";
-import { PAYMENT_TYPE } from "../../utils/constants/common";
 import {
   PAYMENT_TYPE_PREDICTION,
   PAYMENT_ACTIONS,
@@ -12,6 +10,10 @@ import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import EventBus from "../../hooks/event-bus";
 import EventEmitter from "node:events";
+import SubscriptionPaymentServices from "./core-payments/subscription.payments.services";
+import TicketPaymentServices from "./core-payments/ticket.payments.services";
+import { PAYMENT_TYPE } from "../../utils/constants/common";
+import { CreateTicketPaymentPayload } from "../../schemas/payments/ticket.payment.schemas";
 
 @Service()
 export default class PaymentsServices {
@@ -19,7 +21,8 @@ export default class PaymentsServices {
 
   constructor(
     private stripe: StripeServices,
-    private subscriptionPaymentService: SubscriptionPaymentServices
+    private subscriptionPaymentService: SubscriptionPaymentServices,
+    private ticketPaymentService: TicketPaymentServices
   ) {
     this.emitter = EventBus.getEmitter();
   }
@@ -40,8 +43,12 @@ export default class PaymentsServices {
     });
   }
 
-  // TODO: Events
-  // TODO: Tickets
+  // Tickets
+  async initiateTicketPayment(data: CreateTicketPaymentPayload) {
+    return await this.ticketPaymentService.createTicketPayment(data);
+  }
+
+  // TODO: Product
 
   // Refunds
   async refundPayment({
