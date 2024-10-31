@@ -14,7 +14,7 @@ const paymentSchema = new Schema(
     },
     fees: {
       type: Number,
-      required: true
+      required: true,
     },
     trxRef: String,
     paymentIntent: {
@@ -26,12 +26,7 @@ const paymentSchema = new Schema(
       enum: [...Object.values(PAYMENT_STATUS)],
     },
     coupons: {
-      type: [
-        {
-          code: String,
-          discount: Number,
-        },
-      ],
+      type: [String],
       default: [],
     },
     failMessage: {

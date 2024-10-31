@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
-import { array, number, object, string, z } from "zod";
+import { array, object, string, z } from "zod";
 
-export const  createTicketPaymentSchema = object({
+export const createTicketPaymentSchema = object({
   body: object({
     ticketOrder: string({
       required_error: "L'identifiant de la commande est requis",
@@ -16,16 +16,10 @@ export const  createTicketPaymentSchema = object({
         "L'identifiant du mode de paiement doit être une chaîne de caractères",
     }).optional(),
     coupons: array(
-      object({
-        code: string({
-          required_error: "Le code du coupon est requis",
-          invalid_type_error:
-            "Le code du coupon doit être une chaîne de caractères",
-        }),
-        discount: number({
-          required_error: "La réduction est requise",
-          invalid_type_error: "La réduction doit être un nombre",
-        }).min(0, "La réduction doit être supérieure ou égale à 0"),
+      string({
+        required_error: "Le code du coupon est requis",
+        invalid_type_error:
+          "Le code du coupon doit être une chaîne de caractères",
       })
     )
       .optional()
@@ -48,4 +42,11 @@ export type CreateTicketPaymentInput = z.infer<
 >;
 export type CreateTicketPaymentPayload = CreateTicketPaymentInput["body"] & {
   user: string;
+};
+
+export type TicketPaymentPayload = CreateTicketPaymentInput["body"] & {
+  user: string;
+  paymentIntent: string;
+  amount: number;
+  fees: number;
 };

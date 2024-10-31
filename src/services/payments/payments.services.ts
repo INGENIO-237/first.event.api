@@ -10,10 +10,9 @@ import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import EventBus from "../../hooks/event-bus";
 import EventEmitter from "node:events";
-import SubscriptionPaymentServices from "./core-payments/subscription.payments.services";
-import TicketPaymentServices from "./core-payments/ticket.payments.services";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
 import { CreateTicketPaymentPayload } from "../../schemas/payments/ticket.payment.schemas";
+import { SubscriptionPaymentServices, TicketPaymentServices } from "./core";
 
 @Service()
 export default class PaymentsServices {
@@ -142,13 +141,24 @@ export default class PaymentsServices {
         paymentId,
       });
 
+    const ticketPayment = await this.ticketPaymentService.getTicketPayment({
+      paymentIntent,
+      paymentId,
+    });
+
     if (subscriptionPayment) {
       const { paymentIntent } = subscriptionPayment;
       return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
-      // TODO: Add for tickets and articles too
-    } else {
-      return { type: PAYMENT_TYPE.REFUND, paymentIntent };
     }
+
+    if (ticketPayment) {
+      const { paymentIntent } = ticketPayment;
+      return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
+    }
+
+    // TODO: Add for articles too
+
+    return { type: PAYMENT_TYPE.REFUND, paymentIntent };
   }
 
   private async handleSuccessfullPayment({
@@ -167,6 +177,11 @@ export default class PaymentsServices {
           receipt,
         });
         break;
+      case PAYMENT_TYPE.TICKET:
+        this.emitter.emit(PAYMENT_ACTIONS.TICKET_PAYMENT_SUCCEEDED, {
+          paymentIntent,
+          receipt,
+        });
       case PAYMENT_TYPE.REFUND:
         this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_SUCCEEDED, {
           paymentIntent,
@@ -190,6 +205,12 @@ export default class PaymentsServices {
     switch (paymentType) {
       case PAYMENT_TYPE.SUBSCRIPTION:
         this.emitter.emit(PAYMENT_ACTIONS.SUBSCRIPTION_FAILED, {
+          paymentIntent,
+          failMessage,
+        });
+        break;
+      case PAYMENT_TYPE.TICKET:
+        this.emitter.emit(PAYMENT_ACTIONS.TICKET_PAYMENT_FAILED, {
           paymentIntent,
           failMessage,
         });

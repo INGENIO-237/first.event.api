@@ -16,3 +16,18 @@ export type Image = {
 };
 
 export const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+export enum ORDER_TYPE {
+  TICKET = "TicketOrder",
+  PRODUCT = "ProductOrder",
+}
+
+export enum ORDER_PAYMENT_TYPE {
+  TICKET = "TicketPayment",
+  PRODUCT = "ProductPayment",
+}
+
+export type ComputeTotalTicketData = {
+  tickets: {quantity: number; price: number}[],
+  coupons?: string[]
+}

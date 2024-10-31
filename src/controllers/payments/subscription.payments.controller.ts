@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Service } from "typedi";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import SubscriptionPaymentServices from "../../services/payments/core-payments/subscription.payments.services";
+import SubscriptionPaymentServices from "../../services/payments/core/subscription.payments.services";
 import HTTP from "../../utils/constants/http.responses";
 
 @Service()

@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { Document, InferSchemaType, model, Schema, Types } from "mongoose";
 
 export const couponSchema = new Schema(
