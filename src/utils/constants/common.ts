@@ -38,3 +38,8 @@ export type DiscountedCoupon = {
   share: number | undefined | null;
   rate: number;
 };
+
+export type CartItem = {
+  product: string;
+  quantity: number;
+};
