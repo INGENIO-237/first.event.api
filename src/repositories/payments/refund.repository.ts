@@ -23,7 +23,6 @@ export default class RefundRepo {
   }
 
   // TODO: Get list of refunds
-  // TODO: Update refund
   async updateRefund({
     refundId,
     paymentIntent,

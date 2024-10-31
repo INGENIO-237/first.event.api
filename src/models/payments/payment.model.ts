@@ -26,7 +26,7 @@ const paymentSchema = new Schema(
       enum: [...Object.values(PAYMENT_STATUS)],
     },
     coupons: {
-      type: [String],
+      type: [{ code: String, discount: Number, rate: Number, share: Number }],
       default: [],
     },
     failMessage: {
@@ -35,6 +35,8 @@ const paymentSchema = new Schema(
     receipt: {
       type: String,
     },
+
+    // TODO: Pass taxes property here
   },
   { timestamps: true, discriminatorKey: "type" }
 );

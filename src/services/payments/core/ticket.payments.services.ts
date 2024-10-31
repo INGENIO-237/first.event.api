@@ -8,7 +8,12 @@ import StripeServices from "../stripe.services";
 import UserServices from "../../user.services";
 import { IUser } from "../../../models/user.model";
 import CouponServices from "../../coupons/coupon.services";
-import { ComputeTotalTicketData, ENV } from "../../../utils/constants/common";
+import {
+  ComputeTotalTicketData,
+  DiscountedCoupon,
+  ENV,
+} from "../../../utils/constants/common";
+import { ITicketPayment } from "../../../models/payments/ticket.payment.model";
 
 @Service()
 export default class TicketPaymentServices {
@@ -38,12 +43,10 @@ export default class TicketPaymentServices {
         raiseException: false,
       })) as IUser;
 
-      const total = await this.computeTotal({
+      const { total, cpns } = await this.computeTotal({
         tickets,
         coupons: coupons as string[],
       });
-
-      console.log({ total });
 
       const { paymentIntent, clientSecret, ephemeralKey, fees } =
         await this.stripe.initiatePayment({
@@ -57,6 +60,7 @@ export default class TicketPaymentServices {
         paymentIntent,
         amount: total,
         fees,
+        coupons: cpns
       });
 
       if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId) {
@@ -78,22 +82,35 @@ export default class TicketPaymentServices {
 
     const { tickets, coupons } = data;
 
+    let cpns: DiscountedCoupon[] = [];
+
     tickets.forEach((ticket) => {
       const { quantity, price } = ticket;
 
       total += price * quantity;
     });
 
-    if (coupons)
-      total = await this.couponService.applyCoupons({
-        coupons,
-        amount: total,
-      });
+    if (coupons) {
+      const { total: discountedTotal, coupons: discountedCoupons } =
+        await this.couponService.applyCoupons({
+          coupons,
+          amount: total,
+        });
 
-    return total;
+      cpns = discountedCoupons;
+      total = discountedTotal;
+    }
+
+    return { total, cpns };
   }
 
-  async getTicketPayment({ paymentIntent, paymentId }: { paymentIntent?: string, paymentId?: string }) {
+  async getTicketPayment({
+    paymentIntent,
+    paymentId,
+  }: {
+    paymentIntent?: string;
+    paymentId?: string;
+  }) {
     return await this.repository.getTicketPayment({ paymentIntent, paymentId });
   }
 
@@ -117,5 +134,17 @@ export default class TicketPaymentServices {
       receipt,
       failMessage,
     });
+
+    if (status) {
+      const { ticketOrder } = (await this.getTicketPayment({
+        paymentId,
+        paymentIntent,
+      })) as ITicketPayment;
+
+      await this.ticketOrder.updateTicketOrder({
+        ticketOrder: ticketOrder.toString(),
+        status,
+      });
+    }
   }
 }

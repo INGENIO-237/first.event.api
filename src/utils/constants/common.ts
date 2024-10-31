@@ -28,6 +28,13 @@ export enum ORDER_PAYMENT_TYPE {
 }
 
 export type ComputeTotalTicketData = {
-  tickets: {quantity: number; price: number}[],
-  coupons?: string[]
-}
+  tickets: { quantity: number; price: number }[];
+  coupons?: string[];
+};
+
+export type DiscountedCoupon = {
+  code: string;
+  discount: number;
+  share: number | undefined | null;
+  rate: number;
+};

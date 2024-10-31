@@ -21,8 +21,6 @@ const subscriptionPaymentSchema = new Schema({
   unitPrice: {
     type: Number,
   },
-
-  // TODO: Pass taxes property here
 });
 
 export interface ISubscriptionPayment

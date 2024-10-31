@@ -8,8 +8,6 @@ import CouponsRouter from "./coupon.routes";
 import ProductsRouter from "./products/product.routes";
 import OrdersRouter from "./orders.routes";
 
-// TODO: Subscriptions routes
-
 export {
   UserRouter,
   AuthRouter,

@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { array, object, string, z } from "zod";
+import { DiscountedCoupon } from "../../utils/constants/common";
 
 export const createTicketPaymentSchema = object({
   body: object({
@@ -44,9 +45,11 @@ export type CreateTicketPaymentPayload = CreateTicketPaymentInput["body"] & {
   user: string;
 };
 
-export type TicketPaymentPayload = CreateTicketPaymentInput["body"] & {
+export type TicketPaymentPayload = {
   user: string;
   paymentIntent: string;
   amount: number;
   fees: number;
+  coupons?: DiscountedCoupon[];
+  ticketOrder: string;
 };

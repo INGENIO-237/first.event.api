@@ -26,8 +26,6 @@ export default class PaymentsServices {
     this.emitter = EventBus.getEmitter();
   }
 
-  // TODO: When provided with a payment method to use, ensure card is still valid
-
   // Subscriptions
   async initiateSubscriptionPayment({
     data,
@@ -153,7 +151,7 @@ export default class PaymentsServices {
 
     if (ticketPayment) {
       const { paymentIntent } = ticketPayment;
-      return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
+      return { type: PAYMENT_TYPE.TICKET, paymentIntent };
     }
 
     // TODO: Add for articles too
@@ -182,6 +180,7 @@ export default class PaymentsServices {
           paymentIntent,
           receipt,
         });
+        break;
       case PAYMENT_TYPE.REFUND:
         this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_SUCCEEDED, {
           paymentIntent,

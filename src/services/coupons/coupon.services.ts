@@ -3,6 +3,7 @@ import ProductCouponServices from "./product.coupon.services";
 import TicketCouponServices from "./ticket.coupon.services";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import { DiscountedCoupon } from "../../utils/constants/common";
 
 @Service()
 export default class CouponServices {
@@ -11,6 +12,7 @@ export default class CouponServices {
     private readonly ticket: TicketCouponServices
   ) {}
 
+  // TODO: Return coupons and persist 'em
   async applyCoupons({
     coupons,
     amount,
@@ -18,28 +20,46 @@ export default class CouponServices {
     coupons: string[];
     amount: number;
   }) {
+    const cpns: DiscountedCoupon[] = [];
     let total = amount;
     let discount = 0;
 
-    coupons.forEach(async (coupon) => {
-      const cpn =
-        (await this.product.getCoupon({ code: coupon })) ??
-        (await this.ticket.getCoupon({ code: coupon }));
+    await Promise.all(
+      coupons.map(async (coupon) => {
+        const cpn =
+          (await this.product.getCoupon({
+            code: coupon,
+            raiseException: false,
+          })) ??
+          (await this.ticket.getCoupon({
+            code: coupon,
+            raiseException: false,
+          }));
 
-      if (!cpn || cpn.status === "inactive") {
-        throw new ApiError(HTTP.NOT_FOUND, "Un ou plusieurs coupons invalides");
-      }
+        if (!cpn || cpn.status === "inactive") {
+          throw new ApiError(
+            HTTP.NOT_FOUND,
+            "Un ou plusieurs coupons invalides"
+          );
+        }
 
-      discount += cpn.discount;
+        discount += cpn.discount;
 
-      //   TODO: Remove
-      console.log({ coupon, discount });
+        cpns.push({
+          code: cpn.code,
+          discount: (total * cpn.discount) / 100,
+          share: cpn.share,
+          rate: cpn.discount,
+        });
 
-      //   TODO: Compute gains if coupon is for influencer
-    });
+        //   TODO: Compute gains if coupon is for influencer
+      })
+    );
 
-    total -= (total * discount) / 100;
+    const totalDiscount = (total * discount) / 100;
 
-    return total;
+    total = total - totalDiscount;
+
+    return { total, coupons: cpns };
   }
 }

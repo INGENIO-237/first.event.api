@@ -12,10 +12,6 @@ const gainSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Coupon",
     },
-    influencer: {
-      type: Schema.Types.ObjectId,
-      ref: "Influencer",
-    },
     orderType: {
       type: String,
       required: true,
