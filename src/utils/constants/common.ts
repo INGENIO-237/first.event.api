@@ -1,3 +1,5 @@
+import { IProduct } from "../../models/products/product.model";
+
 export enum ENV {
   PROD = "production",
   DEV = "development",
@@ -6,7 +8,7 @@ export enum ENV {
 export enum PAYMENT_TYPE {
   SUBSCRIPTION = "SUBSCRIPTION",
   TICKET = "TICKET",
-  ARTICLE = "ARTICLE",
+  PRODUCT = "PRODUCT",
   REFUND = "REFUND",
 }
 
@@ -29,6 +31,11 @@ export enum ORDER_PAYMENT_TYPE {
 
 export type ComputeTotalTicketData = {
   tickets: { quantity: number; price: number }[];
+  coupons?: string[];
+};
+
+export type ComputeTotalProductData = {
+  items: { quantity: number; product: IProduct }[];
   coupons?: string[];
 };
 

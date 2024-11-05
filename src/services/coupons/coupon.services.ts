@@ -12,7 +12,6 @@ export default class CouponServices {
     private readonly ticket: TicketCouponServices
   ) {}
 
-  // TODO: Return coupons and persist 'em
   async applyCoupons({
     coupons,
     amount,

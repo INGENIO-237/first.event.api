@@ -16,7 +16,10 @@ import moment from "moment";
 import RefundServices from "../services/payments/refund.services";
 import EventEmitter from "node:events";
 import { IRefund } from "../models/payments/refund.model";
-import { TicketPaymentServices } from "../services/payments/core";
+import {
+  TicketPaymentServices,
+  ProductPaymentServices,
+} from "../services/payments/core";
 
 @Service()
 export default class PaymentsHooks {
@@ -25,6 +28,7 @@ export default class PaymentsHooks {
     private refundService: RefundServices,
     private subsPaymentsService: SubscriptionPaymentServices,
     private ticketPaymentService: TicketPaymentServices,
+    private productPaymentService: ProductPaymentServices,
     private planService: PlanServices,
     private organizerService: OrganizerServices
   ) {}
@@ -136,6 +140,43 @@ export default class PaymentsHooks {
         failMessage: string;
       }) => {
         await this.ticketPaymentService.updateTicketPayment({
+          paymentIntent,
+          failMessage,
+          status: PAYMENT_STATUS.FAILED,
+        });
+      }
+    );
+    // <==
+
+    // Product payment ==>
+    emitter.on(
+      PAYMENT_ACTIONS.PRODUCT_PAYMENT_SUCCEEDED,
+      async ({
+        paymentIntent,
+        receipt,
+      }: {
+        paymentIntent: string;
+        receipt: string;
+      }) => {
+        // Update product payment status
+        await this.productPaymentService.updateProductPayment({
+          paymentIntent,
+          status: PAYMENT_STATUS.SUCCEEDED,
+          receipt,
+        });
+      }
+    );
+
+    emitter.on(
+      PAYMENT_ACTIONS.PRODUCT_PAYMENT_FAILED,
+      async ({
+        paymentIntent,
+        failMessage,
+      }: {
+        paymentIntent: string;
+        failMessage: string;
+      }) => {
+        await this.productPaymentService.updateProductPayment({
           paymentIntent,
           failMessage,
           status: PAYMENT_STATUS.FAILED,

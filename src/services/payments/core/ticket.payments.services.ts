@@ -14,6 +14,7 @@ import {
   ENV,
 } from "../../../utils/constants/common";
 import { ITicketPayment } from "../../../models/payments/ticket.payment.model";
+import config from "../../../config";
 
 @Service()
 export default class TicketPaymentServices {
@@ -60,13 +61,13 @@ export default class TicketPaymentServices {
         paymentIntent,
         amount: total,
         fees,
-        coupons: cpns
+        coupons: cpns,
       });
 
       if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId) {
         setTimeout(() => {
           this.stripe.confirmPaymentIntent(paymentIntent);
-        }, 7000);
+        }, config.PAYMENT_CONFIRMATION_TIMEOUT);
       }
 
       return {

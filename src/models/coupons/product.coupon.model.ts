@@ -1,6 +1,7 @@
 import { InferSchemaType, Schema, Types } from "mongoose";
 import Coupon, { ICoupon } from "./coupon.model";
 
+// TODO: Remove this
 const productCouponSchema = new Schema({
   product: {
     type: Types.ObjectId,

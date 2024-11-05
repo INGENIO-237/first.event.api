@@ -2,14 +2,15 @@ import "reflect-metadata";
 
 import { raw, Router } from "express";
 import Container from "typedi";
-import { isLoggedIn } from "../middlewares/auth";
-import { registerSubscriptionSchema } from "../schemas/subs/subscription.schemas";
-import validate from "../middlewares/validate.request";
-import PaymentsController from "../controllers/payments/payments.controller";
-import { tryCatch } from "../utils/errors/errors.utlis";
 import PaymentMethodController from "../controllers/payments/methods.controller";
+import PaymentsController from "../controllers/payments/payments.controller";
+import { isLoggedIn } from "../middlewares/auth";
+import validate from "../middlewares/validate.request";
 import { registerPaymentMethodSchema } from "../schemas/payments/methods.schemas";
+import { createProductPaymentSchema } from "../schemas/payments/product.payment.schemas";
 import { createTicketPaymentSchema } from "../schemas/payments/ticket.payment.schemas";
+import { registerSubscriptionSchema } from "../schemas/subs/subscription.schemas";
+import { tryCatch } from "../utils/errors/errors.utlis";
 
 const PaymentsRouter = Router();
 
@@ -46,7 +47,13 @@ PaymentsRouter.post(
   tryCatch(payments.initiateTicketPayment.bind(payments))
 );
 
-// Articles
+// Products
+PaymentsRouter.post(
+  "/products",
+  isLoggedIn,
+  validate(createProductPaymentSchema),
+  tryCatch(payments.initiateProductPayment.bind(payments))
+);
 
 // General webhooks
 PaymentsRouter.post(

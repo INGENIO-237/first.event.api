@@ -13,6 +13,7 @@ import UserServices from "../../user.services";
 import { IUser } from "../../../models/user.model";
 import { ISubscriptionPayment } from "../../../models/payments/subscription.payment.model";
 import PlanServices from "../../subs/plan.services";
+import config from "../../../config";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -63,11 +64,11 @@ export default class SubscriptionPaymentServices {
       amount,
       fees,
     });
-    
+
     if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId) {
       setTimeout(() => {
         this.stripe.confirmPaymentIntent(paymentIntent);
-      }, 7000);
+      }, config.PAYMENT_CONFIRMATION_TIMEOUT);
     }
 
     return { paymentIntent, ephemeralKey, clientSecret };

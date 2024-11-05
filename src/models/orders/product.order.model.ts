@@ -1,4 +1,5 @@
-import { Schema } from "mongoose";
+import { InferSchemaType, Schema } from "mongoose";
+import Order, { IOrder } from "./order.model";
 
 const productOrderSchema = new Schema({
   items: [
@@ -16,3 +17,14 @@ const productOrderSchema = new Schema({
     },
   ],
 });
+
+export interface IProductOrder
+  extends IOrder,
+    InferSchemaType<typeof productOrderSchema> {}
+
+const ProductOrder = Order.discriminator<IProductOrder>(
+  "ProductOrder",
+  productOrderSchema
+);
+
+export default ProductOrder;

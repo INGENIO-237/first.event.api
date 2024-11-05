@@ -12,7 +12,12 @@ import EventBus from "../../hooks/event-bus";
 import EventEmitter from "node:events";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
 import { CreateTicketPaymentPayload } from "../../schemas/payments/ticket.payment.schemas";
-import { SubscriptionPaymentServices, TicketPaymentServices } from "./core";
+import {
+  SubscriptionPaymentServices,
+  TicketPaymentServices,
+  ProductPaymentServices,
+} from "./core";
+import { CreateProductPaymentPayload } from "../../schemas/payments/product.payment.schemas";
 
 @Service()
 export default class PaymentsServices {
@@ -21,7 +26,8 @@ export default class PaymentsServices {
   constructor(
     private stripe: StripeServices,
     private subscriptionPaymentService: SubscriptionPaymentServices,
-    private ticketPaymentService: TicketPaymentServices
+    private ticketPaymentService: TicketPaymentServices,
+    private productPaymentService: ProductPaymentServices
   ) {
     this.emitter = EventBus.getEmitter();
   }
@@ -45,7 +51,10 @@ export default class PaymentsServices {
     return await this.ticketPaymentService.createTicketPayment(data);
   }
 
-  // TODO: Product
+  // Product
+  async initiateProductPayment(data: CreateProductPaymentPayload) {
+    return await this.productPaymentService.createProductPayment(data);
+  }
 
   // Refunds
   async refundPayment({
@@ -144,6 +153,11 @@ export default class PaymentsServices {
       paymentId,
     });
 
+    const productPayment = await this.productPaymentService.getProductPayment({
+      paymentIntent,
+      paymentId,
+    });
+
     if (subscriptionPayment) {
       const { paymentIntent } = subscriptionPayment;
       return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
@@ -154,7 +168,10 @@ export default class PaymentsServices {
       return { type: PAYMENT_TYPE.TICKET, paymentIntent };
     }
 
-    // TODO: Add for articles too
+    if (productPayment) {
+      const { paymentIntent } = productPayment;
+      return { type: PAYMENT_TYPE.PRODUCT, paymentIntent };
+    }
 
     return { type: PAYMENT_TYPE.REFUND, paymentIntent };
   }
@@ -177,6 +194,12 @@ export default class PaymentsServices {
         break;
       case PAYMENT_TYPE.TICKET:
         this.emitter.emit(PAYMENT_ACTIONS.TICKET_PAYMENT_SUCCEEDED, {
+          paymentIntent,
+          receipt,
+        });
+        break;
+      case PAYMENT_TYPE.PRODUCT:
+        this.emitter.emit(PAYMENT_ACTIONS.PRODUCT_PAYMENT_SUCCEEDED, {
           paymentIntent,
           receipt,
         });
