@@ -7,6 +7,7 @@ import EventsRouter from "./events/event.routes";
 import CouponsRouter from "./coupon.routes";
 import ProductsRouter from "./products/product.routes";
 import OrdersRouter from "./orders.routes";
+import CartRouter from "./cart.routes";
 
 export {
   UserRouter,
@@ -19,5 +20,6 @@ export {
   EventsRouter,
   CouponsRouter,
   ProductsRouter,
-  OrdersRouter
+  OrdersRouter,
+  CartRouter
 };

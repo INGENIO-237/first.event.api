@@ -24,6 +24,10 @@ export default class ProductRepo {
       : await Product.find();
   }
 
+  async getProduct(productId: string) {
+    return await Product.findById(productId);
+  }
+
   async updateProduct({
     productId,
     update,

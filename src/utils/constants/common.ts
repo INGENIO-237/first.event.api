@@ -43,3 +43,13 @@ export type CartItem = {
   product: string;
   quantity: number;
 };
+
+export enum PRODUCT_STATUS {
+  AVAILABLE = "available",
+  UNAVAILABLE = "unavailable",
+}
+
+export enum COUPON_STATUS {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+}

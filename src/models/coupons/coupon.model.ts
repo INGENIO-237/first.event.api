@@ -1,6 +1,5 @@
-import "reflect-metadata";
-
 import { Document, InferSchemaType, model, Schema, Types } from "mongoose";
+import { COUPON_STATUS } from "../../utils/constants/common";
 
 export const couponSchema = new Schema(
   {
@@ -14,8 +13,8 @@ export const couponSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "inactive"],
-      default: "active",
+      enum: [...Object.values(COUPON_STATUS)],
+      default: COUPON_STATUS.ACTIVE,
     },
     influencer: {
       type: Types.ObjectId,

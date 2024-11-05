@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
-import { object, string, number, z } from "zod";
+import { object, string, number, z, nativeEnum } from "zod";
 import config from "../../config";
+import { COUPON_STATUS } from "../../utils/constants/common";
 
 export const getProductCouponsSchema = object({
   query: object({
@@ -136,7 +137,11 @@ export const updateProductCouponSchema = object({
     share: number({
       invalid_type_error: "Le pourcentage de partage doit être un nombre",
     }).optional(),
-    status: string().optional(),
+    status: nativeEnum(COUPON_STATUS, {
+      invalid_type_error:
+        "Le statut du coupon doit être un des valeurs suivantes : " +
+        Object.values(COUPON_STATUS).join(", "),
+    }).optional(),
   })
     .optional()
     .superRefine((data, ctx) => {
@@ -147,18 +152,6 @@ export const updateProductCouponSchema = object({
             message:
               "Le pourcentage de partage doit être compris entre 0 et 100",
             path: ["share"],
-          });
-        }
-
-        if (
-          data.status &&
-          data.status !== "active" &&
-          data.status !== "inactive"
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Le statut du coupon doit être 'active' ou 'inactive'",
-            path: ["status"],
           });
         }
       }

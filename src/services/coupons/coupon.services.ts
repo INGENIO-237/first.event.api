@@ -3,7 +3,7 @@ import ProductCouponServices from "./product.coupon.services";
 import TicketCouponServices from "./ticket.coupon.services";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
-import { DiscountedCoupon } from "../../utils/constants/common";
+import { COUPON_STATUS, DiscountedCoupon } from "../../utils/constants/common";
 
 @Service()
 export default class CouponServices {
@@ -36,7 +36,7 @@ export default class CouponServices {
             raiseException: false,
           }));
 
-        if (!cpn || cpn.status === "inactive") {
+        if (!cpn || cpn.status === COUPON_STATUS.INACTIVE) {
           throw new ApiError(
             HTTP.NOT_FOUND,
             "Un ou plusieurs coupons invalides"

@@ -10,7 +10,9 @@ export default class CartRepo {
   }
 
   async getCart(user: string) {
-    return await Cart.findOne({ user });
+    return await Cart.findOne({ user })
+      .populate("items.product", "title price image")
+      .select("-__v");
   }
 
   async updateCart(cartId: string, items: CartItem[]) {
@@ -28,7 +30,19 @@ export default class CartRepo {
   async removeItem(cartId: string, itemId: string) {
     return await Cart.findByIdAndUpdate(
       cartId,
-      { $pull: { items: { _id: new Types.ObjectId(itemId) } } },
+      { $pull: { items: { product: new Types.ObjectId(itemId) } } },
+      { new: true }
+    );
+  }
+
+  async updateProductQuantity(
+    cartId: string,
+    itemId: string,
+    quantity: number
+  ) {
+    return await Cart.findOneAndUpdate(
+      { _id: cartId, "items.product": new Types.ObjectId(itemId) },
+      { $set: { "items.$.quantity": quantity } },
       { new: true }
     );
   }
