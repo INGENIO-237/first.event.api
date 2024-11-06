@@ -10,10 +10,14 @@ import logger from "../../utils/logger";
 import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import EventBus from "../../hooks/event-bus";
 import EventEmitter from "node:events";
-import SubscriptionPaymentServices from "./core-payments/subscription.payments.services";
-import TicketPaymentServices from "./core-payments/ticket.payments.services";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
 import { CreateTicketPaymentPayload } from "../../schemas/payments/ticket.payment.schemas";
+import {
+  SubscriptionPaymentServices,
+  TicketPaymentServices,
+  ProductPaymentServices,
+} from "./core";
+import { CreateProductPaymentPayload } from "../../schemas/payments/product.payment.schemas";
 
 @Service()
 export default class PaymentsServices {
@@ -22,12 +26,11 @@ export default class PaymentsServices {
   constructor(
     private stripe: StripeServices,
     private subscriptionPaymentService: SubscriptionPaymentServices,
-    private ticketPaymentService: TicketPaymentServices
+    private ticketPaymentService: TicketPaymentServices,
+    private productPaymentService: ProductPaymentServices
   ) {
     this.emitter = EventBus.getEmitter();
   }
-
-  // TODO: When provided with a payment method to use, ensure card is still valid
 
   // Subscriptions
   async initiateSubscriptionPayment({
@@ -48,7 +51,10 @@ export default class PaymentsServices {
     return await this.ticketPaymentService.createTicketPayment(data);
   }
 
-  // TODO: Product
+  // Product
+  async initiateProductPayment(data: CreateProductPaymentPayload) {
+    return await this.productPaymentService.createProductPayment(data);
+  }
 
   // Refunds
   async refundPayment({
@@ -142,13 +148,32 @@ export default class PaymentsServices {
         paymentId,
       });
 
+    const ticketPayment = await this.ticketPaymentService.getTicketPayment({
+      paymentIntent,
+      paymentId,
+    });
+
+    const productPayment = await this.productPaymentService.getProductPayment({
+      paymentIntent,
+      paymentId,
+    });
+
     if (subscriptionPayment) {
       const { paymentIntent } = subscriptionPayment;
       return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
-      // TODO: Add for tickets and articles too
-    } else {
-      return { type: PAYMENT_TYPE.REFUND, paymentIntent };
     }
+
+    if (ticketPayment) {
+      const { paymentIntent } = ticketPayment;
+      return { type: PAYMENT_TYPE.TICKET, paymentIntent };
+    }
+
+    if (productPayment) {
+      const { paymentIntent } = productPayment;
+      return { type: PAYMENT_TYPE.PRODUCT, paymentIntent };
+    }
+
+    return { type: PAYMENT_TYPE.REFUND, paymentIntent };
   }
 
   private async handleSuccessfullPayment({
@@ -163,6 +188,18 @@ export default class PaymentsServices {
     switch (paymentType) {
       case PAYMENT_TYPE.SUBSCRIPTION:
         this.emitter.emit(PAYMENT_ACTIONS.SUBSCRIPTION_SUCCEEDED, {
+          paymentIntent,
+          receipt,
+        });
+        break;
+      case PAYMENT_TYPE.TICKET:
+        this.emitter.emit(PAYMENT_ACTIONS.TICKET_PAYMENT_SUCCEEDED, {
+          paymentIntent,
+          receipt,
+        });
+        break;
+      case PAYMENT_TYPE.PRODUCT:
+        this.emitter.emit(PAYMENT_ACTIONS.PRODUCT_PAYMENT_SUCCEEDED, {
           paymentIntent,
           receipt,
         });
@@ -190,6 +227,12 @@ export default class PaymentsServices {
     switch (paymentType) {
       case PAYMENT_TYPE.SUBSCRIPTION:
         this.emitter.emit(PAYMENT_ACTIONS.SUBSCRIPTION_FAILED, {
+          paymentIntent,
+          failMessage,
+        });
+        break;
+      case PAYMENT_TYPE.TICKET:
+        this.emitter.emit(PAYMENT_ACTIONS.TICKET_PAYMENT_FAILED, {
           paymentIntent,
           failMessage,
         });

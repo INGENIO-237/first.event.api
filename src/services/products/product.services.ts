@@ -7,6 +7,8 @@ import {
 } from "../../schemas/products/product.schema";
 import Product from "../../models/products/product.model";
 import CloudinaryServices from "../utils/cloudinary.services";
+import ApiError from "../../utils/errors/errors.base";
+import HTTP from "../../utils/constants/http.responses";
 
 @Service()
 export default class ProductServices {
@@ -17,6 +19,22 @@ export default class ProductServices {
 
   async createProduct(product: CreateProductPayload) {
     return await this.productRepo.createProduct(product);
+  }
+
+  async getProduct({
+    productId,
+    raiseException = true,
+  }: {
+    productId: string;
+    raiseException?: boolean;
+  }) {
+    const product = await this.productRepo.getProduct(productId);
+
+    if (!product && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Produit introuvable");
+    }
+
+    return product;
   }
 
   async getProducts(query: GetProductsQuery) {

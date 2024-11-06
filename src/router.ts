@@ -11,7 +11,7 @@ import {
   EventsRouter,
   CouponsRouter,
   ProductsRouter,
-  OrdersRouter
+  CartRouter,
 } from "./routes";
 
 export default function router(server: Express) {
@@ -29,5 +29,5 @@ export default function router(server: Express) {
   server.use("/events", EventsRouter);
   server.use("/coupons", CouponsRouter);
   server.use("/products", ProductsRouter);
-  server.use("/orders", OrdersRouter);
+  server.use("/cart", CartRouter);
 }

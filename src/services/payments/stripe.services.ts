@@ -76,17 +76,31 @@ export default class StripeServices {
       cus = id;
     }
     const { client_secret, id: paymentIntent } = paymentMethodId
-      ? await this._stripe.paymentIntents.create({
-          amount: amount * 100,
-          currency,
-          customer: cus,
-          payment_method: paymentMethodId
-        })
-      : await this._stripe.paymentIntents.create({
-          amount: amount * 100,
-          currency,
-          customer: cus,
-        });
+      ? await this._stripe.paymentIntents
+          .create({
+            amount: amount * 100,
+            currency,
+            customer: cus,
+            payment_method: paymentMethodId,
+          })
+          .catch((error) => {
+            throw new ApiError(
+              HTTP.BAD_REQUEST,
+              `Payment Error: ${error.message}`
+            );
+          })
+      : await this._stripe.paymentIntents
+          .create({
+            amount: amount * 100,
+            currency,
+            customer: cus,
+          })
+          .catch((error) => {
+            throw new ApiError(
+              HTTP.BAD_REQUEST,
+              `Payment Error: ${error.message}`
+            );
+          });
 
     return { client_secret, paymentIntent, customer: cus };
   }

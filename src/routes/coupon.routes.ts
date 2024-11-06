@@ -22,7 +22,7 @@ import {
   registerProductCouponSchema,
   updateProductCouponSchema,
 } from "../schemas/coupons/product.coupon.schemas";
-import ProductCouponController from "../controllers/coupons/product.coupon,controller";
+import ProductCouponController from "../controllers/coupons/product.coupon.controller";
 
 const CouponsRouter = Router();
 

@@ -14,7 +14,7 @@ const paymentSchema = new Schema(
     },
     fees: {
       type: Number,
-      required: true
+      required: true,
     },
     trxRef: String,
     paymentIntent: {
@@ -26,12 +26,7 @@ const paymentSchema = new Schema(
       enum: [...Object.values(PAYMENT_STATUS)],
     },
     coupons: {
-      type: [
-        {
-          code: String,
-          discount: Number,
-        },
-      ],
+      type: [{ code: String, discount: Number, rate: Number, share: Number }],
       default: [],
     },
     failMessage: {
@@ -40,6 +35,40 @@ const paymentSchema = new Schema(
     receipt: {
       type: String,
     },
+    billing: {
+      type: {
+        content: {
+          address: String,
+          country: String,
+          state: String,
+          city: String,
+          zipCode: String,
+        },
+        sameAsProfile: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      required: true,
+    },
+    shipping: {
+      type: {
+        content: {
+          address: String,
+          country: String,
+          state: String,
+          city: String,
+          zipCode: String,
+        },
+        sameAsProfile: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      required: true,
+    },
+
+    // TODO: Pass taxes property here
   },
   { timestamps: true, discriminatorKey: "type" }
 );

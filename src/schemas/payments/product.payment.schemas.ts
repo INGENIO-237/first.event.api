@@ -1,27 +1,31 @@
-import { Types } from "mongoose";
-import { array, boolean, number, object, optional, string, z } from "zod";
+import { array, boolean, object, optional, string, z } from "zod";
 import { DiscountedCoupon } from "../../utils/constants/common";
 
-export const createTicketPaymentSchema = object({
+export const createProductPaymentSchema = object({
   body: object({
-    event: string({
-      required_error: "L'identifiant de l'événement est requis",
+    paymentMethodId: string({
       invalid_type_error:
-        "L'identifiant de l'événement doit être une chaîne de caractères",
-    }).refine((data) => Types.ObjectId.isValid(data), {
-      message: "L'identifiant de l'événement n'est pas valide",
-    }),
-    tickets: object(
-      {
-        cat: string(),
-        quantity: number(),
-      },
-      {
-        required_error: "Le type de billet est requis",
+        "L'identifiant du mode de paiement doit être une chaîne de caractères",
+    }).optional(),
+    coupons: array(
+      string({
+        required_error: "Le code du coupon est requis",
         invalid_type_error:
-          "Le type de billet doit être une chaîne de caractères",
-      }
-    ).array(),
+          "Le code du coupon doit être une chaîne de caractères",
+      })
+    )
+      .optional()
+      .refine(
+        (data) => {
+          if (!data) return true;
+
+          return data.length > 0;
+        },
+        {
+          message: "Au moins un coupon est requis",
+          path: ["coupons"],
+        }
+      ),
     billing: object(
       {
         content: optional(
@@ -140,69 +144,24 @@ export const createTicketPaymentSchema = object({
         });
       }
     }),
-    paymentMethodId: string({
-      invalid_type_error:
-        "L'identifiant du mode de paiement doit être une chaîne de caractères",
-    }).optional(),
-    coupons: array(
-      string({
-        required_error: "Le code du coupon est requis",
-        invalid_type_error:
-          "Le code du coupon doit être une chaîne de caractères",
-      })
-    )
-      .optional()
-      .refine(
-        (data) => {
-          if (!data) return true;
-
-          return data.length > 0;
-        },
-        {
-          message: "Au moins un coupon est requis",
-          path: ["coupons"],
-        }
-      ),
   }),
 });
 
-export type CreateTicketPaymentInput = z.infer<
-  typeof createTicketPaymentSchema
+export type CreateProductPaymentInput = z.infer<
+  typeof createProductPaymentSchema
 >;
-export type CreateTicketPaymentPayload = CreateTicketPaymentInput["body"] & {
+export type CreateProductPaymentPayload = CreateProductPaymentInput["body"] & {
   user: string;
 };
 
-export type TicketPaymentPayload = {
+export type ProductPaymentPayload = {
   user: string;
   paymentIntent: string;
   amount: number;
   fees: number;
   coupons?: DiscountedCoupon[];
-  tickets: {
-    cat: string;
+  items: {
+    product: string;
     quantity: number;
-    price: number;
   }[];
-  event: string;
-  billing: {
-    content?: {
-      address: string;
-      country: string;
-      state: string;
-      city: string;
-      zipCode: string;
-    };
-    sameAsProfile: boolean;
-  };
-  shipping: {
-    content?: {
-      address: string;
-      country: string;
-      state: string;
-      city: string;
-      zipCode: string;
-    };
-    sameAsProfile: boolean;
-  };
 };

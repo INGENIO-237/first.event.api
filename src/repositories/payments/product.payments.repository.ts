@@ -1,28 +1,28 @@
 import { Service } from "typedi";
-import { TicketPaymentPayload } from "../../schemas/payments/ticket.payment.schemas";
-import TicketPayment from "../../models/payments/ticket.payment.model";
+import { ProductPaymentPayload } from "../../schemas/payments/product.payment.schemas";
+import ProductPayment from "../../models/payments/product.payment.model";
 import { Types } from "mongoose";
 import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
 
 @Service()
-export default class TicketPaymentRepo {
-  async createTicketPayment(payload: TicketPaymentPayload) {
-    return await TicketPayment.create(payload);
+export default class ProductPaymentRepo {
+  async createProductPayment(payload: ProductPaymentPayload) {
+    return await ProductPayment.create(payload);
   }
 
-  async getTicketPayment({
+  async getProductPayment({
     paymentIntent,
     paymentId,
   }: {
     paymentIntent?: string;
     paymentId?: string;
   }) {
-    return await TicketPayment.findOne({
+    return await ProductPayment.findOne({
       $or: [{ paymentIntent }, { _id: new Types.ObjectId(paymentId) }],
     });
   }
 
-  async updateTicketPayment({
+  async updateProductPayment({
     paymentId,
     paymentIntent,
     status,
@@ -35,7 +35,7 @@ export default class TicketPaymentRepo {
     receipt?: string;
     failMessage?: string;
   }) {
-    await TicketPayment.findOneAndUpdate(
+    await ProductPayment.findOneAndUpdate(
       { $or: [{ _id: new Types.ObjectId(paymentId) }, { paymentIntent }] },
       { status, receipt, failMessage }
     );

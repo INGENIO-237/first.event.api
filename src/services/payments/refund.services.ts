@@ -129,7 +129,7 @@ export default class RefundServices {
   }
 
   // TODO: Get list of refunds
-  // TODO: Update refund
+
   async updateRefund({
     refundId,
     paymentIntent,

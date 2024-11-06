@@ -1,6 +1,6 @@
 import { Service } from "typedi";
 import SubscriptionServices from "../services/subs/subscription.services";
-import SubscriptionPaymentServices from "../services/payments/core-payments/subscription.payments.services";
+import SubscriptionPaymentServices from "../services/payments/core/subscription.payments.services";
 import PlanServices from "../services/subs/plan.services";
 import OrganizerServices from "../services/professionals/organizer.services";
 import {
@@ -16,6 +16,10 @@ import moment from "moment";
 import RefundServices from "../services/payments/refund.services";
 import EventEmitter from "node:events";
 import { IRefund } from "../models/payments/refund.model";
+import {
+  TicketPaymentServices,
+  ProductPaymentServices,
+} from "../services/payments/core";
 
 @Service()
 export default class PaymentsHooks {
@@ -23,12 +27,14 @@ export default class PaymentsHooks {
     private subsService: SubscriptionServices,
     private refundService: RefundServices,
     private subsPaymentsService: SubscriptionPaymentServices,
+    private ticketPaymentService: TicketPaymentServices,
+    private productPaymentService: ProductPaymentServices,
     private planService: PlanServices,
     private organizerService: OrganizerServices
   ) {}
 
   registerListeners(emitter: EventEmitter) {
-    // Subscription payment
+    // Subscription payment ==>
     emitter.on(
       PAYMENT_ACTIONS.SUBSCRIPTION_SUCCEEDED,
       async ({
@@ -103,6 +109,81 @@ export default class PaymentsHooks {
         });
       }
     );
+    // <==
+
+    // Ticket payment ==>
+    emitter.on(
+      PAYMENT_ACTIONS.TICKET_PAYMENT_SUCCEEDED,
+      async ({
+        paymentIntent,
+        receipt,
+      }: {
+        paymentIntent: string;
+        receipt: string;
+      }) => {
+        // Update ticket payment status
+        await this.ticketPaymentService.updateTicketPayment({
+          paymentIntent,
+          status: PAYMENT_STATUS.SUCCEEDED,
+          receipt,
+        });
+      }
+    );
+
+    emitter.on(
+      PAYMENT_ACTIONS.TICKET_PAYMENT_FAILED,
+      async ({
+        paymentIntent,
+        failMessage,
+      }: {
+        paymentIntent: string;
+        failMessage: string;
+      }) => {
+        await this.ticketPaymentService.updateTicketPayment({
+          paymentIntent,
+          failMessage,
+          status: PAYMENT_STATUS.FAILED,
+        });
+      }
+    );
+    // <==
+
+    // Product payment ==>
+    emitter.on(
+      PAYMENT_ACTIONS.PRODUCT_PAYMENT_SUCCEEDED,
+      async ({
+        paymentIntent,
+        receipt,
+      }: {
+        paymentIntent: string;
+        receipt: string;
+      }) => {
+        // Update product payment status
+        await this.productPaymentService.updateProductPayment({
+          paymentIntent,
+          status: PAYMENT_STATUS.SUCCEEDED,
+          receipt,
+        });
+      }
+    );
+
+    emitter.on(
+      PAYMENT_ACTIONS.PRODUCT_PAYMENT_FAILED,
+      async ({
+        paymentIntent,
+        failMessage,
+      }: {
+        paymentIntent: string;
+        failMessage: string;
+      }) => {
+        await this.productPaymentService.updateProductPayment({
+          paymentIntent,
+          failMessage,
+          status: PAYMENT_STATUS.FAILED,
+        });
+      }
+    );
+    // <==
 
     // Sub Refunds ==>
     emitter.on(

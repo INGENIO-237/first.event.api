@@ -13,7 +13,9 @@ export interface ITicketCoupon
   extends ICoupon,
     InferSchemaType<typeof ticketCouponSchema> {}
 
-const TicketCoupon = Coupon.discriminator<ITicketCoupon>("TicketCoupon", ticketCouponSchema);
-
+const TicketCoupon = Coupon.discriminator<ITicketCoupon>(
+  "TicketCoupon",
+  ticketCouponSchema
+);
 
 export default TicketCoupon;

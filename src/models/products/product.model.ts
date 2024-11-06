@@ -2,6 +2,7 @@ import { Schema, model, Types, InferSchemaType, Model } from "mongoose";
 import { getSlug } from "../../utils/utilities";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import { PRODUCT_STATUS } from "../../utils/constants/common";
 
 const productSchema = new Schema(
   {
@@ -32,8 +33,8 @@ const productSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["available", "unavailable"],
-      default: "available",
+      enum: [...Object.values(PRODUCT_STATUS)],
+      default: PRODUCT_STATUS.AVAILABLE,
     },
   },
   {
