@@ -58,7 +58,7 @@ export default class SubscriptionPaymentServices {
       });
 
     // Persist to DB
-    await this.repository.createSubscriptionPayment({
+    const { _id: paymentId } = await this.repository.createSubscriptionPayment({
       ...payload,
       paymentIntent,
       amount,
@@ -71,7 +71,7 @@ export default class SubscriptionPaymentServices {
       }, config.PAYMENT_CONFIRMATION_TIMEOUT);
     }
 
-    return { paymentIntent, ephemeralKey, clientSecret };
+    return { paymentIntent, ephemeralKey, clientSecret, paymentId };
   }
 
   async getSubscriptionPayment({

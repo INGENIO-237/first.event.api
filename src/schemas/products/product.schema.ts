@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
-import { number, object, string, z } from "zod";
-import { Image } from "../../utils/constants/common";
+import { nativeEnum, number, object, string, z } from "zod";
+import { Image, PRODUCT_STATUS } from "../../utils/constants/common";
 
 export const getProductsSchema = object({
   query: object({
@@ -131,20 +131,10 @@ export const updateProductSchema = object({
     description: string({
       invalid_type_error: "La description doit être une chaîne de caractères",
     }).optional(),
-    status: string({
-      invalid_type_error: "Le status doit être une chaîne de caractères",
-    })
-      .optional()
-      .refine(
-        (data) => {
-          if (!data) return true;
-
-          if (data !== "available" && data !== "unavailable") return false;
-        },
-        {
-          message: "Le status doit être 'available' ou 'unavailable'",
-        }
-      ),
+    status: nativeEnum(PRODUCT_STATUS, {
+      invalid_type_error:
+        "Le status doit être une chaîne de caractères. Soit 'available' ou 'unavailable'",
+    }).optional(),
   }),
 });
 

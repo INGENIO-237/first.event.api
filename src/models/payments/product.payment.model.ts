@@ -17,41 +17,7 @@ const productPaymentSchema = new Schema({
       },
     },
   ],
-  billing: {
-    type: {
-      content: {
-        address: String,
-        country: String,
-        state: String,
-        city: String,
-        zipCode: String,
-      },
-      sameAsProfile: {
-        type: Boolean,
-        default: true,
-      },
-    },
-    required: true,
-  },
-  shipping: {
-    type: {
-      content: {
-        address: String,
-        country: String,
-        state: String,
-        city: String,
-        zipCode: String,
-      },
-      sameAsProfile: {
-        type: Boolean,
-        default: true,
-      },
-    },
-    required: true,
-  },
 });
-
-// TODO: Move shipping and billing one level above
 
 export interface IProductPayment
   extends IPayment,

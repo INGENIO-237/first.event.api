@@ -35,6 +35,38 @@ const paymentSchema = new Schema(
     receipt: {
       type: String,
     },
+    billing: {
+      type: {
+        content: {
+          address: String,
+          country: String,
+          state: String,
+          city: String,
+          zipCode: String,
+        },
+        sameAsProfile: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      required: true,
+    },
+    shipping: {
+      type: {
+        content: {
+          address: String,
+          country: String,
+          state: String,
+          city: String,
+          zipCode: String,
+        },
+        sameAsProfile: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      required: true,
+    },
 
     // TODO: Pass taxes property here
   },

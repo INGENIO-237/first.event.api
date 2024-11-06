@@ -2,11 +2,27 @@ import { InferSchemaType, Schema } from "mongoose";
 import Payment, { IPayment } from "./payment.model";
 
 const ticketPaymentSchema = new Schema({
-  ticketOrder: {
+  event: {
     type: Schema.Types.ObjectId,
-    ref: "TicketOrder",
+    ref: "Event",
     required: true,
   },
+  tickets: [
+    {
+      cat: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+      price: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 });
 
 export interface ITicketPayment

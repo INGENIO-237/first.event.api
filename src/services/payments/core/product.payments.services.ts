@@ -84,7 +84,7 @@ export default class ProductPaymentServices {
         paymentMethodId,
       });
 
-    await this.repository.createProductPayment({
+    const { _id: paymentId } = await this.repository.createProductPayment({
       ...payload,
       paymentIntent,
       amount: total,
@@ -107,6 +107,7 @@ export default class ProductPaymentServices {
       paymentIntent,
       clientSecret,
       ephemeralKey,
+      paymentId,
     };
   }
 

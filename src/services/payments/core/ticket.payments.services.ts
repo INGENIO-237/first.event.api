@@ -1,81 +1,116 @@
 import { Service } from "typedi";
-import TicketPaymentRepo from "../../../repositories/payments/ticket.payments.repository";
-import TicketOrder from "../../../models/orders/ticket.order.model";
-import TicketOrderServices from "../../orders/ticket.order.services";
-import { CreateTicketPaymentPayload } from "../../../schemas/payments/ticket.payment.schemas";
-import { PAYMENT_STATUS } from "../../../utils/constants/plans-and-subs";
-import StripeServices from "../stripe.services";
-import UserServices from "../../user.services";
+import config from "../../../config";
+import Event, { IEvent } from "../../../models/events/event.model";
 import { IUser } from "../../../models/user.model";
-import CouponServices from "../../coupons/coupon.services";
+import TicketPaymentRepo from "../../../repositories/payments/ticket.payments.repository";
+import { CreateTicketPaymentPayload } from "../../../schemas/payments/ticket.payment.schemas";
 import {
   ComputeTotalTicketData,
   DiscountedCoupon,
   ENV,
 } from "../../../utils/constants/common";
-import { ITicketPayment } from "../../../models/payments/ticket.payment.model";
-import config from "../../../config";
+import { PAYMENT_STATUS } from "../../../utils/constants/plans-and-subs";
+import CouponServices from "../../coupons/coupon.services";
+import UserServices from "../../user.services";
+import StripeServices from "../stripe.services";
 
 @Service()
 export default class TicketPaymentServices {
   constructor(
     private readonly repository: TicketPaymentRepo,
-    private readonly ticketOrder: TicketOrderServices,
     private readonly userService: UserServices,
     private readonly stripe: StripeServices,
     private readonly couponService: CouponServices
   ) {}
 
   async createTicketPayment(payload: CreateTicketPaymentPayload) {
-    const { ticketOrder, coupons, paymentMethodId, user } = payload;
+    const {
+      tickets: userTickets,
+      event: eventId,
+      coupons,
+      paymentMethodId,
+      user,
+    } = payload;
 
-    const { tickets, event } = await TicketOrder.checkValidity(ticketOrder);
+    const event = (await Event.checkValidity(eventId)) as IEvent;
 
-    // Verify if event is free, if so immediately complete payment
-    if (event.isFree) {
-      await this.ticketOrder.updateTicketOrder({
-        ticketOrder,
-        status: PAYMENT_STATUS.SUCCEEDED,
-      });
-      return;
-    } else {
-      const { stripeCustomer } = (await this.userService.getUser({
-        userId: user,
-        raiseException: false,
-      })) as IUser;
+    const { stripeCustomer } = (await this.userService.getUser({
+      userId: user,
+      raiseException: false,
+    })) as IUser;
 
+    const { tickets } = event;
+
+    const matchingTickets = this.getTicketPrice(tickets, userTickets);
+
+    let finalAmount = 0;
+    let finalCoupons: DiscountedCoupon[] = [];
+
+    if (!event.isFree) {
       const { total, cpns } = await this.computeTotal({
-        tickets,
+        tickets: matchingTickets,
         coupons: coupons as string[],
       });
 
-      const { paymentIntent, clientSecret, ephemeralKey, fees } =
-        await this.stripe.initiatePayment({
-          amount: total,
-          customerId: stripeCustomer as string,
-          paymentMethodId,
-        });
+      finalAmount = total;
+      finalCoupons = cpns;
+    }
 
-      await this.repository.createTicketPayment({
-        ...payload,
-        paymentIntent,
-        amount: total,
-        fees,
-        coupons: cpns,
+    const { paymentIntent, clientSecret, ephemeralKey, fees } =
+      await this.stripe.initiatePayment({
+        amount: finalAmount,
+        customerId: stripeCustomer as string,
+        paymentMethodId,
       });
 
-      if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId) {
-        setTimeout(() => {
-          this.stripe.confirmPaymentIntent(paymentIntent);
-        }, config.PAYMENT_CONFIRMATION_TIMEOUT);
-      }
+    const { _id: paymentId } = await this.repository.createTicketPayment({
+      ...payload,
+      paymentIntent,
+      amount: finalAmount,
+      fees,
+      coupons: finalCoupons,
+      tickets: matchingTickets,
+    });
 
-      return {
-        paymentIntent,
-        clientSecret,
-        ephemeralKey,
-      };
+    if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId || event.isFree) {
+      setTimeout(() => {
+        this.stripe.confirmPaymentIntent(paymentIntent);
+      }, config.PAYMENT_CONFIRMATION_TIMEOUT);
     }
+
+    return {
+      paymentIntent,
+      clientSecret,
+      ephemeralKey,
+      paymentId,
+    };
+  }
+
+  private getTicketPrice(
+    tickets: { cat: string; price: number }[],
+    userTickets: { cat: string; quantity: number }[]
+  ) {
+    const matchingTickets: {
+      cat: string;
+      price: number;
+      quantity: number;
+    }[] = [];
+
+    userTickets.forEach((ticket) => {
+      const foundTicket = tickets.find(
+        (t) => t.cat.toLowerCase() === ticket.cat.toLowerCase()
+      );
+
+      if (foundTicket) {
+        matchingTickets.push({
+          cat: foundTicket.cat,
+          price: foundTicket.price,
+          quantity: ticket.quantity,
+        });
+      }
+    });
+
+    return matchingTickets;
   }
 
   private async computeTotal(data: ComputeTotalTicketData) {
@@ -135,17 +170,5 @@ export default class TicketPaymentServices {
       receipt,
       failMessage,
     });
-
-    if (status) {
-      const { ticketOrder } = (await this.getTicketPayment({
-        paymentId,
-        paymentIntent,
-      })) as ITicketPayment;
-
-      await this.ticketOrder.updateTicketOrder({
-        ticketOrder: ticketOrder.toString(),
-        status,
-      });
-    }
   }
 }
