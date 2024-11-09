@@ -80,7 +80,9 @@ export interface IPayment
 paymentSchema.pre<IPayment>("save", function (next) {
   const payment = this;
 
-  payment.status = PAYMENT_STATUS.INITIATED;
+  if (!payment.status) {
+    payment.status = PAYMENT_STATUS.INITIATED;
+  }
 
   next();
 });

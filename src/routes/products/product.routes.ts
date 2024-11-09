@@ -52,4 +52,11 @@ ProductsRouter.put(
   tryCatch(controller.updateProduct.bind(controller))
 );
 
+ProductsRouter.delete(
+  "/:product",
+  isLoggedIn,
+  isValidOrganizer,
+  tryCatch(controller.deleteProduct.bind(controller))
+);
+
 export default ProductsRouter;

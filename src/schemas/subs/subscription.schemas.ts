@@ -1,4 +1,4 @@
-import { array, nativeEnum, object, optional, string, z } from "zod";
+import { array, nativeEnum, number, object, optional, string, z } from "zod";
 import {
   ASSISTANCE,
   BILLING_TYPE,
@@ -65,3 +65,42 @@ export type CreateSubscription = {
   couponsPerEvent: string;
   promotion: number;
 };
+
+export const getSubscriptionSchema = object({
+  params: object({
+    subscription: string({
+      required_error: "L'identifiant de l'abonnement est requis",
+      invalid_type_error:
+        "L'identifiant de l'abonnement doit être une chaîne de caractères",
+    }),
+  }),
+});
+
+export type GetSubscription = z.infer<typeof getSubscriptionSchema>;
+
+export const getSubscriptionsSchema = object({
+  query: object({
+    page: optional(
+      number({
+        invalid_type_error: "Le numéro de la page doit être un nombre",
+      }).min(1, {
+        message: "Le numéro de la page doit être supérieur ou égal à 1",
+      })
+    ),
+    limit: optional(
+      number({
+        invalid_type_error: "La limite doit être un nombre",
+      })
+    ),
+    target: optional(
+      string({
+        invalid_type_error:
+          "L'identifiant de l'organisateur doit être une chaîne de caractères",
+      }).refine((data) => Types.ObjectId.isValid(data), {
+        message: "L'identifiant de l'organisateur est invalide",
+      })
+    ),
+  }),
+});
+
+export type GetSubscriptions = z.infer<typeof getSubscriptionsSchema>;

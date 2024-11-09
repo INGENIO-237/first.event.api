@@ -5,7 +5,7 @@ import {
   GetProductsQuery,
   UpdateProductInput,
 } from "../../schemas/products/product.schema";
-import Product from "../../models/products/product.model";
+import Product, { IProduct } from "../../models/products/product.model";
 import CloudinaryServices from "../utils/cloudinary.services";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
@@ -53,6 +53,24 @@ export default class ProductServices {
     const product = await Product.isOwner(productId, organizer);
 
     await this.productRepo.updateProduct({ productId, update });
+
+    await this.cloudinary.deleteResource(product.image.publicId as string);
+  }
+
+  async deleteProduct({
+    productId,
+    organizer,
+  }: {
+    productId: string;
+    organizer: string;
+  }) {
+    const product = (await this.getProduct({ productId })) as IProduct;
+
+    if ((product.organizer as string) !== organizer) {
+      throw new ApiError(HTTP.FORBIDDEN, "Vous n'êtes pas l'organisateur");
+    }
+
+    await this.productRepo.deleteProduct(productId);
 
     await this.cloudinary.deleteResource(product.image.publicId as string);
   }

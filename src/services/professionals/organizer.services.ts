@@ -47,7 +47,7 @@ export default class OrganizerServices {
     const organizer = await this.repository.getOrganizer(userId);
 
     if (!organizer && raiseException) {
-      throw new ApiError(HTTP.NOT_FOUND, "Organizer not found");
+      throw new ApiError(HTTP.NOT_FOUND, "Cet organisateur n'existe pas");
     }
 
     return organizer;

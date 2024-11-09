@@ -36,6 +36,10 @@ const productSchema = new Schema(
       enum: [...Object.values(PRODUCT_STATUS)],
       default: PRODUCT_STATUS.AVAILABLE,
     },
+    hasBeenDeleted: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true,

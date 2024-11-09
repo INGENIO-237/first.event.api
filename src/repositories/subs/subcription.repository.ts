@@ -1,10 +1,24 @@
 import { Service } from "typedi";
-import { CreateSubscription } from "../../schemas/subs/subscription.schemas";
+import {
+  CreateSubscription,
+  GetSubscriptions,
+} from "../../schemas/subs/subscription.schemas";
 import Subscription from "../../models/subs/subscription.model";
 import { Types } from "mongoose";
 
 @Service()
 export default class SubsRepo {
+  async getSubscriptions(filters: Omit<GetSubscriptions["query"], "target">) {
+    const { page, limit } = filters;
+
+    return page && limit
+      ? await Subscription.find()
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .populate("payment")
+      : await Subscription.find().populate("payment");
+  }
+
   async createSubscription(payload: CreateSubscription) {
     return await Subscription.create(payload);
   }

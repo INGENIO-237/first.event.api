@@ -43,47 +43,53 @@ export default class TicketPaymentServices {
 
     const matchingTickets = this.getTicketPrice(tickets, userTickets);
 
-    let finalAmount = 0;
-    let finalCoupons: DiscountedCoupon[] = [];
-
     if (!event.isFree) {
       const { total, cpns } = await this.computeTotal({
         tickets: matchingTickets,
         coupons: coupons as string[],
       });
 
-      finalAmount = total;
-      finalCoupons = cpns;
-    }
+      const { paymentIntent, clientSecret, ephemeralKey, fees } =
+        await this.stripe.initiatePayment({
+          amount: total,
+          customerId: stripeCustomer as string,
+          paymentMethodId,
+        });
 
-    const { paymentIntent, clientSecret, ephemeralKey, fees } =
-      await this.stripe.initiatePayment({
-        amount: finalAmount,
-        customerId: stripeCustomer as string,
-        paymentMethodId,
+      const { _id: paymentId } = await this.repository.createTicketPayment({
+        ...payload,
+        paymentIntent,
+        amount: total,
+        fees,
+        coupons: cpns,
+        tickets: matchingTickets,
       });
 
-    const { _id: paymentId } = await this.repository.createTicketPayment({
-      ...payload,
-      paymentIntent,
-      amount: finalAmount,
-      fees,
-      coupons: finalCoupons,
-      tickets: matchingTickets,
-    });
+      if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId) {
+        setTimeout(() => {
+          this.stripe.confirmPaymentIntent(paymentIntent);
+        }, config.PAYMENT_CONFIRMATION_TIMEOUT);
+      }
 
-    if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId || event.isFree) {
-      setTimeout(() => {
-        this.stripe.confirmPaymentIntent(paymentIntent);
-      }, config.PAYMENT_CONFIRMATION_TIMEOUT);
+      return {
+        paymentIntent,
+        clientSecret,
+        ephemeralKey,
+        paymentId,
+      };
+    } else {
+      const { _id: paymentId } = await this.repository.createTicketPayment({
+        ...payload,
+        tickets: matchingTickets,
+        amount: 0,
+        fees: 0,
+        coupons: [],
+        paymentIntent: "free",
+        status: PAYMENT_STATUS.SUCCEEDED,
+      });
+
+      return { paymentId };
     }
-
-    return {
-      paymentIntent,
-      clientSecret,
-      ephemeralKey,
-      paymentId,
-    };
   }
 
   private getTicketPrice(
