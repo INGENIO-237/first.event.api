@@ -249,5 +249,49 @@ export default class PaymentsHooks {
       }
     );
     // <==
+
+    // Ticket Refunds ==>
+    emitter.on(
+      PAYMENT_ACTIONS.REFUND_TICKET,
+      async ({ amount, payment }: { amount: number; payment: string }) => {
+        await this.refundService.processTicketRefundRequest({
+          amount,
+          payment,
+        });
+      }
+    );
+
+    emitter.on(
+      PAYMENT_ACTIONS.REFUND_TICKET_SUCCEEDED,
+      async ({ paymentIntent }: { paymentIntent: string }) => {
+        await this.refundService.updateRefund({
+          paymentIntent,
+          status: PAYMENT_STATUS.SUCCEEDED,
+        });
+
+        // TODO: Send successful email
+        // TODO: Invalidate gains
+      }
+    );
+
+    emitter.on(
+      PAYMENT_ACTIONS.REFUND_TICKET_FAILED,
+      async ({
+        paymentIntent,
+        failMessage,
+      }: {
+        paymentIntent: string;
+        failMessage?: string;
+      }) => {
+        await this.refundService.updateRefund({
+          paymentIntent,
+          failMessage,
+          status: PAYMENT_STATUS.FAILED,
+        });
+
+        // TODO: Send fail email
+      }
+    );
+    // <==
   }
 }

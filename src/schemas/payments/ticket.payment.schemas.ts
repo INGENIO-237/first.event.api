@@ -206,5 +206,21 @@ export type TicketPaymentPayload = {
     };
     sameAsProfile: boolean;
   };
-  status?: PAYMENT_STATUS
+  status?: PAYMENT_STATUS;
 };
+
+export const requestTicketPaymentRefund = object({
+  params: object({
+    payment: string({
+      required_error: "L'identifiant du paiement est requis",
+      invalid_type_error:
+        "L'identifiant du paiement doit être une chaîne de caractères",
+    }).refine((data) => Types.ObjectId.isValid(data), {
+      message: "L'identifiant du paiement n'est pas valide",
+    }),
+  }),
+});
+
+export type RequestTicketPaymentRefundInput = z.infer<
+  typeof requestTicketPaymentRefund
+>;

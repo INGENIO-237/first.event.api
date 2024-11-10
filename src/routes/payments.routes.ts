@@ -8,7 +8,7 @@ import { isLoggedIn } from "../middlewares/auth";
 import validate from "../middlewares/validate.request";
 import { registerPaymentMethodSchema } from "../schemas/payments/methods.schemas";
 import { createProductPaymentSchema } from "../schemas/payments/product.payment.schemas";
-import { createTicketPaymentSchema } from "../schemas/payments/ticket.payment.schemas";
+import { createTicketPaymentSchema, requestTicketPaymentRefund } from "../schemas/payments/ticket.payment.schemas";
 import { registerSubscriptionSchema } from "../schemas/subs/subscription.schemas";
 import { tryCatch } from "../utils/errors/errors.utlis";
 
@@ -45,6 +45,12 @@ PaymentsRouter.post(
   isLoggedIn,
   validate(createTicketPaymentSchema),
   tryCatch(payments.initiateTicketPayment.bind(payments))
+);
+PaymentsRouter.post(
+  "/tickets/refund/:payment",
+  isLoggedIn,
+  validate(requestTicketPaymentRefund),
+  tryCatch(payments.requestTicketPaymentRefund.bind(payments))
 );
 
 // Products

@@ -1,6 +1,12 @@
+import moment from "moment";
+import { ObjectId } from "mongoose";
+import EventEmitter from "node:events";
 import { Service } from "typedi";
 import config from "../../../config";
+import EventBus from "../../../hooks/event-bus";
 import Event, { IEvent } from "../../../models/events/event.model";
+import { ITicketPayment } from "../../../models/payments/ticket.payment.model";
+import { IOrganizer } from "../../../models/professionals/organizer.model";
 import { IUser } from "../../../models/user.model";
 import TicketPaymentRepo from "../../../repositories/payments/ticket.payments.repository";
 import { CreateTicketPaymentPayload } from "../../../schemas/payments/ticket.payment.schemas";
@@ -9,19 +15,28 @@ import {
   DiscountedCoupon,
   ENV,
 } from "../../../utils/constants/common";
-import { PAYMENT_STATUS } from "../../../utils/constants/plans-and-subs";
+import HTTP from "../../../utils/constants/http.responses";
+import {
+  PAYMENT_ACTIONS,
+  PAYMENT_STATUS,
+} from "../../../utils/constants/plans-and-subs";
+import ApiError from "../../../utils/errors/errors.base";
 import CouponServices from "../../coupons/coupon.services";
 import UserServices from "../../user.services";
 import StripeServices from "../stripe.services";
 
 @Service()
 export default class TicketPaymentServices {
+  private emitter: EventEmitter;
+
   constructor(
     private readonly repository: TicketPaymentRepo,
     private readonly userService: UserServices,
     private readonly stripe: StripeServices,
     private readonly couponService: CouponServices
-  ) {}
+  ) {
+    this.emitter = EventBus.getEmitter();
+  }
 
   async createTicketPayment(payload: CreateTicketPaymentPayload) {
     const {
@@ -92,6 +107,79 @@ export default class TicketPaymentServices {
     }
   }
 
+  async requestTicketPaymentRefund({
+    payment,
+    user,
+  }: {
+    payment: string;
+    user: string;
+  }) {
+    const {
+      event,
+      user: payer,
+      amount,
+      paymentIntent,
+    } = (await this.getTicketPayment({
+      paymentId: payment,
+      raiseException: true,
+    })) as ITicketPayment;
+
+    let isOrganizer = false;
+
+    const { startDate, organizer: eventOrg } = await Event.checkValidity(
+      event.toString()
+    );
+
+    const { user: orgUser } = eventOrg as IOrganizer;
+
+    if (orgUser) isOrganizer = orgUser.toString() == user;
+
+    if ((payer as ObjectId).toString() !== user && !isOrganizer) {
+      throw new ApiError(
+        HTTP.FORBIDDEN,
+        "Vous n'êtes pas autorisé à effectuer cette action"
+      );
+    }
+
+    if (paymentIntent == "free" || amount == 0) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        `Vous ne pouvez pas demander un remboursement pour cet événement.Veuillez contacter l'${
+          isOrganizer ? "administrateur" : "organisateur"
+        } pour plus d'informations.`
+      );
+    }
+
+    // TODO: Get refund deadline from organizer's profile
+    const REFUND_DEADLINE = 1; // Days
+    const present = new Date();
+
+    const dateDiff = moment(present).diff(moment(startDate), "days");
+
+    if (dateDiff < REFUND_DEADLINE && !isOrganizer) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Vous ne pouvez plus demander un remboursement pour cet événement. Le délai est passé. Veuillez contacter l'organisateur pour plus d'informations."
+      );
+    }
+
+    this.emitter.emit(PAYMENT_ACTIONS.REFUND_TICKET, { payment, amount });
+  }
+
+  async refundTicketPayment({
+    paymentId,
+    amount,
+  }: {
+    paymentId: string;
+    amount: number;
+  }) {
+    const { paymentIntent } = (await this.getTicketPayment({
+      paymentId,
+    })) as ITicketPayment;
+
+    return await this.stripe.createRefund({ paymentIntent, amount });
+  }
+
   private getTicketPrice(
     tickets: { cat: string; price: number }[],
     userTickets: { cat: string; quantity: number }[]
@@ -149,11 +237,22 @@ export default class TicketPaymentServices {
   async getTicketPayment({
     paymentIntent,
     paymentId,
+    raiseException = false,
   }: {
     paymentIntent?: string;
     paymentId?: string;
+    raiseException?: boolean;
   }) {
-    return await this.repository.getTicketPayment({ paymentIntent, paymentId });
+    const payment = (await this.repository.getTicketPayment({
+      paymentIntent,
+      paymentId,
+    })) as ITicketPayment;
+
+    if (!payment && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Ce paiement n'existe pas");
+    }
+
+    return payment;
   }
 
   async updateTicketPayment({

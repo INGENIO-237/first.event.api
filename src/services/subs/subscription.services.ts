@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import EventEmitter from "node:events";
 import { Service } from "typedi";
 import EventBus from "../../hooks/event-bus";
@@ -15,7 +16,6 @@ import {
 import ApiError from "../../utils/errors/errors.base";
 import { SubscriptionPaymentServices } from "../payments/core";
 import OrganizerServices from "../professionals/organizer.services";
-import { ObjectId } from "mongoose";
 
 @Service()
 export default class SubscriptionServices {
@@ -177,7 +177,6 @@ export default class SubscriptionServices {
       hasBeenCancelled,
       cancelDate,
       endsOn,
-      _id: sub,
       freemiumEndsOn,
       payment,
     } = subscription as ISubscription;

@@ -3,7 +3,10 @@ import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import HTTP from "../../utils/constants/http.responses";
 import { Service } from "typedi";
 import PaymentsServices from "../../services/payments/payments.services";
-import { CreateTicketPaymentInput } from "../../schemas/payments/ticket.payment.schemas";
+import {
+  CreateTicketPaymentInput,
+  RequestTicketPaymentRefundInput,
+} from "../../schemas/payments/ticket.payment.schemas";
 import { CreateProductPaymentInput } from "../../schemas/payments/product.payment.schemas";
 
 @Service()
@@ -37,6 +40,21 @@ export default class PaymentsController {
     });
 
     return res.status(HTTP.CREATED).json(payment);
+  }
+
+  async requestTicketPaymentRefund(
+    req: Request<RequestTicketPaymentRefundInput["params"]>,
+    res: Response
+  ) {
+    await this.service.requestTicketPaymentRefund({
+      payment: req.params.payment,
+      user: (req as any).user.id,
+    });
+
+    return res.status(HTTP.CREATED).json({
+      message:
+        "Votre requête a bien été prise en compte. Nous allons la traiter, et vous revenir. Merci de bien vouloir patienter.",
+    });
   }
 
   // Products

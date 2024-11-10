@@ -69,7 +69,7 @@ export default class EventsRepo {
                 {
                   "location.geo": {
                     $geoWithin: {
-                      $centerSphere: [[lng, lat], 50 / 6378.1],
+                      $centerSphere: [[lng, lat], 50 / 6378.1], // 6378.1 being the approximate value of the radius of earth in km
                     },
                   },
                 },
@@ -88,6 +88,6 @@ export default class EventsRepo {
   }
 
   async getEvent(id: string) {
-    return await Event.findById(id);
+    return await Event.findById(id).populate("organizer");
   }
 }

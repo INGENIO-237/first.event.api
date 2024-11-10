@@ -14,6 +14,7 @@ import EventServices from "../../services/events/event.services";
 import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
 import { getSlug } from "../../utils/utilities";
+import { IOrganizer } from "../professionals/organizer.model";
 
 const eventSchema = new Schema(
   {
@@ -156,11 +157,12 @@ eventSchema.statics.checkValidity = async function (event: string) {
   const dateIsValid =
     startDate >= now && (!endDate || new Date(endDate) >= now);
 
-  const isValid =
-    dateIsValid && matchingEvent!.status === EVENT_STATUS.PUBLISHED;
+  if (matchingEvent!.status !== EVENT_STATUS.PUBLISHED) {
+    throw new ApiError(HTTP.BAD_REQUEST, "L'événement n'est pas actif.");
+  }
 
-  if (!isValid) {
-    throw new ApiError(HTTP.BAD_REQUEST, "L'événement n'est pas/plus actif.");
+  if (!dateIsValid) {
+    throw new ApiError(HTTP.BAD_REQUEST, "L'événement est déjà passé.");
   }
 
   return matchingEvent!;

@@ -86,7 +86,7 @@ export default class StripeServices {
           .catch((error) => {
             throw new ApiError(
               HTTP.BAD_REQUEST,
-              `Payment Error: ${error.message}`
+              `Erreur lors du paiement: ${error.message}`
             );
           })
       : await this._stripe.paymentIntents
@@ -98,7 +98,7 @@ export default class StripeServices {
           .catch((error) => {
             throw new ApiError(
               HTTP.BAD_REQUEST,
-              `Payment Error: ${error.message}`
+              `Erreur lors du paiement: ${error.message}`
             );
           });
 
@@ -153,7 +153,7 @@ export default class StripeServices {
     return this._stripe.refunds
       .create({
         payment_intent: paymentIntent,
-        amount: amount * 100,
+        amount: Math.floor(amount * 100),
       })
       .then((response) => {
         const { id, destination_details } = response;

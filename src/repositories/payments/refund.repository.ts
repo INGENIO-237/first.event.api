@@ -7,7 +7,11 @@ import { Types } from "mongoose";
 @Service()
 export default class RefundRepo {
   async createRefund(payload: CreateRefund & { fees: number }) {
-    return await Refund.create(payload);
+    return await Refund.create({
+      billing: { sameAsProfile: true },
+      shipping: { sameAsProfile: true },
+      ...payload,
+    });
   }
 
   async getRefund({

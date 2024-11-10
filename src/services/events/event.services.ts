@@ -1,4 +1,7 @@
 import { Service } from "typedi";
+import Event from "../../models/events/event.model";
+import { IOrganizer } from "../../models/professionals/organizer.model";
+import { ISubscription } from "../../models/subs/subscription.model";
 import EventsRepo from "../../repositories/events/event.repository";
 import {
   CreateEvent,
@@ -7,17 +10,13 @@ import {
   UpdateEventPayload,
 } from "../../schemas/events/event.schemas";
 import { Image } from "../../utils/constants/common";
-import CloudinaryServices from "../utils/cloudinary.services";
-import OrganizerServices from "../professionals/organizer.services";
-import ApiError from "../../utils/errors/errors.base";
-import HTTP from "../../utils/constants/http.responses";
-import { IOrganizer } from "../../models/professionals/organizer.model";
-import SubscriptionServices from "../subs/subscription.services";
-import { ISubscription } from "../../models/subs/subscription.model";
-import { TICKETS_PER_EVENT } from "../../utils/constants/plans-and-subs";
 import { EVENT_STATUS } from "../../utils/constants/events";
-import { Types } from "mongoose";
-import Event from "../../models/events/event.model";
+import HTTP from "../../utils/constants/http.responses";
+import { TICKETS_PER_EVENT } from "../../utils/constants/plans-and-subs";
+import ApiError from "../../utils/errors/errors.base";
+import OrganizerServices from "../professionals/organizer.services";
+import SubscriptionServices from "../subs/subscription.services";
+import CloudinaryServices from "../utils/cloudinary.services";
 
 @Service()
 export default class EventServices {
