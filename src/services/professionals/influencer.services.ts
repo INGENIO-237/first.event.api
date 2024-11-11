@@ -56,7 +56,7 @@ export default class InfluencerServices {
     const influencer = await this.repository.getInfluencer(userId);
 
     if(!influencer && raiseException){
-      throw new ApiError(HTTP.NOT_FOUND, "Influencer not found");
+      throw new ApiError(HTTP.NOT_FOUND, "Ce communicateur n'existe pas");
     }
 
     return influencer
