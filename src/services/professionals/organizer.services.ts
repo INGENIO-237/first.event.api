@@ -30,7 +30,11 @@ export default class OrganizerServices {
       throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà influenceur");
     }
 
-    // TODO: Make  sure user is not already an organizer
+    const existingOrganizer = await this.getOrganizer(userId);
+
+    if (existingOrganizer) {
+      throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà organisateur");
+    }
 
     const organizer = await this.repository.registerOrganizer(userId, payload);
 
@@ -47,7 +51,7 @@ export default class OrganizerServices {
     const organizer = await this.repository.getOrganizer(userId);
 
     if (!organizer && raiseException) {
-      throw new ApiError(HTTP.NOT_FOUND, "Organizer not found");
+      throw new ApiError(HTTP.NOT_FOUND, "Cet organisateur n'existe pas");
     }
 
     return organizer;

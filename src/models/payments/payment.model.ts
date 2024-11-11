@@ -67,10 +67,22 @@ const paymentSchema = new Schema(
       },
       required: true,
     },
+    fundsDispatched: {
+      type: Boolean,
+      default: false,
+    },
+    fundsDispatchedOn: {
+      type: Date,
+    },
 
     // TODO: Pass taxes property here
   },
-  { timestamps: true, discriminatorKey: "type" }
+  {
+    timestamps: true,
+    discriminatorKey: "type",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 export interface IPayment
@@ -80,7 +92,9 @@ export interface IPayment
 paymentSchema.pre<IPayment>("save", function (next) {
   const payment = this;
 
-  payment.status = PAYMENT_STATUS.INITIATED;
+  if (!payment.status) {
+    payment.status = PAYMENT_STATUS.INITIATED;
+  }
 
   next();
 });

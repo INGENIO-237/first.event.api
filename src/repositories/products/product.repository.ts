@@ -37,4 +37,10 @@ export default class ProductRepo {
   }) {
     await Product.findByIdAndUpdate(productId, update);
   }
+
+  async deleteProduct(productId: string) {
+    await Product.findByIdAndUpdate(productId, {
+      hasBeenDeleted: true,
+    });
+  }
 }

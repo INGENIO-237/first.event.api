@@ -1,5 +1,6 @@
 import { InferSchemaType, Schema } from "mongoose";
 import Payment, { IPayment } from "./payment.model";
+import Refund from "./refund.model";
 
 const ticketPaymentSchema = new Schema({
   event: {
@@ -25,9 +26,19 @@ const ticketPaymentSchema = new Schema({
   ],
 });
 
+ticketPaymentSchema.virtual("refund").get(async function () {
+  const payment = this as ITicketPayment;
+  const refund = await Refund.findOne({
+    $or: [{ payment: payment._id }, { paymentIntent: payment.paymentIntent }],
+  });
+  return refund;
+});
+
 export interface ITicketPayment
   extends IPayment,
-    InferSchemaType<typeof ticketPaymentSchema> {}
+    InferSchemaType<typeof ticketPaymentSchema> {
+  refund: InstanceType<typeof Refund> | null;
+}
 
 const TicketPayment = Payment.discriminator<ITicketPayment>(
   "TicketPayment",

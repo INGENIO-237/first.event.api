@@ -1,5 +1,6 @@
 import { InferSchemaType, Schema } from "mongoose";
 import Payment, { IPayment } from "./payment.model";
+import Refund from "./refund.model";
 
 // TODO: Once payment is completed, send success notification email
 const productPaymentSchema = new Schema({
@@ -19,9 +20,19 @@ const productPaymentSchema = new Schema({
   ],
 });
 
+productPaymentSchema.virtual("refund").get(async function () {
+  const payment = this as IProductPayment;
+  const refund = await Refund.findOne({
+    $or: [{ payment: payment._id }, { paymentIntent: payment.paymentIntent }],
+  });
+  return refund;
+});
+
 export interface IProductPayment
   extends IPayment,
-    InferSchemaType<typeof productPaymentSchema> {}
+    InferSchemaType<typeof productPaymentSchema> {
+  refund: InstanceType<typeof Refund> | null;
+}
 
 const ProductPayment = Payment.discriminator<IProductPayment>(
   "ProductPayment",

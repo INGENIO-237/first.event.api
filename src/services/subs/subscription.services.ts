@@ -1,13 +1,21 @@
-import { Service } from "typedi";
-import { CreateSubscription } from "../../schemas/subs/subscription.schemas";
-import { ISubscription } from "../../models/subs/subscription.model";
-import ApiError from "../../utils/errors/errors.base";
-import HTTP from "../../utils/constants/http.responses";
-import OrganizerServices from "../professionals/organizer.services";
-import { PAYMENT_ACTIONS } from "../../utils/constants/plans-and-subs";
-import SubsRepo from "../../repositories/subs/subcription.repository";
+import { ObjectId } from "mongoose";
 import EventEmitter from "node:events";
+import { Service } from "typedi";
 import EventBus from "../../hooks/event-bus";
+import { ISubscription } from "../../models/subs/subscription.model";
+import SubsRepo from "../../repositories/subs/subcription.repository";
+import {
+  CreateSubscription,
+  GetSubscriptions,
+} from "../../schemas/subs/subscription.schemas";
+import HTTP from "../../utils/constants/http.responses";
+import {
+  PAYMENT_ACTIONS,
+  PAYMENT_STATUS,
+} from "../../utils/constants/plans-and-subs";
+import ApiError from "../../utils/errors/errors.base";
+import { SubscriptionPaymentServices } from "../payments/core";
+import OrganizerServices from "../professionals/organizer.services";
 
 @Service()
 export default class SubscriptionServices {
@@ -15,13 +23,81 @@ export default class SubscriptionServices {
 
   constructor(
     private repository: SubsRepo,
-    private organizerService: OrganizerServices
+    private organizerService: OrganizerServices,
+    private paymentService: SubscriptionPaymentServices
   ) {
     this.emitter = EventBus.getEmitter();
   }
 
   async createSubscription(payload: CreateSubscription) {
     return await this.repository.createSubscription(payload);
+  }
+
+  async getSubscriptions({
+    user, // incoming request initiator
+    target, // organizer user id
+    ...filters
+  }: GetSubscriptions["query"] & {
+    user: {
+      id: string;
+      isAdmin: boolean;
+    };
+  }) {
+    if (target) {
+      if (!user.isAdmin && user.id != target) {
+        throw new ApiError(
+          HTTP.FORBIDDEN,
+          "Vous n'êtes pas autorisé à effectuer cette action"
+        );
+      }
+
+      await this.organizerService.getOrganizer(target, true);
+
+      // Retrieve organizer's successful subs payments
+      let payments = await Promise.all([
+        this.paymentService.getSubscriptionPayments({ user: target }),
+      ]).then((data) => {
+        let innerPayments = data.flat();
+
+        innerPayments = innerPayments.filter(
+          (payment) => payment.status == PAYMENT_STATUS.SUCCEEDED
+        );
+
+        return innerPayments.map((payment) =>
+          (payment._id as ObjectId).toString()
+        );
+      });
+
+      // From the payments, match related subscriptions
+      let subscriptions: ISubscription[] = [];
+
+      if (payments.length > 0) {
+        subscriptions = await Promise.all([
+          ...payments.map(async (payment) => {
+            return (await this.repository.getSubscription({
+              payment,
+            })) as ISubscription;
+          }),
+        ]);
+
+        const { page, limit } = filters;
+
+        if (page && limit) {
+          subscriptions = subscriptions.slice((page - 1) * limit, page * limit);
+        }
+      }
+
+      return subscriptions;
+    }
+
+    if (!user.isAdmin) {
+      throw new ApiError(
+        HTTP.FORBIDDEN,
+        "Vous n'êtes pas autorisé à effectuer cette action"
+      );
+    }
+
+    return await this.repository.getSubscriptions(filters);
   }
 
   async getSubscription({
@@ -101,7 +177,6 @@ export default class SubscriptionServices {
       hasBeenCancelled,
       cancelDate,
       endsOn,
-      _id: sub,
       freemiumEndsOn,
       payment,
     } = subscription as ISubscription;

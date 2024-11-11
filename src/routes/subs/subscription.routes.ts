@@ -10,14 +10,16 @@ const SubscriptionRouter = Router();
 
 const controller = Container.get(SubscriptionController);
 
+SubscriptionRouter.use(isLoggedIn);
+
 SubscriptionRouter.post(
   "/cancel",
-  isLoggedIn,
   tryCatch(controller.cancelSubscription.bind(controller))
 );
 
-SubscriptionRouter.use(isAdmin);
-
-// TODO: Get list of subscriptions
+SubscriptionRouter.get(
+  "",
+  tryCatch(controller.getSubscriptions.bind(controller))
+);
 
 export default SubscriptionRouter;

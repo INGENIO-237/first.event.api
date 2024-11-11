@@ -25,6 +25,16 @@ export default class SubscriptionPaymentServices {
     private userService: UserServices
   ) {}
 
+async getSubscriptionPayments({
+    user,
+  }: {
+    user: string;
+  }) {
+    return await this.repository.getSubscriptionPayments({
+      user,
+    });
+  }
+
   async createSubscriptionPayment(
     payload: RegisterSubscription["body"] & { user: string }
   ) {
@@ -77,13 +87,16 @@ export default class SubscriptionPaymentServices {
   async getSubscriptionPayment({
     paymentId,
     paymentIntent,
+    user,
   }: {
     paymentId?: string;
     paymentIntent?: string;
+    user?: string;
   }) {
     return await this.repository.getSubscriptionPayment({
       paymentId,
       paymentIntent,
+      user,
     });
   }
 

@@ -65,8 +65,6 @@ export function parseBodyLocation(req: Request, res: Response, next: NextFunctio
 
   req.body = transformedBody;
 
-  console.log({ location });
-
   return next();
 }
 

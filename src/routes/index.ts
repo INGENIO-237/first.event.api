@@ -1,23 +1,16 @@
-import UserRouter from "./user.routes";
 import AuthRouter from "./auth.routes";
-import { InfluencerRouter, OrganizerRouter } from "./professionals";
-import { PlanRouter, SubscriptionRouter } from "./subs";
-import PaymentsRouter from "./payments.routes";
-import EventsRouter from "./events/event.routes";
-import CouponsRouter from "./coupon.routes";
-import ProductsRouter from "./products/product.routes";
 import CartRouter from "./cart.routes";
+import CouponsRouter from "./coupon.routes";
+import EventsRouter from "./events/event.routes";
+import PaymentsRouter from "./payments.routes";
+import ProductsRouter from "./products/product.routes";
+import { InfluencerRouter, OrganizerRouter } from "./professionals";
+import ReviewsRouter from "./reviews.routes";
+import { PlanRouter, SubscriptionRouter } from "./subs";
+import UserRouter from "./user.routes";
 
 export {
-  UserRouter,
-  AuthRouter,
-  InfluencerRouter,
-  OrganizerRouter,
-  PlanRouter,
-  SubscriptionRouter,
-  PaymentsRouter,
-  EventsRouter,
-  CouponsRouter,
-  ProductsRouter,
-  CartRouter
+  AuthRouter, CartRouter, CouponsRouter, EventsRouter, InfluencerRouter,
+  OrganizerRouter, PaymentsRouter, PlanRouter, ProductsRouter, ReviewsRouter, SubscriptionRouter, UserRouter
 };
+

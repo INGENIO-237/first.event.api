@@ -5,9 +5,19 @@ const profileSchema = new Schema(
     user: {
       type: Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      default: 0,
     },
   },
-  { timestamps: true, discriminatorKey: "type" }
+  {
+    timestamps: true,
+    discriminatorKey: "type",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 export interface IProfile

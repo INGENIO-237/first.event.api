@@ -58,4 +58,16 @@ export default class ProductController {
 
     res.status(HTTP.OK).json({ message: "Produit mis à jour avec succès" });
   }
+
+  async deleteProduct(
+    req: Request<UpdateProductInput["params"]>,
+    res: Response
+  ) {
+    await this.productServices.deleteProduct({
+      productId: req.params.product,
+      organizer: ((req as any).organizer as IOrganizer)._id as string,
+    });
+
+    res.status(HTTP.OK).json({ message: "Produit supprimé avec succès" });
+  }
 }

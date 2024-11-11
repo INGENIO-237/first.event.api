@@ -113,7 +113,14 @@ export const createEventSchema = object({
       required_error: "Le titre est requis",
       invalid_type_error: "Le titre doit être une chaîne de caractères",
     }),
-    video: string().optional(),
+    video: optional(
+      string({
+        invalid_type_error:
+          "Le lien de la vidéo doit être une chaîne de caractères",
+      }).url({
+        message: "Le lien de la vidéo doit être une URL valide",
+      })
+    ),
     description: string({
       required_error: "La description est requise",
       invalid_type_error: "La description doit être une chaîne de caractères",
@@ -147,7 +154,14 @@ export const createEventSchema = object({
       required_error: "Le type d'événement est requis",
       invalid_type_error: "Le type d'événement doit être une valeur valide",
     }),
-    eventLink: string().optional(),
+    eventLink: optional(
+      string({
+        invalid_type_error:
+          "Le lien de l'événement doit être une chaîne de caractères",
+      }).url({
+        message: "Le lien de l'événement doit être une URL valide",
+      })
+    ),
     location: optional(
       object({
         geo: object(

@@ -1,5 +1,4 @@
 import { Document, InferSchemaType, model, Schema, Types } from "mongoose";
-import { ASSISTANCE, TICKETS_PER_EVENT } from "../../utils/constants/plans-and-subs";
 
 const subscriptionSchema = new Schema(
   {

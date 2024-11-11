@@ -1,19 +1,43 @@
 import { Request, Response } from "express";
 import { Service } from "typedi";
-import HTTP from "../../utils/constants/http.responses";
+import {
+  GetSubscription,
+  GetSubscriptions,
+} from "../../schemas/subs/subscription.schemas";
 import SubscriptionServices from "../../services/subs/subscription.services";
+import HTTP from "../../utils/constants/http.responses";
 
 @Service()
 export default class SubscriptionController {
   constructor(private service: SubscriptionServices) {}
 
-  // TODO: Get subscriptions list
-  async getSubscriptions(req: Request, res: Response) {}
-  // TODO: Get single subscritption
-  async getSubscription(req: Request, res: Response) {}
-  // TODO: Update subscription
-  async updateSubscription(req: Request, res: Response) {}
-  // Request subscription cancellation
+  async getSubscriptions(
+    req: Request<{}, {}, {}, GetSubscriptions["query"]>,
+    res: Response
+  ) {
+    const user = (req as any).user;
+
+    const subscriptions = await this.service.getSubscriptions({
+      user,
+      ...req.query,
+    });
+
+    return res.status(HTTP.OK).json(subscriptions);
+  }
+
+  async getSubscription(
+    req: Request<GetSubscription["params"]>,
+    res: Response
+  ) {
+    const { subscription: subId } = req.params;
+
+    const subscription = await this.service.getSubscription({
+      subscriptionId: subId,
+    });
+
+    return res.status(HTTP.OK).json(subscription);
+  }
+
   async cancelSubscription(req: Request, res: Response) {
     const { id } = (req as any).user;
 

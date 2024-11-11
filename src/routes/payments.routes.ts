@@ -11,6 +11,7 @@ import { createProductPaymentSchema } from "../schemas/payments/product.payment.
 import { createTicketPaymentSchema } from "../schemas/payments/ticket.payment.schemas";
 import { registerSubscriptionSchema } from "../schemas/subs/subscription.schemas";
 import { tryCatch } from "../utils/errors/errors.utlis";
+import { requestPaymentRefundSchema } from "../schemas/payments/refund.schemas";
 
 const PaymentsRouter = Router();
 
@@ -46,6 +47,12 @@ PaymentsRouter.post(
   validate(createTicketPaymentSchema),
   tryCatch(payments.initiateTicketPayment.bind(payments))
 );
+PaymentsRouter.post(
+  "/tickets/refund/:payment",
+  isLoggedIn,
+  validate(requestPaymentRefundSchema),
+  tryCatch(payments.requestTicketPaymentRefund.bind(payments))
+);
 
 // Products
 PaymentsRouter.post(
@@ -53,6 +60,12 @@ PaymentsRouter.post(
   isLoggedIn,
   validate(createProductPaymentSchema),
   tryCatch(payments.initiateProductPayment.bind(payments))
+);
+PaymentsRouter.post(
+  "/products/refund/:payment",
+  isLoggedIn,
+  validate(requestPaymentRefundSchema),
+  tryCatch(payments.requestProductPaymentRefund.bind(payments))
 );
 
 // General webhooks

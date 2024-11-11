@@ -1,11 +1,7 @@
-import { Document, InferSchemaType, Schema, Types } from "mongoose";
-import Profile from "../profile.model";
+import { InferSchemaType, Schema, Types } from "mongoose";
+import Profile, { IProfile } from "../profile.model";
 
 const organizerSchema = new Schema({
-  user: {
-    type: Types.ObjectId,
-    ref: "User",
-  },
   experience: {
     type: String,
     required: true,
@@ -28,12 +24,23 @@ const organizerSchema = new Schema({
   },
   subscription: {
     type: Types.ObjectId,
-    ref: "Subscription"
-  }
+    ref: "Subscription",
+  },
+  website: String,
+  socialMedia: {
+    facebook: String,
+    twitter: String,
+    instagram: String,
+    linkedin: String,
+    youtube: String,
+    tiktok: String,
+    other: String,
+  },
+  description: String,
 });
 
 export interface IOrganizer
-  extends Document,
+  extends IProfile,
     InferSchemaType<typeof organizerSchema> {}
 
 const Organizer = Profile.discriminator<IOrganizer>(
