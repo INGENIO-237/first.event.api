@@ -10,22 +10,33 @@ import {
   ENV,
 } from "../../../utils/constants/common";
 import HTTP from "../../../utils/constants/http.responses";
-import { PAYMENT_STATUS } from "../../../utils/constants/plans-and-subs";
+import {
+  PAYMENT_ACTIONS,
+  PAYMENT_STATUS,
+} from "../../../utils/constants/plans-and-subs";
 import ApiError from "../../../utils/errors/errors.base";
 import CartServices from "../../cart.services";
 import CouponServices from "../../coupons/coupon.services";
 import UserServices from "../../user.services";
 import StripeServices from "../stripe.services";
+import EventEmitter from "node:events";
+import EventBus from "../../../hooks/event-bus";
+import moment from "moment";
+import { ObjectId } from "mongoose";
 
 @Service()
 export default class ProductPaymentServices {
+  private emitter: EventEmitter;
+
   constructor(
     private readonly repository: ProductPaymentRepo,
     private readonly userService: UserServices,
     private readonly stripe: StripeServices,
     private readonly couponService: CouponServices,
     private readonly cartService: CartServices
-  ) {}
+  ) {
+    this.emitter = EventBus.getEmitter();
+  }
 
   async createProductPayment(payload: CreateProductPaymentPayload) {
     const { coupons, paymentMethodId, user, billing, shipping } = payload;
@@ -111,6 +122,77 @@ export default class ProductPaymentServices {
     };
   }
 
+  async requestProductPaymentRefund({
+    payment,
+    user,
+  }: {
+    payment: string;
+    user: {
+      id: string;
+      isAdmin: boolean;
+    };
+  }) {
+    const {
+      user: payer,
+      amount,
+      paymentIntent,
+      updatedAt,
+      refund
+    } = (await this.getProductPayment({
+      paymentId: payment,
+      raiseException: true,
+    })) as IProductPayment;
+
+    if(refund){
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Vous avez déjà demandé un remboursement pour ce paiement."
+      );
+    }
+
+    if ((payer as ObjectId).toString() !== user.id && !user.isAdmin) {
+      throw new ApiError(
+        HTTP.FORBIDDEN,
+        "Vous n'êtes pas autorisé à effectuer cette action"
+      );
+    }
+
+    if (paymentIntent == "free" || amount == 0) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Vous ne pouvez pas demander un remboursement pour cet événement.Veuillez contacter l'administrateur pour plus d'informations."
+      );
+    }
+
+    const REFUND_DEADLINE = config.PRODUCT_REFUND_DEADLINE; // Days
+    const present = new Date();
+
+    const dateDiff = moment(present).diff(moment(updatedAt), "days");
+
+    if (dateDiff > REFUND_DEADLINE) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Vous ne pouvez plus demander un remboursement pour cet événement. Le délai est passé. Veuillez contacter l'organisateur pour plus d'informations."
+      );
+    }
+
+    this.emitter.emit(PAYMENT_ACTIONS.REFUND_PRODUCT, { payment, amount });
+  }
+
+  async refundProductPayment({
+    paymentId,
+    amount,
+  }: {
+    paymentId: string;
+    amount: number;
+  }) {
+    const { paymentIntent } = (await this.getProductPayment({
+      paymentId,
+    })) as IProductPayment;
+
+    return await this.stripe.createRefund({ paymentIntent, amount });
+  }
+
   private async computeTotal(data: ComputeTotalProductData) {
     let total = 0;
 
@@ -144,14 +226,22 @@ export default class ProductPaymentServices {
   async getProductPayment({
     paymentIntent,
     paymentId,
+    raiseException = false,
   }: {
     paymentIntent?: string;
     paymentId?: string;
+    raiseException?: boolean;
   }) {
-    return await this.repository.getProductPayment({
+    const payment = await this.repository.getProductPayment({
       paymentIntent,
       paymentId,
     });
+
+    if (!payment && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Paiement introuvable");
+    }
+
+    return payment;
   }
 
   async updateProductPayment({

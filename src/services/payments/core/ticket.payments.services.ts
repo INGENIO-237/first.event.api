@@ -119,10 +119,15 @@ export default class TicketPaymentServices {
       user: payer,
       amount,
       paymentIntent,
+      refund
     } = (await this.getTicketPayment({
       paymentId: payment,
       raiseException: true,
     })) as ITicketPayment;
+
+    if(refund){
+      throw new ApiError(HTTP.BAD_REQUEST, "Ce paiement a déjà été remboursé.");
+    }
 
     let isOrganizer = false;
 
@@ -151,12 +156,12 @@ export default class TicketPaymentServices {
     }
 
     // TODO: Get refund deadline from organizer's profile
-    const REFUND_DEADLINE = 1; // Days
+    const TICKET_REFUND_DEADLINE = config.TICKET_REFUND_DEADLINE; // Days
     const present = new Date();
 
     const dateDiff = moment(present).diff(moment(startDate), "days");
 
-    if (dateDiff < REFUND_DEADLINE && !isOrganizer) {
+    if (dateDiff < TICKET_REFUND_DEADLINE && !isOrganizer) {
       throw new ApiError(
         HTTP.BAD_REQUEST,
         "Vous ne pouvez plus demander un remboursement pour cet événement. Le délai est passé. Veuillez contacter l'organisateur pour plus d'informations."

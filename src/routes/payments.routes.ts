@@ -8,9 +8,10 @@ import { isLoggedIn } from "../middlewares/auth";
 import validate from "../middlewares/validate.request";
 import { registerPaymentMethodSchema } from "../schemas/payments/methods.schemas";
 import { createProductPaymentSchema } from "../schemas/payments/product.payment.schemas";
-import { createTicketPaymentSchema, requestTicketPaymentRefund } from "../schemas/payments/ticket.payment.schemas";
+import { createTicketPaymentSchema } from "../schemas/payments/ticket.payment.schemas";
 import { registerSubscriptionSchema } from "../schemas/subs/subscription.schemas";
 import { tryCatch } from "../utils/errors/errors.utlis";
+import { requestPaymentRefundSchema } from "../schemas/payments/refund.schemas";
 
 const PaymentsRouter = Router();
 
@@ -49,7 +50,7 @@ PaymentsRouter.post(
 PaymentsRouter.post(
   "/tickets/refund/:payment",
   isLoggedIn,
-  validate(requestTicketPaymentRefund),
+  validate(requestPaymentRefundSchema),
   tryCatch(payments.requestTicketPaymentRefund.bind(payments))
 );
 
@@ -59,6 +60,12 @@ PaymentsRouter.post(
   isLoggedIn,
   validate(createProductPaymentSchema),
   tryCatch(payments.initiateProductPayment.bind(payments))
+);
+PaymentsRouter.post(
+  "/products/refund/:payment",
+  isLoggedIn,
+  validate(requestPaymentRefundSchema),
+  tryCatch(payments.requestProductPaymentRefund.bind(payments))
 );
 
 // General webhooks

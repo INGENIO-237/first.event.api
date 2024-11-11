@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
-import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import HTTP from "../../utils/constants/http.responses";
 import { Service } from "typedi";
-import PaymentsServices from "../../services/payments/payments.services";
-import {
-  CreateTicketPaymentInput,
-  RequestTicketPaymentRefundInput,
-} from "../../schemas/payments/ticket.payment.schemas";
 import { CreateProductPaymentInput } from "../../schemas/payments/product.payment.schemas";
+import { CreateTicketPaymentInput } from "../../schemas/payments/ticket.payment.schemas";
+import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
+import PaymentsServices from "../../services/payments/payments.services";
+import HTTP from "../../utils/constants/http.responses";
+import { RequestPaymentRefundInput } from "../../schemas/payments/refund.schemas";
 
 @Service()
 export default class PaymentsController {
@@ -43,7 +41,7 @@ export default class PaymentsController {
   }
 
   async requestTicketPaymentRefund(
-    req: Request<RequestTicketPaymentRefundInput["params"]>,
+    req: Request<RequestPaymentRefundInput["params"]>,
     res: Response
   ) {
     await this.service.requestTicketPaymentRefund({
@@ -72,6 +70,22 @@ export default class PaymentsController {
     return res.status(HTTP.CREATED).json(payment);
   }
 
+  async requestProductPaymentRefund(
+    req: Request<RequestPaymentRefundInput["params"]>,
+    res: Response
+  ) {
+    await this.service.requestProductPaymentRefund({
+      payment: req.params.payment,
+      user: (req as any).user,
+    });
+
+    return res.status(HTTP.CREATED).json({
+      message:
+        "Votre requête a bien été prise en compte. Nous allons la traiter, et vous revenir. Merci de bien vouloir patienter.",
+    });
+  }
+
+  // Webhook
   async handleWebhook(req: Request, res: Response) {
     const signature = req.headers["stripe-signature"] as string | string[];
 

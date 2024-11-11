@@ -1,11 +1,12 @@
 import "reflect-metadata";
 
 import { InferSchemaType, Schema, Types } from "mongoose";
-import Payment, { IPayment } from "./payment.model";
-import { BILLING_TYPE } from "../../utils/constants/plans-and-subs";
 import Container from "typedi";
-import { IPlan } from "../subs/plan.model";
 import PlanServices from "../../services/subs/plan.services";
+import { BILLING_TYPE } from "../../utils/constants/plans-and-subs";
+import { IPlan } from "../subs/plan.model";
+import Payment, { IPayment } from "./payment.model";
+import Refund from "./refund.model";
 
 const subscriptionPaymentSchema = new Schema({
   plan: {
@@ -23,9 +24,19 @@ const subscriptionPaymentSchema = new Schema({
   },
 });
 
+subscriptionPaymentSchema.virtual("refund").get(async function () {
+  const payment = this as ISubscriptionPayment;
+  const refund = await Refund.findOne({
+    $or: [{ payment: payment._id }, { paymentIntent: payment.paymentIntent }],
+  });
+  return refund;
+});
+
 export interface ISubscriptionPayment
   extends IPayment,
-    InferSchemaType<typeof subscriptionPaymentSchema> {}
+    InferSchemaType<typeof subscriptionPaymentSchema> {
+  refund: InstanceType<typeof Refund> | null;
+}
 
 // Set subscription unit price from plan's monthly or yearly price
 subscriptionPaymentSchema.pre<ISubscriptionPayment>(

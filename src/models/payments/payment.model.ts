@@ -67,10 +67,22 @@ const paymentSchema = new Schema(
       },
       required: true,
     },
+    fundsDispatched: {
+      type: Boolean,
+      default: false,
+    },
+    fundsDispatchedOn: {
+      type: Date,
+    },
 
     // TODO: Pass taxes property here
   },
-  { timestamps: true, discriminatorKey: "type" }
+  {
+    timestamps: true,
+    discriminatorKey: "type",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 export interface IPayment

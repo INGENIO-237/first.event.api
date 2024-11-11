@@ -95,6 +95,19 @@ export default class RefundServices {
     });
   }
 
+  async processProductRefundRequest({
+    amount,
+    payment,
+  }: {
+    amount: number;
+    payment: string;
+  }) {
+    await this.initiateRefund({
+      paymentId: payment,
+      amount,
+    });
+  }
+
   async initiateRefund({
     paymentId,
     amount,

@@ -66,9 +66,22 @@ export default class PaymentsServices {
     });
   }
 
-  // Product
+  // Products
   async initiateProductPayment(data: CreateProductPaymentPayload) {
     return await this.productPaymentService.createProductPayment(data);
+  }
+
+  async requestProductPaymentRefund({
+    payment,
+    user,
+  }: {
+    payment: string;
+    user: { id: string; isAdmin: boolean };
+  }) {
+    await this.productPaymentService.requestProductPaymentRefund({
+      payment,
+      user,
+    });
   }
 
   // Refunds
@@ -95,16 +108,15 @@ export default class PaymentsServices {
         rfId = ticketRefundId;
         acquirer = ticketAcquirerReferenceNumber;
         break;
-
-      // case PAYMENT_TYPE.PRODUCT:
-      //   const { id: prodId, acquirerReferenceNumber: prodAcquirer } =
-      //     (await this.productPaymentService.refundProductPayment({
-      //       paymentId,
-      //       amount,
-      //     })) as { id: string; acquirerReferenceNumber: string };
-      //   rfId = prodId;
-      //   acquirer = prodAcquirer;
-      //   break;
+      case PAYMENT_TYPE.PRODUCT:
+        const { id: prodId, acquirerReferenceNumber: prodAcquirer } =
+          (await this.productPaymentService.refundProductPayment({
+            paymentId,
+            amount,
+          })) as { id: string; acquirerReferenceNumber: string };
+        rfId = prodId;
+        acquirer = prodAcquirer;
+        break;
       default:
         const { id, acquirerReferenceNumber } =
           (await this.subscriptionPaymentService.refundSubscriptionPayment({
@@ -119,6 +131,7 @@ export default class PaymentsServices {
     return { rfId, acquirer };
   }
 
+  // Webhooks & utilities
   async handleWebhook(signature: string | string[], data: string | Buffer) {
     const event = this.stripe.constructEvent({ signature, data });
 
@@ -258,11 +271,11 @@ export default class PaymentsServices {
           });
         }
 
-        // if (refundType === REFUND_TYPES.PRODUCT) {
-        //   this.emitter.emit(PAYMENT_ACTIONS.REFUND_PRODUCT_SUCCEEDED, {
-        //     paymentIntent,
-        //   });
-        // }
+        if (refundType === REFUND_TYPES.PRODUCT) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_PRODUCT_SUCCEEDED, {
+            paymentIntent,
+          });
+        }
         break;
       default:
         logger.error("Invalid payment type");
@@ -306,6 +319,13 @@ export default class PaymentsServices {
 
         if (refundType === REFUND_TYPES.TICKET) {
           this.emitter.emit(PAYMENT_ACTIONS.REFUND_TICKET_FAILED, {
+            paymentIntent,
+            failMessage,
+          });
+        }
+
+        if (refundType === REFUND_TYPES.PRODUCT) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_PRODUCT_FAILED, {
             paymentIntent,
             failMessage,
           });
