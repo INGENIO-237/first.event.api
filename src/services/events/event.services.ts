@@ -27,8 +27,6 @@ export default class EventServices {
     private readonly subscriptionService: SubscriptionServices
   ) {}
 
-  // TODO: A day after an event is done, automatically send the funds to the organizer
-
   async getEvents(filters: GetEvents["query"]) {
     return await this.eventRepo.getEvents(filters);
   }

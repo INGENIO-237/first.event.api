@@ -7,7 +7,12 @@ const profileSchema = new Schema(
       ref: "User",
     },
   },
-  { timestamps: true, discriminatorKey: "type" }
+  {
+    timestamps: true,
+    discriminatorKey: "type",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 export interface IProfile

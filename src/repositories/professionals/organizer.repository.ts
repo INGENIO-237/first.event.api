@@ -12,9 +12,10 @@ export default class OrganizerRepo {
     return await Organizer.create({ user: userId, ...payload });
   }
 
-
-  async getOrganizer(userId: string){
-    return await Organizer.findOne({user: new Types.ObjectId(userId)}).populate("subscription user");
+  async getOrganizer(userId: string) {
+    return await Organizer.findOne({
+      user: new Types.ObjectId(userId),
+    }).populate("subscription user");
   }
 
   async updateOrganizer(
@@ -23,7 +24,10 @@ export default class OrganizerRepo {
   ) {
     await Organizer.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
-      { ...update }
+      { ...update },
+      {
+        new: true,
+      }
     );
   }
 }
