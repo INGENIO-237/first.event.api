@@ -1,20 +1,24 @@
 import "reflect-metadata";
 
-import { InferSchemaType, Model, Schema, Types } from "mongoose";
+import {
+  Document,
+  InferSchemaType,
+  Model,
+  model,
+  Schema,
+  Types,
+} from "mongoose";
+import Container from "typedi";
+import EventServices from "../../services/events/event.services";
+import OrganizerServices from "../../services/professionals/organizer.services";
 import {
   EVENT_STATUS,
   EVENT_TYPE,
   TAX_POLICY,
 } from "../../utils/constants/events";
-import { Document } from "mongoose";
-import { model } from "mongoose";
-import Container from "typedi";
-import OrganizerServices from "../../services/professionals/organizer.services";
-import EventServices from "../../services/events/event.services";
-import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import ApiError from "../../utils/errors/errors.base";
 import { getSlug } from "../../utils/utilities";
-import { IOrganizer } from "../professionals/organizer.model";
 
 const eventSchema = new Schema(
   {

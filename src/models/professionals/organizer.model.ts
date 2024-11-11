@@ -36,13 +36,7 @@ const organizerSchema = new Schema({
     tiktok: String,
     other: String,
   },
-  description: String
-});
-
-organizerSchema.virtual("rating").get(function () {
-  // TODO: Compute rating based on user's reviews
-
-  return 5;
+  description: String,
 });
 
 export interface IOrganizer
