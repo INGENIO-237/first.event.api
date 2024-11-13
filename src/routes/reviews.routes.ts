@@ -5,13 +5,17 @@ import Container from "typedi";
 import InfluencerReviewsController from "../controllers/reviews/influencer.review.controller";
 import OrganizerReviewsController from "../controllers/reviews/organizer.review.controller";
 import { isLoggedIn } from "../middlewares/auth";
+import { isValidOrganizer } from "../middlewares/professionals";
 import validate from "../middlewares/validate.request";
+import {
+  createInfluencerReviewSchema,
+  getInfluencerReviewsSchema,
+} from "../schemas/reviews/influencer.review.schemas";
 import {
   createOrganizerReviewSchema,
   getOrganizerReviewsSchema,
 } from "../schemas/reviews/organizer.review.schemas";
 import { tryCatch } from "../utils/errors/errors.utlis";
-import { isValidOrganizer } from "../middlewares/organizer";
 
 const ReviewsRouter = Router();
 
@@ -36,7 +40,7 @@ ReviewsRouter.post(
   "/influencers",
   isLoggedIn,
   isValidOrganizer,
-  validate(createOrganizerReviewSchema),
+  validate(createInfluencerReviewSchema),
   tryCatch(influencers.createReview.bind(influencers))
 );
 
@@ -44,7 +48,7 @@ ReviewsRouter.get(
   "/influencers",
   isLoggedIn,
   isValidOrganizer,
-  validate(getOrganizerReviewsSchema),
+  validate(getInfluencerReviewsSchema),
   tryCatch(influencers.getReviews.bind(influencers))
 );
 

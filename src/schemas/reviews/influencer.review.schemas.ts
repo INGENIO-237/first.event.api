@@ -17,10 +17,10 @@ export const createInfluencerReviewSchema = object({
       invalid_type_error: "Le commentaire doit être une chaîne de caractères",
     }).optional(),
     influencer: string({
-      required_error: "L'organisateur est requis",
-      invalid_type_error: "L'organisateur doit être une chaîne de caractères",
+      required_error: "L'influenceur est requis",
+      invalid_type_error: "L'influenceur doit être une chaîne de caractères",
     }).refine((data) => Types.ObjectId.isValid(data), {
-      message: "L'organisateur doit être une chaîne de caractères valide",
+      message: "L'influenceur doit être une chaîne de caractères valide",
     }),
   }),
 });
@@ -37,8 +37,8 @@ export type CreateInfluencerReviewPayload =
 export const getInfluencerReviewsSchema = object({
   query: object({
     influencer: string({
-      required_error: "L'organisateur est requis",
-      invalid_type_error: "L'organisateur doit être une chaîne de caractères",
+      required_error: "L'influenceur est requis",
+      invalid_type_error: "L'influenceur doit être une chaîne de caractères",
     }),
   }),
 });

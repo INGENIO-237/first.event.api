@@ -22,9 +22,9 @@ export default class OrganizerReviewServices {
     const existingOrganizer = await this.organizerService.getOrganizer(user);
 
     if (existingOrganizer) {
-      const { _id: orgUser } = existingOrganizer;
+      const { _id: organizerId } = existingOrganizer;
 
-      if (organizer == (orgUser as ObjectId).toString()) {
+      if (organizer == (organizerId as ObjectId).toString()) {
         throw new ApiError(
           HTTP.BAD_REQUEST,
           "Vous ne pouvez pas vous évaluer vous-même"

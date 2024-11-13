@@ -22,9 +22,9 @@ export default class InfluencerReviewServices {
     const existingInfluencer = await this.influencerService.getInfluencer(user);
 
     if (existingInfluencer) {
-      const { _id: orgUser } = existingInfluencer;
+      const { _id: influencerId } = existingInfluencer;
 
-      if (influencer == (orgUser as ObjectId).toString()) {
+      if (influencer == (influencerId as ObjectId).toString()) {
         throw new ApiError(
           HTTP.BAD_REQUEST,
           "Vous ne pouvez pas vous évaluer vous-même"
