@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 import { array, boolean, number, object, optional, string, z } from "zod";
 import { DiscountedCoupon } from "../../utils/constants/common";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { PAYMENT_STATUS } from "../../utils/constants/payments-and-subs";
 
 export const createTicketPaymentSchema = object({
   body: object({

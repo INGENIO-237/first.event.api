@@ -34,9 +34,8 @@ export default class AuthServices {
     } else {
       otp && (await this.validateOtp({ email, otp: otp as number }));
 
-      // TODO: Add isAdmin property here
-      accessToken = this.jwt.signJwt({ user: user._id });
-      refreshToken = this.jwt.signJwt({ user: user._id }, true);
+      accessToken = this.jwt.signJwt({ user: user._id, isAdmin: user.isAdmin });
+      refreshToken = this.jwt.signJwt({ user: user._id, isAdmin: user.isAdmin }, true);
     }
 
     return { accessToken, refreshToken, otpGenerated };

@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { InferSchemaType, Schema, Types } from "mongoose";
 import Container from "typedi";
 import PlanServices from "../../services/subs/plan.services";
-import { BILLING_TYPE } from "../../utils/constants/plans-and-subs";
+import { BILLING_TYPE } from "../../utils/constants/payments-and-subs";
 import { IPlan } from "../subs/plan.model";
 import Payment, { IPayment } from "./payment.model";
 import Refund from "./refund.model";

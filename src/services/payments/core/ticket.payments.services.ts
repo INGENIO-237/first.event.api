@@ -19,7 +19,7 @@ import HTTP from "../../../utils/constants/http.responses";
 import {
   PAYMENT_ACTIONS,
   PAYMENT_STATUS,
-} from "../../../utils/constants/plans-and-subs";
+} from "../../../utils/constants/payments-and-subs";
 import ApiError from "../../../utils/errors/errors.base";
 import CouponServices from "../../coupons/coupon.services";
 import UserServices from "../../user.services";
@@ -119,13 +119,13 @@ export default class TicketPaymentServices {
       user: payer,
       amount,
       paymentIntent,
-      refund
+      refund,
     } = (await this.getTicketPayment({
       paymentId: payment,
       raiseException: true,
     })) as ITicketPayment;
 
-    if(refund){
+    if (refund) {
       throw new ApiError(HTTP.BAD_REQUEST, "Ce paiement a déjà été remboursé.");
     }
 

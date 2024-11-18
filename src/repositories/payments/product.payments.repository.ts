@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { ProductPaymentPayload } from "../../schemas/payments/product.payment.schemas";
 import ProductPayment from "../../models/payments/product.payment.model";
 import { Types } from "mongoose";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { PAYMENT_STATUS } from "../../utils/constants/payments-and-subs";
 
 @Service()
 export default class ProductPaymentRepo {

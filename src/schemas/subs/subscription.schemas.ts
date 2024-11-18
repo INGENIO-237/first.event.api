@@ -3,7 +3,7 @@ import {
   ASSISTANCE,
   BILLING_TYPE,
   TICKETS_PER_EVENT,
-} from "../../utils/constants/plans-and-subs";
+} from "../../utils/constants/payments-and-subs";
 import { Types } from "mongoose";
 import config from "../../config";
 

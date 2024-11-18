@@ -123,6 +123,12 @@ const userSchema = new Schema(
         },
       },
     },
+
+    // Admin
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

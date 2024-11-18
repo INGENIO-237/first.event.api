@@ -1,15 +1,13 @@
 import { Document, InferSchemaType, model, Schema } from "mongoose";
 import {
   ASSISTANCE,
-  PLANS,
   TICKETS_PER_EVENT,
-} from "../../utils/constants/plans-and-subs";
+} from "../../utils/constants/payments-and-subs";
 
 const planSchema = new Schema({
   name: {
     type: String,
     required: true,
-    enum: [...Object.values(PLANS)],
   },
   monthlyPrice: {
     type: Number,
@@ -40,6 +38,10 @@ const planSchema = new Schema({
   promotion: {
     type: Number,
     default: 0,
+  },
+  hasBeenDeleted: {
+    type: Boolean,
+    default: false,
   },
 });
 

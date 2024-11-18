@@ -11,13 +11,11 @@ function processDecodedPayload(
   decoded: JwtPayload,
   next: NextFunction
 ) {
-  // TODO: Retrieve isAdmin property too
-  const { user } = decoded;
+  const { user, isAdmin } = decoded;
 
-  // TODO: Add isAdmin property too
   (req as any).user = {
     id: user,
-    isAdmin: true, // TODO: Change this to be dynamic
+    isAdmin,
   };
 
   return next();
@@ -67,4 +65,3 @@ export function isAdmin(req: Request, res: Response, next: NextFunction) {
 
   return next();
 }
-

@@ -1,6 +1,6 @@
 import { Document, InferSchemaType, model, Schema } from "mongoose";
 import { ORDER_PAYMENT_TYPE, ORDER_TYPE } from "../../utils/constants/common";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { PAYMENT_STATUS } from "../../utils/constants/payments-and-subs";
 
 const gainSchema = new Schema(
   {

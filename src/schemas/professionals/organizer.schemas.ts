@@ -115,3 +115,11 @@ export const updateOrganizerSchema = object({
 });
 
 export type UpdateOrganizer = z.infer<typeof updateOrganizerSchema>;
+
+export type UpdateOrganizerPayload = UpdateOrganizer["body"] & {
+  subscription?: string;
+  connectedAccount?: string;
+  connectedAccountCompleted?: boolean;
+  accountCompletionLink?: string;
+  accountLinkExpiresAt?: Date;
+};

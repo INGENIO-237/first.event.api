@@ -85,3 +85,10 @@ export const updateInfluencerSchema = object({
 });
 
 export type UpdateInfluencer = z.infer<typeof updateInfluencerSchema>;
+
+export type UpdateInfluencerPayload = UpdateInfluencer["body"] & {
+  connectedAccount?: string;
+  connectedAccountCompleted?: boolean;
+  accountCompletionLink?: string;
+  accountLinkExpiresAt?: Date;
+};
