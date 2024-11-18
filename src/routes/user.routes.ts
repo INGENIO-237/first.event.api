@@ -23,8 +23,7 @@ const multer = Container.get(MulterServices);
 
 const uploader = multer.uploader;
 
-// TODO: Ensure this is accessed only by admin
-UserRouter.get("", tryCatch(controller.getUsers.bind(controller)));
+UserRouter.get("", isAdmin, tryCatch(controller.getUsers.bind(controller)));
 
 UserRouter.post(
   "/register",

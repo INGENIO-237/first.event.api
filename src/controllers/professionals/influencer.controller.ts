@@ -11,7 +11,6 @@ import { Service } from "typedi";
 export default class InfluencerController {
   constructor(private service: InfluencerServices) {}
 
-  // TODO: Set a similar route for admin too
   async registerInfluencer( 
     req: Request<{}, {}, RegisterInfluencer["body"]>,
     res: Response

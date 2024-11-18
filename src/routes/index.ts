@@ -1,4 +1,5 @@
 import AuthRouter from "./auth.routes";
+import EventBookmarkRouter from "./bookmarks/event.bookmark.routes";
 import CartRouter from "./cart.routes";
 import CouponsRouter from "./coupon.routes";
 import EventsRouter from "./events/event.routes";
@@ -10,7 +11,17 @@ import { PlanRouter, SubscriptionRouter } from "./subs";
 import UserRouter from "./user.routes";
 
 export {
-  AuthRouter, CartRouter, CouponsRouter, EventsRouter, InfluencerRouter,
-  OrganizerRouter, PaymentsRouter, PlanRouter, ProductsRouter, ReviewsRouter, SubscriptionRouter, UserRouter
+  AuthRouter,
+  CartRouter,
+  CouponsRouter,
+  EventBookmarkRouter,
+  EventsRouter,
+  InfluencerRouter,
+  OrganizerRouter,
+  PaymentsRouter,
+  PlanRouter,
+  ProductsRouter,
+  ReviewsRouter,
+  SubscriptionRouter,
+  UserRouter,
 };
-
