@@ -1,10 +1,10 @@
 import "reflect-metadata";
 
 import { NextFunction, Request, Response } from "express";
-import HTTP from "../utils/constants/http.responses";
+import { JwtPayload } from "jsonwebtoken";
 import Container from "typedi";
 import JwtServices from "../services/utils/jwt.services";
-import { JwtPayload } from "jsonwebtoken";
+import HTTP from "../utils/constants/http.responses";
 
 function processDecodedPayload(
   req: Request,
@@ -15,7 +15,7 @@ function processDecodedPayload(
 
   (req as any).user = {
     id: user,
-    isAdmin,
+    isAdmin: isAdmin ? isAdmin : false,
   };
 
   return next();
@@ -48,11 +48,11 @@ export function isLoggedIn(req: Request, res: Response, next: NextFunction) {
 
     if (expired) return res.sendStatus(HTTP.UNAUTHORIZED);
 
-    const { user } = decoded as JwtPayload;
+    const { user, isAdmin } = decoded as JwtPayload;
 
-    const newAccessToken = jwt.reIssueAccesstoken({ user });
+    const newAccessToken = jwt.reIssueAccesstoken({ user, isAdmin });
 
-    res.setHeader("x-access-token", newAccessToken);
+    if(!res.headersSent) res.setHeader("x-access-token", newAccessToken);
 
     return processDecodedPayload(req, decoded as JwtPayload, next);
   }

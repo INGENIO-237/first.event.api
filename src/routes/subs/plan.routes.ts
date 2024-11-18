@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { Router } from "express";
 import Container from "typedi";
 import PlanController from "../../controllers/subs/plan.controller";
-import { isAdmin } from "../../middlewares/auth";
+import { isAdmin, isLoggedIn } from "../../middlewares/auth";
 import validate from "../../middlewares/validate.request";
 import {
   createPlanSchema,
@@ -17,7 +17,8 @@ const controller = Container.get(PlanController);
 // FIXME: 404 not found for endpoints that apply isAdmin
 PlanRouter.post(
   "",
-  isAdmin,
+  // isAdmin,
+  isLoggedIn,
   validate(createPlanSchema),
   tryCatch(controller.createPlan.bind(controller))
 );

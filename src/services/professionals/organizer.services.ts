@@ -36,6 +36,15 @@ export default class OrganizerServices {
       throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà influenceur");
     }
 
+    const { isAdmin } = (await this.userService.getUser({ userId })) as IUser;
+
+    if (isAdmin) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Vous ne pouvez pas être organisateur et administrateur en même temps"
+      );
+    }
+
     const existingOrganizer = await this.getOrganizer(userId);
 
     if (existingOrganizer) {
@@ -71,7 +80,6 @@ export default class OrganizerServices {
 
     return organizer;
   }
-
 
   async getOrganizerByCAccountId(
     connectedAccount: string,

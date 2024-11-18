@@ -39,6 +39,15 @@ export default class InfluencerServices {
       throw new ApiError(HTTP.BAD_REQUEST, "Vous êtes déjà organisateur");
     }
 
+    const { isAdmin } = (await this.userService.getUser({ userId })) as IUser;
+
+    if (isAdmin) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Vous ne pouvez pas être influenceur si vous êtes administrateur"
+      );
+    }
+
     const existingInfluencer = await this.getInfluencer(userId);
 
     if (existingInfluencer) {
