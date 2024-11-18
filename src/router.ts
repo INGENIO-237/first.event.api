@@ -10,6 +10,7 @@ import {
   PaymentsRouter,
   PlanRouter,
   ProductsRouter,
+  ReportsRouter,
   ReviewsRouter,
   SubscriptionRouter,
   UserRouter,
@@ -33,5 +34,6 @@ export default function router(server: Express) {
   server.use("/products", ProductsRouter);
   server.use("/cart", CartRouter);
   server.use("/reviews", ReviewsRouter);
+  server.use("/reports", ReportsRouter);
   server.use("/bookmarks/events", EventBookmarkRouter);
 }
