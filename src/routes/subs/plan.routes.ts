@@ -14,11 +14,10 @@ import { tryCatch } from "../../utils/errors/errors.utlis";
 const PlanRouter = Router();
 const controller = Container.get(PlanController);
 
-// FIXME: 404 not found for endpoints that apply isAdmin
 PlanRouter.post(
   "",
-  // isAdmin,
   isLoggedIn,
+  isAdmin,
   validate(createPlanSchema),
   tryCatch(controller.createPlan.bind(controller))
 );
@@ -29,6 +28,7 @@ PlanRouter.get("/:name", tryCatch(controller.getPlanByName.bind(controller)));
 
 PlanRouter.put(
   "/:plan",
+  isLoggedIn,
   isAdmin,
   validate(updatePlanSchema),
   tryCatch(controller.updatePlan.bind(controller))
@@ -36,6 +36,7 @@ PlanRouter.put(
 
 PlanRouter.delete(
   "/:plan",
+  isLoggedIn,
   isAdmin,
   tryCatch(controller.deletePlan.bind(controller))
 );
