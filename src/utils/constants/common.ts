@@ -66,3 +66,8 @@ export enum REPORT_STATUS {
   RESOLVED = "resolved",
   REJECTED = "rejected",
 }
+
+export type User = {
+  id: string;
+  isAdmin: boolean;
+};

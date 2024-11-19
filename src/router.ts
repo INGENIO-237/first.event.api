@@ -5,6 +5,7 @@ import {
   CouponsRouter,
   EventBookmarkRouter,
   EventsRouter,
+  FollowingRouter,
   InfluencerRouter,
   OrganizerRouter,
   PaymentsRouter,
@@ -36,4 +37,5 @@ export default function router(server: Express) {
   server.use("/reviews", ReviewsRouter);
   server.use("/reports", ReportsRouter);
   server.use("/bookmarks/events", EventBookmarkRouter);
+  server.use("/followings", FollowingRouter);
 }

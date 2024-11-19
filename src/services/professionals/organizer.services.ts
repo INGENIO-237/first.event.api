@@ -81,6 +81,16 @@ export default class OrganizerServices {
     return organizer;
   }
 
+  async getOrganizerById(id: string, raiseException = true) {
+    const organizer = await this.repository.getOrganizerById(id);
+
+    if (!organizer && raiseException) {
+      throw new ApiError(HTTP.NOT_FOUND, "Cet organisateur n'existe pas");
+    }
+
+    return organizer;
+  }
+
   async getOrganizerByCAccountId(
     connectedAccount: string,
     raiseException = false

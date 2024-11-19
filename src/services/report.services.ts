@@ -1,9 +1,9 @@
 import { Service } from "typedi";
 import ReportRepo from "../repositories/report.repository";
 import {
-    CreateReportPayload,
-    GetReports,
-    UpdateReport,
+  CreateReportPayload,
+  GetReports,
+  UpdateReport,
 } from "../schemas/report.schemas";
 import HTTP from "../utils/constants/http.responses";
 import ApiError from "../utils/errors/errors.base";
@@ -27,9 +27,12 @@ export default class ReportServices {
     if (target) await this.userService.getUser({ userId: target });
     if (product) await this.productService.getProduct({ productId: product });
 
-    // if(user == target){
-    //     throw new ApiError(HTTP.BAD_REQUEST, "Vous ne pouvez pas vous signaler vous-même");
-    // }
+    if (user == target) {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        "Vous ne pouvez pas vous signaler vous-même"
+      );
+    }
 
     return await this.repository.create(payload);
   }

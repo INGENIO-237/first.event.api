@@ -3,6 +3,7 @@ import EventBookmarkRouter from "./bookmarks/event.bookmark.routes";
 import CartRouter from "./cart.routes";
 import CouponsRouter from "./coupon.routes";
 import EventsRouter from "./events/event.routes";
+import FollowingRouter from "./following.routes";
 import PaymentsRouter from "./payments.routes";
 import ProductsRouter from "./products/product.routes";
 import { InfluencerRouter, OrganizerRouter } from "./professionals";
@@ -17,6 +18,7 @@ export {
   CouponsRouter,
   EventBookmarkRouter,
   EventsRouter,
+  FollowingRouter,
   InfluencerRouter,
   OrganizerRouter,
   PaymentsRouter,
