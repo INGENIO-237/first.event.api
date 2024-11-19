@@ -21,6 +21,20 @@ export const registerOrganizerSchema = object({
       invalid_type_error:
         "La liste de vos objectifs doit être un tableau de chaînes de caractères",
     }).min(1, "Au moins un objectif est requis"),
+    location: object({
+      city: string({
+        required_error: "La ville est requise",
+        invalid_type_error: "La ville doit être une chaîne de caractères",
+      }),
+      country: string({
+        required_error: "Le pays est requis",
+        invalid_type_error: "Le pays doit être une chaîne de caractères",
+      }),
+      state: string({
+        required_error: "L'état est requis",
+        invalid_type_error: "L'état doit être une chaîne de caractères",
+      }),
+    }),
   }),
 });
 
@@ -56,6 +70,22 @@ export const updateOrganizerSchema = object({
         invalid_type_error:
           "La liste de vos objectifs doit être un tableau de chaînes de caractères",
       }).min(1, "Au moins un objectif est requis")
+    ),
+    location: optional(
+      object({
+        city: string({
+          required_error: "La ville est requise",
+          invalid_type_error: "La ville doit être une chaîne de caractères",
+        }),
+        country: string({
+          required_error: "Le pays est requis",
+          invalid_type_error: "Le pays doit être une chaîne de caractères",
+        }),
+        state: string({
+          required_error: "L'état est requis",
+          invalid_type_error: "L'état doit être une chaîne de caractères",
+        }),
+      })
     ),
     website: optional(
       string({

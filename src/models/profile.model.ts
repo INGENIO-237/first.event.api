@@ -1,5 +1,7 @@
 import { Document, InferSchemaType, model, Schema, Types } from "mongoose";
 
+// TODO: Update influencer's social media
+
 const profileSchema = new Schema(
   {
     user: {
@@ -17,7 +19,24 @@ const profileSchema = new Schema(
       default: false,
     },
     accountCompletionLink: String,
-    accountLinkExpiresAt: Date
+    accountLinkExpiresAt: Date,
+    location: {
+      type: {
+        country: { type: String, required: true },
+        state: { type: String, required: true },
+        city: { type: String, required: true },
+      },
+      required: true,
+    },
+    socialMedia: {
+      facebook: String,
+      twitter: String,
+      instagram: String,
+      linkedin: String,
+      youtube: String,
+      tiktok: String,
+      other: String,
+    },
   },
   {
     timestamps: true,

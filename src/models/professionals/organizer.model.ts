@@ -27,15 +27,6 @@ const organizerSchema = new Schema({
     ref: "Subscription",
   },
   website: String,
-  socialMedia: {
-    facebook: String,
-    twitter: String,
-    instagram: String,
-    linkedin: String,
-    youtube: String,
-    tiktok: String,
-    other: String,
-  },
   description: String,
 });
 
