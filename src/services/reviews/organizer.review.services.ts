@@ -1,13 +1,13 @@
+import { ObjectId } from "mongoose";
 import { Service } from "typedi";
 import OrganizerReviewRepo from "../../repositories/reviews/organizer.review.repository";
 import {
   CreateOrganizerReviewPayload,
   GetOrganizerReviewsInput,
 } from "../../schemas/reviews/organizer.review.schemas";
-import OrganizerServices from "../professionals/organizer.services";
-import { ObjectId } from "mongoose";
-import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import ApiError from "../../utils/errors/errors.base";
+import OrganizerServices from "../professionals/organizer.services";
 
 @Service()
 export default class OrganizerReviewServices {
@@ -19,15 +19,12 @@ export default class OrganizerReviewServices {
   async createReview(data: CreateOrganizerReviewPayload) {
     const { user, organizer } = data;
 
-    const existingOrganizer = await this.organizerService.getOrganizer(
-      user,
-      false
-    );
+    const existingOrganizer = await this.organizerService.getOrganizer(user);
 
     if (existingOrganizer) {
-      const { _id: orgUser } = existingOrganizer;
+      const { _id: organizerId } = existingOrganizer;
 
-      if (organizer == (orgUser as ObjectId).toString()) {
+      if (organizer == (organizerId as ObjectId).toString()) {
         throw new ApiError(
           HTTP.BAD_REQUEST,
           "Vous ne pouvez pas vous évaluer vous-même"

@@ -6,7 +6,7 @@ import { IPlan } from "../../../models/subs/plan.model";
 import {
   BILLING_TYPE,
   PAYMENT_STATUS,
-} from "../../../utils/constants/plans-and-subs";
+} from "../../../utils/constants/payments-and-subs";
 import { ENV } from "../../../utils/constants/common";
 import OrganizerServices from "../../professionals/organizer.services";
 import UserServices from "../../user.services";
@@ -25,11 +25,7 @@ export default class SubscriptionPaymentServices {
     private userService: UserServices
   ) {}
 
-async getSubscriptionPayments({
-    user,
-  }: {
-    user: string;
-  }) {
+  async getSubscriptionPayments({ user }: { user: string }) {
     return await this.repository.getSubscriptionPayments({
       user,
     });

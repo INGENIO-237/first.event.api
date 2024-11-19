@@ -11,10 +11,17 @@ import {
 } from "../../schemas/events/event.schemas";
 import { imageUploader } from "../../middlewares/cloudinary";
 import EventController from "../../controllers/events/event.controller";
-import { isValidOrganizer, validateSubscription } from "../../middlewares/organizer";
+import {
+  isValidOrganizer,
+  validateSubscription,
+} from "../../middlewares/professionals";
 import { tryCatch } from "../../utils/errors/errors.utlis";
 import { isLoggedIn } from "../../middlewares/auth";
-import { parseBodyLocation, parseQueryLocation, parseTickets } from "../../middlewares/parse-fields";
+import {
+  parseBodyLocation,
+  parseQueryLocation,
+  parseTickets,
+} from "../../middlewares/parse-fields";
 
 const EventsRouter = Router();
 

@@ -1,10 +1,10 @@
+import { Types } from "mongoose";
 import { Service } from "typedi";
+import Organizer from "../../models/professionals/organizer.model";
 import {
   RegisterOrganizer,
-  UpdateOrganizer,
+  UpdateOrganizerPayload,
 } from "../../schemas/professionals/organizer.schemas";
-import Organizer from "../../models/professionals/organizer.model";
-import { Types } from "mongoose";
 
 @Service()
 export default class OrganizerRepo {
@@ -18,10 +18,15 @@ export default class OrganizerRepo {
     }).populate("subscription user");
   }
 
-  async updateOrganizer(
-    userId: string,
-    update: UpdateOrganizer["body"] & { subscription?: string }
-  ) {
+  async getOrganizerById(id: string) {
+    return await Organizer.findById(id).populate("user");
+  }
+
+  async getOrganizerByCAccountId(connectedAccount: string) {
+    return await Organizer.findOne({ connectedAccount });
+  }
+
+  async updateOrganizer(userId: string, update: UpdateOrganizerPayload) {
     await Organizer.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       { ...update },

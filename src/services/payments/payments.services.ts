@@ -12,7 +12,7 @@ import {
   PAYMENT_TYPE_PREDICTION,
   REFUND_TYPES,
   STRIPE_EVENT_TYPES,
-} from "../../utils/constants/plans-and-subs";
+} from "../../utils/constants/payments-and-subs";
 import logger from "../../utils/logger";
 import {
   ProductPaymentServices,
@@ -20,6 +20,7 @@ import {
   TicketPaymentServices,
 } from "./core";
 import StripeServices from "./stripe.services";
+import { USERS_ACTIONS } from "../../utils/constants/user.utils";
 
 @Service()
 export default class PaymentsServices {
@@ -181,6 +182,17 @@ export default class PaymentsServices {
           failMessage: failMessage as string,
           paymentType,
         });
+      }
+
+      if (eventType === STRIPE_EVENT_TYPES.ACCOUNT_EXTERNAL_ACCOUNT_UPDATED) {
+        const { account } = event.data.object;
+
+        const { id: connectedAccount } = account as Stripe.Account;
+
+        this.emitter.emit(
+          USERS_ACTIONS.ACCOUNT_EXTERNAL_ACCOUNT_UPDATED,
+          connectedAccount
+        );
       }
     }
   }

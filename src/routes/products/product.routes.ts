@@ -14,7 +14,7 @@ import { isLoggedIn } from "../../middlewares/auth";
 import {
   isValidOrganizer,
   validateSubscription,
-} from "../../middlewares/organizer";
+} from "../../middlewares/professionals";
 import { imageUploader } from "../../middlewares/cloudinary";
 import ProductController from "../../controllers/products/product.controller";
 

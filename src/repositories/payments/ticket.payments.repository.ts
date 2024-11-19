@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { TicketPaymentPayload } from "../../schemas/payments/ticket.payment.schemas";
 import TicketPayment from "../../models/payments/ticket.payment.model";
 import { Types } from "mongoose";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { PAYMENT_STATUS } from "../../utils/constants/payments-and-subs";
 
 @Service()
 export default class TicketPaymentRepo {

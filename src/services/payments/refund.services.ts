@@ -10,7 +10,7 @@ import {
   PAYMENT_STATUS,
   PAYMENT_TYPE_PREDICTION,
   REFUND_TYPES,
-} from "../../utils/constants/plans-and-subs";
+} from "../../utils/constants/payments-and-subs";
 import ApiError from "../../utils/errors/errors.base";
 import PaymentsServices from "./payments.services";
 

@@ -1,6 +1,6 @@
 import { Document, InferSchemaType, model, Types } from "mongoose";
 import { Schema } from "mongoose";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { PAYMENT_STATUS } from "../../utils/constants/payments-and-subs";
 
 const paymentSchema = new Schema(
   {

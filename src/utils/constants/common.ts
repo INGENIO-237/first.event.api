@@ -60,3 +60,14 @@ export enum COUPON_STATUS {
   ACTIVE = "active",
   INACTIVE = "inactive",
 }
+
+export enum REPORT_STATUS {
+  PENDING = "pending",
+  RESOLVED = "resolved",
+  REJECTED = "rejected",
+}
+
+export type User = {
+  id: string;
+  isAdmin: boolean;
+};

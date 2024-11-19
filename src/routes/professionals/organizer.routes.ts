@@ -22,6 +22,12 @@ OrganizerRouter.post(
   tryCatch(controller.registerOrganizer.bind(controller))
 );
 
+OrganizerRouter.get(
+  "/:id",
+  isLoggedIn,
+  tryCatch(controller.getOrganizer.bind(controller))
+);
+
 OrganizerRouter.put(
   "",
   validate(updateOrganizerSchema),

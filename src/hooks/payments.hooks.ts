@@ -9,7 +9,7 @@ import {
   PAYMENT_ACTIONS,
   PAYMENT_STATUS,
   TICKETS_PER_EVENT,
-} from "../utils/constants/plans-and-subs";
+} from "../utils/constants/payments-and-subs";
 import { ISubscriptionPayment } from "../models/payments/subscription.payment.model";
 import { IPlan } from "../models/subs/plan.model";
 import moment from "moment";

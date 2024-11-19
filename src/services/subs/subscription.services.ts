@@ -12,7 +12,7 @@ import HTTP from "../../utils/constants/http.responses";
 import {
   PAYMENT_ACTIONS,
   PAYMENT_STATUS,
-} from "../../utils/constants/plans-and-subs";
+} from "../../utils/constants/payments-and-subs";
 import ApiError from "../../utils/errors/errors.base";
 import { SubscriptionPaymentServices } from "../payments/core";
 import OrganizerServices from "../professionals/organizer.services";
@@ -173,13 +173,8 @@ export default class SubscriptionServices {
     }
 
     // Make sure we don't cancel twice. So that we don't refund twice.
-    const {
-      hasBeenCancelled,
-      cancelDate,
-      endsOn,
-      freemiumEndsOn,
-      payment,
-    } = subscription as ISubscription;
+    const { hasBeenCancelled, cancelDate, endsOn, freemiumEndsOn, payment } =
+      subscription as ISubscription;
 
     if (hasBeenCancelled && cancelDate) {
       throw new ApiError(

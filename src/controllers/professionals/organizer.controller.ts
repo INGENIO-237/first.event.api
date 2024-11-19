@@ -11,7 +11,6 @@ import { Service } from "typedi";
 export default class OrganizerController {
   constructor(private service: OrganizerServices) {}
 
-  // TODO: Set a similar route for admin too
   async registerOrganizer(
     req: Request<{}, {}, RegisterOrganizer["body"]>,
     res: Response
@@ -24,6 +23,12 @@ export default class OrganizerController {
     );
 
     return res.status(HTTP.CREATED).json(organizer);
+  }
+
+  async getOrganizer(req: Request, res: Response) {
+    const organizer = await this.service.getOrganizerById(req.params.id);
+
+    return res.status(HTTP.OK).json(organizer);
   }
 
   async updateOrganizer(

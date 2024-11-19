@@ -11,6 +11,13 @@ const profileSchema = new Schema(
       type: Number,
       default: 0,
     },
+    connectedAccount: String,
+    connectedAccountCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    accountCompletionLink: String,
+    accountLinkExpiresAt: Date
   },
   {
     timestamps: true,

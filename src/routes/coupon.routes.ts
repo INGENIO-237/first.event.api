@@ -2,27 +2,27 @@ import "reflect-metadata";
 
 import { Request, Response, Router } from "express";
 import Container from "typedi";
+import ProductCouponController from "../controllers/coupons/product.coupon.controller";
+import TicketCouponController from "../controllers/coupons/ticket.coupon.controller";
 import { isLoggedIn } from "../middlewares/auth";
 import {
   isValidOrganizer,
   validateSubscription,
-} from "../middlewares/organizer";
+} from "../middlewares/professionals";
 import validate from "../middlewares/validate.request";
-import { tryCatch } from "../utils/errors/errors.utlis";
-import { generateCouponCode } from "../utils/utilities";
-import HTTP from "../utils/constants/http.responses";
-import TicketCouponController from "../controllers/coupons/ticket.coupon.controller";
-import {
-  getTicketCouponsSchema,
-  registerTicketCouponSchema,
-  updateTicketCouponSchema,
-} from "../schemas/coupons/ticket.coupon.schemas";
 import {
   getProductCouponsSchema,
   registerProductCouponSchema,
   updateProductCouponSchema,
 } from "../schemas/coupons/product.coupon.schemas";
-import ProductCouponController from "../controllers/coupons/product.coupon.controller";
+import {
+  getTicketCouponsSchema,
+  registerTicketCouponSchema,
+  updateTicketCouponSchema,
+} from "../schemas/coupons/ticket.coupon.schemas";
+import HTTP from "../utils/constants/http.responses";
+import { tryCatch } from "../utils/errors/errors.utlis";
+import { generateCouponCode } from "../utils/utilities";
 
 const CouponsRouter = Router();
 

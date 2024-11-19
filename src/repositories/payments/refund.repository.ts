@@ -1,7 +1,7 @@
 import { Service } from "typedi";
 import { CreateRefund } from "../../schemas/payments/refund.schemas";
 import Refund from "../../models/payments/refund.model";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { PAYMENT_STATUS } from "../../utils/constants/payments-and-subs";
 import { Types } from "mongoose";
 
 @Service()

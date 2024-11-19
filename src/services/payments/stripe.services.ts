@@ -1,8 +1,8 @@
-import { Service } from "typedi";
 import { Stripe } from "stripe";
+import { Service } from "typedi";
 import config from "../../config";
-import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import ApiError from "../../utils/errors/errors.base";
 import logger from "../../utils/logger";
 
 @Service()
@@ -185,5 +185,48 @@ export default class StripeServices {
     } catch (err: any) {
       throw new ApiError(HTTP.BAD_REQUEST, `Webhook Error: ${err.message}`);
     }
+  }
+
+  async createConnectedAccount({
+    email,
+    name,
+  }: {
+    email: string;
+    name: string;
+  }) {
+    const { id: connectedAccount } = await this._stripe.accounts.create({
+      type: "express",
+      country: "AE", // TODO: Change this CA
+      email,
+      business_type: "individual",
+      capabilities: {
+        transfers: { requested: true },
+      },
+      business_profile: {
+        name,
+      },
+    }).catch((error) => {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        `Erreur lors de la création du compte: ${error.message}`
+      );
+    });
+
+    const { accountCompletionLink, accountLinkExpiresAt } =
+      await this.createAccountLink(connectedAccount);
+
+    return { connectedAccount, accountCompletionLink, accountLinkExpiresAt };
+  }
+
+  async createAccountLink(accountId: string) {
+    const { url: accountCompletionLink, expires_at: accountLinkExpiresAt } =
+      await this._stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: "https://example.com/reauth",
+        return_url: "https://example.com/return",
+        type: "account_onboarding",
+      });
+
+    return { accountCompletionLink, accountLinkExpiresAt };
   }
 }

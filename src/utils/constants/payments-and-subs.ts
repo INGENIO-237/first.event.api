@@ -11,12 +11,6 @@ export enum ASSISTANCE {
   PRIORITY = "Prioritaire",
 }
 
-export enum PLANS {
-  ESSENTIAL = "Essentiel",
-  PROFESSIONAL = "Professionnel",
-  PREMIUM = "Premium",
-}
-
 export enum BILLING_TYPE {
   MONTHLY = "Mensuel",
   YEARLY = "Annuel",
@@ -35,6 +29,7 @@ export enum STRIPE_EVENT_TYPES {
   CHARGE_FAILED = "charge.failed",
   CHARGE_EXPIRED = "charge.expired",
   CHARGE_REFUNDED = "charge.refunded",
+  ACCOUNT_EXTERNAL_ACCOUNT_UPDATED = "account.external_account.updated",
 }
 
 export enum PAYMENT_ACTIONS {

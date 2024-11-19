@@ -12,7 +12,7 @@ import {
 import { Image } from "../../utils/constants/common";
 import { EVENT_STATUS } from "../../utils/constants/events";
 import HTTP from "../../utils/constants/http.responses";
-import { TICKETS_PER_EVENT } from "../../utils/constants/plans-and-subs";
+import { TICKETS_PER_EVENT } from "../../utils/constants/payments-and-subs";
 import ApiError from "../../utils/errors/errors.base";
 import OrganizerServices from "../professionals/organizer.services";
 import SubscriptionServices from "../subs/subscription.services";

@@ -13,7 +13,7 @@ import HTTP from "../../../utils/constants/http.responses";
 import {
   PAYMENT_ACTIONS,
   PAYMENT_STATUS,
-} from "../../../utils/constants/plans-and-subs";
+} from "../../../utils/constants/payments-and-subs";
 import ApiError from "../../../utils/errors/errors.base";
 import CartServices from "../../cart.services";
 import CouponServices from "../../coupons/coupon.services";
@@ -137,13 +137,13 @@ export default class ProductPaymentServices {
       amount,
       paymentIntent,
       updatedAt,
-      refund
+      refund,
     } = (await this.getProductPayment({
       paymentId: payment,
       raiseException: true,
     })) as IProductPayment;
 
-    if(refund){
+    if (refund) {
       throw new ApiError(
         HTTP.BAD_REQUEST,
         "Vous avez déjà demandé un remboursement pour ce paiement."
