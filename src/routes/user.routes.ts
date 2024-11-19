@@ -23,7 +23,12 @@ const multer = Container.get(MulterServices);
 
 const uploader = multer.uploader;
 
-UserRouter.get("", isAdmin, tryCatch(controller.getUsers.bind(controller)));
+UserRouter.get(
+  "",
+  isLoggedIn,
+  isAdmin,
+  tryCatch(controller.getUsers.bind(controller))
+);
 
 UserRouter.post(
   "/register",

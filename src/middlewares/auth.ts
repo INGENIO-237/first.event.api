@@ -59,8 +59,6 @@ export function isLoggedIn(req: Request, res: Response, next: NextFunction) {
 }
 
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
-  isLoggedIn(req, res, next);
-
   if (!(req as any).user.isAdmin) return res.sendStatus(HTTP.FORBIDDEN);
 
   return next();
