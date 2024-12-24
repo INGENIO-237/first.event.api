@@ -2,7 +2,7 @@ import "reflect-metadata";
 
 import { InferSchemaType, Schema, Types } from "mongoose";
 import Payment, { IPayment } from "./payment.model";
-import { REFUND_TYPES } from "../../utils/constants/plans-and-subs";
+import { REFUND_TYPES } from "../../utils/constants/payments-and-subs";
 // import Container from "typedi";
 // import SubscriptionServices from "../../services/subs/subscription.services";
 

@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import JwtServices from "./utils/jwt.services";
 import { LoginPayload, ResetPwd, VerifAccount } from "../schemas/auth.schemas";
 import UserServices from "./user.services";
-import OtpServices from "./otp.services";
+import OtpServices from "./utils/otp.services";
 import { IUser } from "../models/user.model";
 import ApiError from "../utils/errors/errors.base";
 import HTTP from "../utils/constants/http.responses";
@@ -34,12 +34,15 @@ export default class AuthServices {
     } else {
       otp && (await this.validateOtp({ email, otp: otp as number }));
 
-      // TODO: Add isAdmin property here
-      accessToken = this.jwt.signJwt({ user: user._id });
-      refreshToken = this.jwt.signJwt({ user: user._id }, true);
+      accessToken = this.jwt.signJwt({ user: user._id, isAdmin: user.isAdmin });
+      refreshToken = this.jwt.signJwt({ user: user._id, isAdmin: user.isAdmin }, true);
     }
 
     return { accessToken, refreshToken, otpGenerated };
+  }
+
+  async getCurrentUser(userId: string) {
+    return await this.userService.getUser({ userId });
   }
 
   private async sendOtp({ email }: { email: string }) {

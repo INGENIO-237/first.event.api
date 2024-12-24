@@ -1,10 +1,10 @@
+import { Types } from "mongoose";
 import { Service } from "typedi";
+import Influencer from "../../models/professionals/influencer.model";
 import {
   RegisterInfluencer,
-  UpdateInfluencer,
+  UpdateInfluencerPayload,
 } from "../../schemas/professionals/influencer.schemas";
-import Influencer from "../../models/professionals/influencer.model";
-import { Types } from "mongoose";
 
 @Service()
 export default class InfluencerRepo {
@@ -19,7 +19,11 @@ export default class InfluencerRepo {
     return await Influencer.findById(userId);
   }
 
-  async updateInfluencer(userId: string, update: UpdateInfluencer["body"]) {
+  async getInfluencerByCAccountId(connectedAccount: string) {
+    return await Influencer.findOne({ connectedAccount });
+  }
+
+  async updateInfluencer(userId: string, update: UpdateInfluencerPayload) {
     await Influencer.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       { ...update }

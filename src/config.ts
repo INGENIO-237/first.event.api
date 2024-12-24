@@ -4,6 +4,12 @@ const config = {
   PORT: process.env.PORT || 5000,
   SALT: Number(process.env.SALT),
   DB_URI: process.env.DB_URI as string,
+  COUPON_LENGTH: (process.env.COUPON_LENGTH ?? 8) as number,
+  PAYMENT_CONFIRMATION_TIMEOUT: (process.env.PAYMENT_CONFIRMATION_TIMEOUT ?? 7000) as number, // in ms
+
+  // Refunds validity deadlines
+  TICKET_REFUND_DEADLINE: (process.env.TICKET_REFUND_DEADLINE ?? 1) as number, // in days
+  PRODUCT_REFUND_DEADLINE: (process.env.PRODUCT_REFUND_DEADLINE ?? 5) as number, // in days
 
   // MAIL
   MAIL_HOST: process.env.MAIL_HOST as string,

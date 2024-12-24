@@ -1,18 +1,19 @@
 import { Service } from "typedi";
-import SubscriptionPaymentRepo from "../../repositories/payments/subscription.payments.repository";
-import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import StripeServices from "./stripe.services";
-import { IPlan } from "../../models/subs/plan.model";
+import SubscriptionPaymentRepo from "../../../repositories/payments/subscription.payments.repository";
+import { RegisterSubscription } from "../../../schemas/subs/subscription.schemas";
+import StripeServices from "../stripe.services";
+import { IPlan } from "../../../models/subs/plan.model";
 import {
   BILLING_TYPE,
   PAYMENT_STATUS,
-} from "../../utils/constants/plans-and-subs";
-import { ENV } from "../../utils/constants/common";
-import OrganizerServices from "../professionals/organizer.services";
-import UserServices from "../user.services";
-import { IUser } from "../../models/user.model";
-import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
-import PlanServices from "../subs/plan.services";
+} from "../../../utils/constants/payments-and-subs";
+import { ENV } from "../../../utils/constants/common";
+import OrganizerServices from "../../professionals/organizer.services";
+import UserServices from "../../user.services";
+import { IUser } from "../../../models/user.model";
+import { ISubscriptionPayment } from "../../../models/payments/subscription.payment.model";
+import PlanServices from "../../subs/plan.services";
+import config from "../../../config";
 
 @Service()
 export default class SubscriptionPaymentServices {
@@ -24,10 +25,16 @@ export default class SubscriptionPaymentServices {
     private userService: UserServices
   ) {}
 
+  async getSubscriptionPayments({ user }: { user: string }) {
+    return await this.repository.getSubscriptionPayments({
+      user,
+    });
+  }
+
   async createSubscriptionPayment(
     payload: RegisterSubscription["body"] & { user: string }
   ) {
-    const { plan, coupons, billed, user } = payload;
+    const { plan, coupons, billed, user, paymentMethodId } = payload;
 
     let amount: number;
     // Get plan and price
@@ -37,8 +44,6 @@ export default class SubscriptionPaymentServices {
     )) as IPlan;
 
     amount = billed == BILLING_TYPE.MONTHLY ? monthlyPrice : yearlyPrice * 12;
-
-    // TODO: Apply coupons if any
     // TODO: Apply taxes
 
     // Ensure current user is legit to create a subscription payment
@@ -55,36 +60,39 @@ export default class SubscriptionPaymentServices {
       await this.stripe.initiatePayment({
         amount,
         customerId: stripeCustomer as string,
+        paymentMethodId,
       });
 
     // Persist to DB
-    await this.repository.createSubscriptionPayment({
+    const { _id: paymentId } = await this.repository.createSubscriptionPayment({
       ...payload,
       paymentIntent,
       amount,
       fees,
     });
 
-    // Dev purpose only
-    if (process.env.NODE_ENV !== ENV.PROD) {
+    if (process.env.NODE_ENV !== ENV.PROD || paymentMethodId) {
       setTimeout(() => {
         this.stripe.confirmPaymentIntent(paymentIntent);
-      }, 7000);
+      }, config.PAYMENT_CONFIRMATION_TIMEOUT);
     }
 
-    return { paymentIntent, ephemeralKey, clientSecret };
+    return { paymentIntent, ephemeralKey, clientSecret, paymentId };
   }
 
   async getSubscriptionPayment({
     paymentId,
     paymentIntent,
+    user,
   }: {
     paymentId?: string;
     paymentIntent?: string;
+    user?: string;
   }) {
     return await this.repository.getSubscriptionPayment({
       paymentId,
       paymentIntent,
+      user,
     });
   }
 

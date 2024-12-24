@@ -1,17 +1,26 @@
+import EventEmitter from "node:events";
 import Stripe from "stripe";
 import { Service } from "typedi";
-import StripeServices from "./stripe.services";
-import SubscriptionPaymentServices from "./subscription.payments.services";
+import EventBus from "../../hooks/event-bus";
+import Refund, { IRefund } from "../../models/payments/refund.model";
+import { CreateProductPaymentPayload } from "../../schemas/payments/product.payment.schemas";
+import { CreateTicketPaymentPayload } from "../../schemas/payments/ticket.payment.schemas";
+import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
 import { PAYMENT_TYPE } from "../../utils/constants/common";
 import {
-  PAYMENT_TYPE_PREDICTION,
   PAYMENT_ACTIONS,
-  PAYMENT_STATUS,
-} from "../../utils/constants/plans-and-subs";
+  PAYMENT_TYPE_PREDICTION,
+  REFUND_TYPES,
+  STRIPE_EVENT_TYPES,
+} from "../../utils/constants/payments-and-subs";
 import logger from "../../utils/logger";
-import { RegisterSubscription } from "../../schemas/subs/subscription.schemas";
-import EventBus from "../../hooks/event-bus";
-import EventEmitter from "node:events";
+import {
+  ProductPaymentServices,
+  SubscriptionPaymentServices,
+  TicketPaymentServices,
+} from "./core";
+import StripeServices from "./stripe.services";
+import { USERS_ACTIONS } from "../../utils/constants/user.utils";
 
 @Service()
 export default class PaymentsServices {
@@ -19,7 +28,9 @@ export default class PaymentsServices {
 
   constructor(
     private stripe: StripeServices,
-    private subscriptionPaymentService: SubscriptionPaymentServices
+    private subscriptionPaymentService: SubscriptionPaymentServices,
+    private ticketPaymentService: TicketPaymentServices,
+    private productPaymentService: ProductPaymentServices
   ) {
     this.emitter = EventBus.getEmitter();
   }
@@ -38,8 +49,41 @@ export default class PaymentsServices {
     });
   }
 
-  // TODO: Events
-  // TODO: Tickets
+  // Tickets
+  async initiateTicketPayment(data: CreateTicketPaymentPayload) {
+    return await this.ticketPaymentService.createTicketPayment(data);
+  }
+
+  async requestTicketPaymentRefund({
+    payment,
+    user,
+  }: {
+    payment: string;
+    user: string;
+  }) {
+    await this.ticketPaymentService.requestTicketPaymentRefund({
+      payment,
+      user,
+    });
+  }
+
+  // Products
+  async initiateProductPayment(data: CreateProductPaymentPayload) {
+    return await this.productPaymentService.createProductPayment(data);
+  }
+
+  async requestProductPaymentRefund({
+    payment,
+    user,
+  }: {
+    payment: string;
+    user: { id: string; isAdmin: boolean };
+  }) {
+    await this.productPaymentService.requestProductPaymentRefund({
+      payment,
+      user,
+    });
+  }
 
   // Refunds
   async refundPayment({
@@ -53,19 +97,42 @@ export default class PaymentsServices {
   }) {
     let rfId, acquirer;
 
-    if (paymentType === PAYMENT_TYPE.SUBSCRIPTION) {
-      const { id, acquirerReferenceNumber } =
-        (await this.subscriptionPaymentService.refundSubscriptionPayment({
+    switch (paymentType) {
+      case PAYMENT_TYPE.TICKET:
+        const {
+          id: ticketRefundId,
+          acquirerReferenceNumber: ticketAcquirerReferenceNumber,
+        } = (await this.ticketPaymentService.refundTicketPayment({
           paymentId,
           amount,
         })) as { id: string; acquirerReferenceNumber: string };
-      rfId = id;
-      acquirer = acquirerReferenceNumber;
+        rfId = ticketRefundId;
+        acquirer = ticketAcquirerReferenceNumber;
+        break;
+      case PAYMENT_TYPE.PRODUCT:
+        const { id: prodId, acquirerReferenceNumber: prodAcquirer } =
+          (await this.productPaymentService.refundProductPayment({
+            paymentId,
+            amount,
+          })) as { id: string; acquirerReferenceNumber: string };
+        rfId = prodId;
+        acquirer = prodAcquirer;
+        break;
+      default:
+        const { id, acquirerReferenceNumber } =
+          (await this.subscriptionPaymentService.refundSubscriptionPayment({
+            paymentId,
+            amount,
+          })) as { id: string; acquirerReferenceNumber: string };
+        rfId = id;
+        acquirer = acquirerReferenceNumber;
+        break;
     }
 
     return { rfId, acquirer };
   }
 
+  // Webhooks & utilities
   async handleWebhook(signature: string | string[], data: string | Buffer) {
     const event = this.stripe.constructEvent({ signature, data });
 
@@ -74,12 +141,20 @@ export default class PaymentsServices {
     const paymentIntent = (event.data.object as Stripe.Charge)
       .payment_intent as string;
 
-    if (paymentIntent) {
-      const { type: paymentType } = (await this.predictPaymentType({
+    if (
+      paymentIntent &&
+      [...Object.values(STRIPE_EVENT_TYPES)].includes(
+        eventType as STRIPE_EVENT_TYPES
+      )
+    ) {
+      const { type: paymentType, refundType } = (await this.predictPaymentType({
         paymentIntent,
       })) as PAYMENT_TYPE_PREDICTION;
 
-      if (eventType === "charge.captured" || eventType === "charge.succeeded") {
+      if (
+        eventType === STRIPE_EVENT_TYPES.CHARGE_CAPTURED ||
+        eventType === STRIPE_EVENT_TYPES.CHARGE_SUCCEEDED
+      ) {
         const receipt = (event.data.object.receipt_url as string) ?? undefined;
 
         await this.handleSuccessfullPayment({
@@ -89,14 +164,17 @@ export default class PaymentsServices {
         });
       }
 
-      if (eventType === "charge.refunded") {
+      if (eventType === STRIPE_EVENT_TYPES.CHARGE_REFUNDED) {
         await this.handleSuccessfullPayment({
           paymentIntent,
           paymentType: PAYMENT_TYPE.REFUND,
         });
       }
 
-      if (eventType === "charge.expired" || eventType === "charge.failed") {
+      if (
+        eventType === STRIPE_EVENT_TYPES.CHARGE_EXPIRED ||
+        eventType === STRIPE_EVENT_TYPES.CHARGE_FAILED
+      ) {
         const { failure_message: failMessage } = event.data.object;
 
         await this.handleFailedPayment({
@@ -104,6 +182,17 @@ export default class PaymentsServices {
           failMessage: failMessage as string,
           paymentType,
         });
+      }
+
+      if (eventType === STRIPE_EVENT_TYPES.ACCOUNT_EXTERNAL_ACCOUNT_UPDATED) {
+        const { account } = event.data.object;
+
+        const { id: connectedAccount } = account as Stripe.Account;
+
+        this.emitter.emit(
+          USERS_ACTIONS.ACCOUNT_EXTERNAL_ACCOUNT_UPDATED,
+          connectedAccount
+        );
       }
     }
   }
@@ -121,16 +210,35 @@ export default class PaymentsServices {
         paymentId,
       });
 
+    const ticketPayment = await this.ticketPaymentService.getTicketPayment({
+      paymentIntent,
+      paymentId,
+    });
+
+    const productPayment = await this.productPaymentService.getProductPayment({
+      paymentIntent,
+      paymentId,
+    });
+
     if (subscriptionPayment) {
       const { paymentIntent } = subscriptionPayment;
       return { type: PAYMENT_TYPE.SUBSCRIPTION, paymentIntent };
-      // TODO: Add for tickets and articles too
-    } else {
-      return { type: PAYMENT_TYPE.REFUND, paymentIntent };
     }
+
+    if (ticketPayment) {
+      const { paymentIntent } = ticketPayment;
+      return { type: PAYMENT_TYPE.TICKET, paymentIntent };
+    }
+
+    if (productPayment) {
+      const { paymentIntent } = productPayment;
+      return { type: PAYMENT_TYPE.PRODUCT, paymentIntent };
+    }
+
+    return { type: PAYMENT_TYPE.REFUND, paymentIntent };
   }
 
-  async handleSuccessfullPayment({
+  private async handleSuccessfullPayment({
     paymentIntent,
     receipt,
     paymentType,
@@ -146,10 +254,40 @@ export default class PaymentsServices {
           receipt,
         });
         break;
-      case PAYMENT_TYPE.REFUND:
-        this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_SUCCEEDED, {
+      case PAYMENT_TYPE.TICKET:
+        this.emitter.emit(PAYMENT_ACTIONS.TICKET_PAYMENT_SUCCEEDED, {
           paymentIntent,
+          receipt,
         });
+        break;
+      case PAYMENT_TYPE.PRODUCT:
+        this.emitter.emit(PAYMENT_ACTIONS.PRODUCT_PAYMENT_SUCCEEDED, {
+          paymentIntent,
+          receipt,
+        });
+        break;
+      case PAYMENT_TYPE.REFUND:
+        const { refundType } = (await Refund.findOne({
+          paymentIntent,
+        })) as IRefund;
+
+        if (refundType === REFUND_TYPES.SUBSCRIPTION) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_SUCCEEDED, {
+            paymentIntent,
+          });
+        }
+
+        if (refundType === REFUND_TYPES.TICKET) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_TICKET_SUCCEEDED, {
+            paymentIntent,
+          });
+        }
+
+        if (refundType === REFUND_TYPES.PRODUCT) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_PRODUCT_SUCCEEDED, {
+            paymentIntent,
+          });
+        }
         break;
       default:
         logger.error("Invalid payment type");
@@ -157,7 +295,7 @@ export default class PaymentsServices {
     }
   }
 
-  async handleFailedPayment({
+  private async handleFailedPayment({
     paymentIntent,
     failMessage,
     paymentType,
@@ -173,11 +311,38 @@ export default class PaymentsServices {
           failMessage,
         });
         break;
-      case PAYMENT_TYPE.REFUND:
-        this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_FAILED, {
+      case PAYMENT_TYPE.TICKET:
+        this.emitter.emit(PAYMENT_ACTIONS.TICKET_PAYMENT_FAILED, {
           paymentIntent,
           failMessage,
         });
+        break;
+      case PAYMENT_TYPE.REFUND:
+        const { refundType } = (await Refund.findOne({
+          paymentIntent,
+        })) as IRefund;
+
+        if (refundType === REFUND_TYPES.SUBSCRIPTION) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_SUB_FAILED, {
+            paymentIntent,
+            failMessage,
+          });
+        }
+
+        if (refundType === REFUND_TYPES.TICKET) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_TICKET_FAILED, {
+            paymentIntent,
+            failMessage,
+          });
+        }
+
+        if (refundType === REFUND_TYPES.PRODUCT) {
+          this.emitter.emit(PAYMENT_ACTIONS.REFUND_PRODUCT_FAILED, {
+            paymentIntent,
+            failMessage,
+          });
+        }
+
       default:
         logger.error("Invalid payment type");
         break;

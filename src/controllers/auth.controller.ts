@@ -17,6 +17,14 @@ export default class AuthController {
       .json({ accessToken, refreshToken, otpGenerated });
   }
 
+  async getCurrentUser(req: Request, res: Response) {
+    const { id } = (req as any).user;
+
+    const user = await this.service.getCurrentUser(id as string);
+
+    return res.status(HTTP.OK).json(user);
+  }
+
   async resendOtp(req: Request<{}, {}, VerifAccount["body"]>, res: Response) {
     await this.service.verifAccount(req.body);
 
@@ -31,11 +39,8 @@ export default class AuthController {
 
     return res.sendStatus(HTTP.CREATED);
   }
-  
-  async resetPwd(
-    req: Request<{}, {}, ResetPwd["body"]>,
-    res: Response
-  ) {
+
+  async resetPwd(req: Request<{}, {}, ResetPwd["body"]>, res: Response) {
     await this.service.resetPwd(req.body);
 
     return res.sendStatus(HTTP.OK);

@@ -1,18 +1,18 @@
+import moment from "moment";
 import { Service } from "typedi";
+import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
 import RefundRepo from "../../repositories/payments/refund.repository";
 import { CreateRefund } from "../../schemas/payments/refund.schemas";
-import { ISubscriptionPayment } from "../../models/payments/subscription.payment.model";
+import { PAYMENT_TYPE } from "../../utils/constants/common";
+import HTTP from "../../utils/constants/http.responses";
 import {
   BILLING_TYPE,
   PAYMENT_STATUS,
   PAYMENT_TYPE_PREDICTION,
   REFUND_TYPES,
-} from "../../utils/constants/plans-and-subs";
-import moment from "moment";
-import PaymentsServices from "./payments.services";
-import { PAYMENT_TYPE } from "../../utils/constants/common";
+} from "../../utils/constants/payments-and-subs";
 import ApiError from "../../utils/errors/errors.base";
-import HTTP from "../../utils/constants/http.responses";
+import PaymentsServices from "./payments.services";
 
 @Service()
 export default class RefundServices {
@@ -82,6 +82,32 @@ export default class RefundServices {
     });
   }
 
+  async processTicketRefundRequest({
+    amount,
+    payment,
+  }: {
+    amount: number;
+    payment: string;
+  }) {
+    await this.initiateRefund({
+      paymentId: payment,
+      amount,
+    });
+  }
+
+  async processProductRefundRequest({
+    amount,
+    payment,
+  }: {
+    amount: number;
+    payment: string;
+  }) {
+    await this.initiateRefund({
+      paymentId: payment,
+      amount,
+    });
+  }
+
   async initiateRefund({
     paymentId,
     amount,
@@ -96,8 +122,6 @@ export default class RefundServices {
       })) as PAYMENT_TYPE_PREDICTION;
 
     if (paymentType) {
-      let refundId;
-      let acquirerReferenceNumber;
       let refundType;
 
       const { rfId, acquirer } = await this.paymentService.refundPayment({
@@ -105,13 +129,20 @@ export default class RefundServices {
         amount,
         paymentType,
       });
-      refundId = rfId as string;
-      acquirerReferenceNumber = acquirer as string;
+      const refundId = rfId as string;
+      const acquirerReferenceNumber = acquirer as string;
 
-      // Subscription refund
-      // TODO: Convert to a switch statement
-      if (paymentType === PAYMENT_TYPE.SUBSCRIPTION) {
-        refundType = REFUND_TYPES.SUBSCRIPTION;
+      // Set refund type
+      switch (paymentType) {
+        case PAYMENT_TYPE.TICKET:
+          refundType = REFUND_TYPES.TICKET;
+          break;
+        case PAYMENT_TYPE.PRODUCT:
+          refundType = REFUND_TYPES.PRODUCT;
+          break;
+        default:
+          refundType = REFUND_TYPES.SUBSCRIPTION;
+          break;
       }
 
       // Persist refund
@@ -129,7 +160,7 @@ export default class RefundServices {
   }
 
   // TODO: Get list of refunds
-  // TODO: Update refund
+
   async updateRefund({
     refundId,
     paymentIntent,

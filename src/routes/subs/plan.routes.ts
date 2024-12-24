@@ -1,27 +1,44 @@
 import "reflect-metadata";
 
 import { Router } from "express";
-import { isAdmin } from "../../middlewares/auth";
-import validate from "../../middlewares/validate.request";
-import { createPlanSchema } from "../../schemas/subs/plan.schemas";
 import Container from "typedi";
-import { tryCatch } from "../../utils/errors/errors.utlis";
 import PlanController from "../../controllers/subs/plan.controller";
+import { isAdmin, isLoggedIn } from "../../middlewares/auth";
+import validate from "../../middlewares/validate.request";
+import {
+  createPlanSchema,
+  updatePlanSchema,
+} from "../../schemas/subs/plan.schemas";
+import { tryCatch } from "../../utils/errors/errors.utlis";
 
 const PlanRouter = Router();
 const controller = Container.get(PlanController);
 
-// TODO: Uncomment
-// PlanRouter.use(isAdmin)
-
 PlanRouter.post(
   "",
+  isLoggedIn,
+  isAdmin,
   validate(createPlanSchema),
   tryCatch(controller.createPlan.bind(controller))
 );
 
 PlanRouter.get("", tryCatch(controller.getPlans.bind(controller)));
 
-// TODO: Routes for getting a single plan and updating and deleting plans (Admins)
+PlanRouter.get("/:name", tryCatch(controller.getPlanByName.bind(controller)));
+
+PlanRouter.put(
+  "/:plan",
+  isLoggedIn,
+  isAdmin,
+  validate(updatePlanSchema),
+  tryCatch(controller.updatePlan.bind(controller))
+);
+
+PlanRouter.delete(
+  "/:plan",
+  isLoggedIn,
+  isAdmin,
+  tryCatch(controller.deletePlan.bind(controller))
+);
 
 export default PlanRouter;

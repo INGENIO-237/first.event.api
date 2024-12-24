@@ -6,11 +6,19 @@ import errorHandler from "../utils/errors/errors.handler";
 import { v2 as cloudinary } from "cloudinary";
 import config from "../config";
 import registerEvents from "../hooks/event-bus-connector";
+import cors from "cors";
 
 export default function createServer() {
   const server = express();
 
   (async () => await connectToDb())();
+
+  // Cors
+  server.use(
+    cors({
+      origin: "*",
+    })
+  );
 
   // Request body parser
   server.use(parseRequestBody());

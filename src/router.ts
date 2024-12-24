@@ -1,14 +1,22 @@
 import { Express, Request, Response } from "express";
-import HTTP from "./utils/constants/http.responses";
 import {
   AuthRouter,
+  CartRouter,
+  CouponsRouter,
+  EventBookmarkRouter,
+  EventsRouter,
+  FollowingRouter,
   InfluencerRouter,
   OrganizerRouter,
   PaymentsRouter,
   PlanRouter,
+  ProductsRouter,
+  ReportsRouter,
+  ReviewsRouter,
   SubscriptionRouter,
   UserRouter,
 } from "./routes";
+import HTTP from "./utils/constants/http.responses";
 
 export default function router(server: Express) {
   server.get("/healthcheck", (req: Request, res: Response) =>
@@ -22,4 +30,12 @@ export default function router(server: Express) {
   server.use("/plans", PlanRouter);
   server.use("/subscriptions", SubscriptionRouter);
   server.use("/payments", PaymentsRouter);
+  server.use("/events", EventsRouter);
+  server.use("/coupons", CouponsRouter);
+  server.use("/products", ProductsRouter);
+  server.use("/cart", CartRouter);
+  server.use("/reviews", ReviewsRouter);
+  server.use("/reports", ReportsRouter);
+  server.use("/bookmarks/events", EventBookmarkRouter);
+  server.use("/followings", FollowingRouter);
 }

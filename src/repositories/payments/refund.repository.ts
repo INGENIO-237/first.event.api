@@ -1,13 +1,17 @@
 import { Service } from "typedi";
 import { CreateRefund } from "../../schemas/payments/refund.schemas";
 import Refund from "../../models/payments/refund.model";
-import { PAYMENT_STATUS } from "../../utils/constants/plans-and-subs";
+import { PAYMENT_STATUS } from "../../utils/constants/payments-and-subs";
 import { Types } from "mongoose";
 
 @Service()
 export default class RefundRepo {
   async createRefund(payload: CreateRefund & { fees: number }) {
-    return await Refund.create(payload);
+    return await Refund.create({
+      billing: { sameAsProfile: true },
+      shipping: { sameAsProfile: true },
+      ...payload,
+    });
   }
 
   async getRefund({
@@ -23,7 +27,6 @@ export default class RefundRepo {
   }
 
   // TODO: Get list of refunds
-  // TODO: Update refund
   async updateRefund({
     refundId,
     paymentIntent,

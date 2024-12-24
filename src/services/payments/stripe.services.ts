@@ -1,8 +1,8 @@
-import { Service } from "typedi";
 import { Stripe } from "stripe";
+import { Service } from "typedi";
 import config from "../../config";
-import ApiError from "../../utils/errors/errors.base";
 import HTTP from "../../utils/constants/http.responses";
+import ApiError from "../../utils/errors/errors.base";
 import logger from "../../utils/logger";
 
 @Service()
@@ -20,10 +20,12 @@ export default class StripeServices {
     amount,
     currency = "CAD",
     customerId,
+    paymentMethodId,
   }: {
     amount: number;
     currency?: string;
     customerId?: string;
+    paymentMethodId?: string;
   }) {
     const stripeFeesMargin = Math.ceil((amount * this._fees) / 100);
     const amountToBePaid = Math.ceil(amount + stripeFeesMargin); // initial amount + stripe fees
@@ -33,6 +35,7 @@ export default class StripeServices {
         amount: amountToBePaid,
         currency,
         customerId,
+        paymentMethodId,
       });
 
     const ephemeralKey = await this._stripe.ephemeralKeys.create(
@@ -59,23 +62,49 @@ export default class StripeServices {
     amount,
     currency,
     customerId,
+    paymentMethodId,
   }: {
     amount: number;
     currency: string;
     customerId?: string;
+    paymentMethodId?: string;
   }) {
-    const { id } = await this._stripe.customers.create();
-    const { client_secret, id: paymentIntent } =
-      await this._stripe.paymentIntents.create({
-        amount: amount * 100, // american and european currency format
-        currency,
-        customer: customerId ?? id,
-      });
+    let cus = customerId;
 
-    return { client_secret, paymentIntent, customer: customerId ?? id };
+    if (!customerId) {
+      const { id } = await this._stripe.customers.create();
+      cus = id;
+    }
+    const { client_secret, id: paymentIntent } = paymentMethodId
+      ? await this._stripe.paymentIntents
+          .create({
+            amount: amount * 100,
+            currency,
+            customer: cus,
+            payment_method: paymentMethodId,
+          })
+          .catch((error) => {
+            throw new ApiError(
+              HTTP.BAD_REQUEST,
+              `Erreur lors du paiement: ${error.message}`
+            );
+          })
+      : await this._stripe.paymentIntents
+          .create({
+            amount: amount * 100,
+            currency,
+            customer: cus,
+          })
+          .catch((error) => {
+            throw new ApiError(
+              HTTP.BAD_REQUEST,
+              `Erreur lors du paiement: ${error.message}`
+            );
+          });
+
+    return { client_secret, paymentIntent, customer: cus };
   }
 
-  // Dev purpose only
   async confirmPaymentIntent(paymentIntent: string) {
     console.log(`Capturing ${paymentIntent}`);
 
@@ -102,6 +131,18 @@ export default class StripeServices {
     return id;
   }
 
+  async attachCustomerToPaymentMethod({
+    paymentMethodId,
+    customerId,
+  }: {
+    paymentMethodId: string;
+    customerId: string;
+  }) {
+    await this._stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+  }
+
   async createRefund({
     paymentIntent,
     amount,
@@ -112,7 +153,7 @@ export default class StripeServices {
     return this._stripe.refunds
       .create({
         payment_intent: paymentIntent,
-        amount: amount * 100,
+        amount: Math.floor(amount * 100),
       })
       .then((response) => {
         const { id, destination_details } = response;
@@ -144,5 +185,48 @@ export default class StripeServices {
     } catch (err: any) {
       throw new ApiError(HTTP.BAD_REQUEST, `Webhook Error: ${err.message}`);
     }
+  }
+
+  async createConnectedAccount({
+    email,
+    name,
+  }: {
+    email: string;
+    name: string;
+  }) {
+    const { id: connectedAccount } = await this._stripe.accounts.create({
+      type: "express",
+      country: "AE", // TODO: Change this CA
+      email,
+      business_type: "individual",
+      capabilities: {
+        transfers: { requested: true },
+      },
+      business_profile: {
+        name,
+      },
+    }).catch((error) => {
+      throw new ApiError(
+        HTTP.BAD_REQUEST,
+        `Erreur lors de la création du compte: ${error.message}`
+      );
+    });
+
+    const { accountCompletionLink, accountLinkExpiresAt } =
+      await this.createAccountLink(connectedAccount);
+
+    return { connectedAccount, accountCompletionLink, accountLinkExpiresAt };
+  }
+
+  async createAccountLink(accountId: string) {
+    const { url: accountCompletionLink, expires_at: accountLinkExpiresAt } =
+      await this._stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: "https://example.com/reauth",
+        return_url: "https://example.com/return",
+        type: "account_onboarding",
+      });
+
+    return { accountCompletionLink, accountLinkExpiresAt };
   }
 }

@@ -21,6 +21,20 @@ export const registerOrganizerSchema = object({
       invalid_type_error:
         "La liste de vos objectifs doit être un tableau de chaînes de caractères",
     }).min(1, "Au moins un objectif est requis"),
+    location: object({
+      city: string({
+        required_error: "La ville est requise",
+        invalid_type_error: "La ville doit être une chaîne de caractères",
+      }),
+      country: string({
+        required_error: "Le pays est requis",
+        invalid_type_error: "Le pays doit être une chaîne de caractères",
+      }),
+      state: string({
+        required_error: "L'état est requis",
+        invalid_type_error: "L'état doit être une chaîne de caractères",
+      }),
+    }),
   }),
 });
 
@@ -57,7 +71,85 @@ export const updateOrganizerSchema = object({
           "La liste de vos objectifs doit être un tableau de chaînes de caractères",
       }).min(1, "Au moins un objectif est requis")
     ),
+    location: optional(
+      object({
+        city: string({
+          required_error: "La ville est requise",
+          invalid_type_error: "La ville doit être une chaîne de caractères",
+        }),
+        country: string({
+          required_error: "Le pays est requis",
+          invalid_type_error: "Le pays doit être une chaîne de caractères",
+        }),
+        state: string({
+          required_error: "L'état est requis",
+          invalid_type_error: "L'état doit être une chaîne de caractères",
+        }),
+      })
+    ),
+    website: optional(
+      string({
+        invalid_type_error: "Le site web doit être une chaîne de caractères",
+      }).url("Le site web doit être une URL valide")
+    ),
+    socialMedia: object({
+      facebook: optional(
+        string({
+          invalid_type_error:
+            "Le lien Facebook doit être une chaîne de caractères",
+        }).url("Le lien Facebook doit être une URL valide")
+      ),
+      instagram: optional(
+        string({
+          invalid_type_error:
+            "Le lien Instagram doit être une chaîne de caractères",
+        }).url("Le lien Instagram doit être une URL valide")
+      ),
+      twitter: optional(
+        string({
+          invalid_type_error:
+            "Le lien Twitter doit être une chaîne de caractères",
+        }).url("Le lien Twitter doit être une URL valide")
+      ),
+      linkedin: optional(
+        string({
+          invalid_type_error:
+            "Le lien LinkedIn doit être une chaîne de caractères",
+        }).url("Le lien LinkedIn doit être une URL valide")
+      ),
+      youtube: optional(
+        string({
+          invalid_type_error:
+            "Le lien YouTube doit être une chaîne de caractères",
+        }).url("Le lien YouTube doit être une URL valide")
+      ),
+      tiktok: optional(
+        string({
+          invalid_type_error:
+            "Le lien TikTok doit être une chaîne de caractères",
+        }).url("Le lien TikTok doit être une URL valide")
+      ),
+      other: optional(
+        string({
+          invalid_type_error:
+            "Le lien autre doit être une chaîne de caractères",
+        }).url("Le lien autre doit être une URL valide")
+      ),
+    }).optional(),
+    description: optional(
+      string({
+        invalid_type_error: "La description doit être une chaîne de caractères",
+      })
+    ),
   }),
 });
 
 export type UpdateOrganizer = z.infer<typeof updateOrganizerSchema>;
+
+export type UpdateOrganizerPayload = UpdateOrganizer["body"] & {
+  subscription?: string;
+  connectedAccount?: string;
+  connectedAccountCompleted?: boolean;
+  accountCompletionLink?: string;
+  accountLinkExpiresAt?: Date;
+};
