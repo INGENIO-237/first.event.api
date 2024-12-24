@@ -19,6 +19,12 @@ import {
 import HTTP from "../../utils/constants/http.responses";
 import ApiError from "../../utils/errors/errors.base";
 import { getSlug } from "../../utils/utilities";
+import Organizer, { IOrganizer } from "../professionals/organizer.model";
+import Subscription, { ISubscription } from "../subs/subscription.model";
+import SubscriptionPayment, {
+  ISubscriptionPayment,
+} from "../payments/subscription.payment.model";
+import Plan, { IPlan } from "../subs/plan.model";
 
 const eventSchema = new Schema(
   {
@@ -106,9 +112,29 @@ const eventSchema = new Schema(
         quantity: { type: Number, required: true },
       },
     ],
+    remainingSpots: {
+      type: Number,
+      default: 0,
+    },
     remainingTickets: {
       type: Number,
-      default: 100,
+      default: 0,
+    },
+    remainingCoupons: {
+      type: Number,
+      default: 0,
+    },
+    remainingPromotions: {
+      type: Number,
+      default: 0,
+    },
+    ticketsSold: {
+      type: Number,
+      default: 0,
+    },
+    revenue: {
+      type: Number,
+      default: 0,
     },
     status: {
       type: String,
@@ -127,7 +153,7 @@ const eventSchema = new Schema(
       type: Number,
       default: 0,
     },
-    isDeleted: {
+    hasBeenDeleted: {
       type: Boolean,
       default: false,
     },
@@ -145,6 +171,46 @@ const eventSchema = new Schema(
 
 eventSchema.virtual("slug").get(function () {
   return getSlug(this.title);
+});
+
+eventSchema.pre<IEvent>("save", async function (next) {
+  let event = this;
+
+  if (event.isNew) {
+    const spots = this.tickets.reduce((acc, ticket) => {
+      return acc + ticket.quantity;
+    }, 0);
+
+    event.remainingSpots = spots;
+
+    // Get subscription and set remaining tickets, coupons and promotions
+    const { subscription } = (await Organizer.findById(
+      event.organizer
+    )) as IOrganizer;
+
+    const { payment } = (await Subscription.findById(
+      subscription
+    )) as ISubscription;
+
+    const { plan } = (await SubscriptionPayment.findById(
+      payment
+    )) as ISubscriptionPayment;
+
+    const { ticketsPerEvent, couponsPerEvent, promotion } =
+      (await Plan.findById(plan)) as IPlan;
+
+    event.remainingTickets = isNaN(Number(ticketsPerEvent))
+      ? 999999 // Unlimited number (theoritically...)
+      : Number(ticketsPerEvent);
+    event.remainingCoupons = isNaN(Number(couponsPerEvent))
+      ? 999999
+      : Number(couponsPerEvent);
+    event.remainingPromotions = isNaN(Number(promotion))
+      ? 999999
+      : Number(promotion);
+  }
+
+  next();
 });
 
 eventSchema.statics.checkValidity = async function (event: string) {
